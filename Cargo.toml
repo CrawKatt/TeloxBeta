@@ -1,0 +1,18 @@
+[package]
+name = "beta"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+teloxide = { version = "0.11", features = ["macros", "auto-send"] }
+teloxide-core = "0.8.0"
+log = "0.4"
+pretty_env_logger = "0.4"
+tokio = { version =  "1.8", features = ["rt-multi-thread", "macros"] }
+dotenv= "0.15.0"
+dotenv_codegen = "0.15.0"
+chrono = "0.4.23"
+regex = "1.7.0"
+rand = "0.8.5"
