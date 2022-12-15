@@ -6,9 +6,6 @@ pub type MyBot = DefaultParseMode<Bot>;
 use teloxide::{prelude::*, utils::command::BotCommands};
 use teloxide::adaptors::DefaultParseMode;
 
-
-
-
 // Derive BotCommands para analizar texto con un comando en esta enumeración.
 //
 // 1. `rename_rule = "lowercase"` convierte todos los comandos en letras minúsculas.
@@ -131,6 +128,13 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
             bot.delete_message(msg.chat.id, msg.id).await?;
         }
 
+        // Comandos de Administración
+        Command::Ban => admin::ban_user(bot, msg).await?,
+        Command::Unban => admin::unban_user(bot, msg).await?,
+        Command::Mute => admin::mute_user(bot, msg).await?,
+        Command::Unmute => admin::unmute_user(bot, msg).await?,
+
+        // Comandos de Información
         Command::Variables =>  funciones::variables(bot, msg).await?,
         Command::Constantes => funciones::constantes(bot, msg).await?,
         Command::TiposDeDatos => funciones::tipos_de_datos(bot, msg).await?,
@@ -145,34 +149,34 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Match => funciones::matchs(bot, msg).await?,
         Command::Enums => funciones::enums(bot, msg).await?,
         Command::Funciones => funciones::funciones(bot, msg).await?,
-        Command::Metodos => funciones::metodos(bot, msg).await?,
         Command::Return => funciones::returns(bot, msg).await?,
+        Command::Metodos => funciones::metodos(bot, msg).await?,
+        Command::Closures => funciones::closures(bot, msg).await?,
         Command::Structs => funciones::estructuras(bot, msg).await?,
         Command::Traits => funciones::traits(bot, msg).await?,
-        Command::Closures => funciones::closures(bot, msg).await?,
-        Command::Generics => funciones::generics(bot, msg).await?,
         Command::Option => funciones::option(bot, msg).await?,
         Command::Result => funciones::result(bot, msg).await?,
-        Command::Iterators => funciones::iterators(bot, msg).await?,
-        Command::Shadowing => funciones::shadowing(bot, msg).await?,
+        Command::Generics => funciones::generics(bot, msg).await?,
+        Command::Lifetimes => funciones::lifetimes(bot, msg).await?,
+        Command::Macros => funciones::macros(bot, msg).await?,
         Command::Ownership => funciones::ownership(bot, msg).await?,
         Command::Referencias => funciones::referencias(bot, msg).await?,
         Command::Borrowing => funciones::borrowing(bot, msg).await?,
-        Command::Slices => funciones::slices(bot, msg).await?,
         Command::Modulos => funciones::modulos(bot, msg).await?,
+        Command::Shadowing => funciones::shadowing(bot, msg).await?,
+        Command::Slices => funciones::slices(bot, msg).await?,
         Command::Strings => funciones::strings(bot, msg).await?,
-        Command::Lifetimes => funciones::lifetimes(bot, msg).await?,
-        Command::Macros => funciones::macros(bot, msg).await?,
-        Command::Async => funciones::asyncs(bot, msg).await?,
+        Command::Iterators => funciones::iterators(bot, msg).await?,
         Command::Scopes => funciones::scopes(bot, msg).await?,
-        Command::Novedades => funciones::novedades(bot, msg).await?,
-        Command::About => funciones::about(bot, msg).await?,
-        Command::Pat => fun::send_pat(bot, msg).await?,
+        Command::Async => funciones::asyncs(bot, msg).await?,
+
+        // Comandos de Diversión
+        Command::Pat => fun::send_pat(bot, msg).await?, //
         Command::Meme => fun::send_random_meme(bot, msg).await?,
-        Command::Ban => admin::ban_user(bot, msg).await?,
-        Command::Unban => admin::unban_user(bot, msg).await?,
-        Command::Mute => admin::mute_user_two(bot, msg).await?,
-        Command::Unmute => admin::unmute_user(bot, msg).await?,
+
+        // Comandos de Acerca del Bot y Novedades
+        Command::About => funciones::about(bot, msg).await?,
+        Command::Novedades => funciones::novedades(bot, msg).await?,
     };
 
     Ok(())

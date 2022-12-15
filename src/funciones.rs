@@ -5,9 +5,8 @@ use crate::{Message};
 use crate::ResponseResult;
 
 
-
 pub async fn variables(bot: MyBot, msg: Message) -> ResponseResult<()> {
-    bot.send_message(msg.chat.id, "Variables: Son un espacio en memoria cuyo valor puede asignarse y cambiar \n\nEjemplo en Rust: \n`let mi_variable = valor:`").await?;
+    bot.send_message(msg.chat.id, "Variables: Son un espacio en memoria cuyo valor puede asignarse y cambiar \n\nEjemplo en Rust: \n`let mi_variable = \"valor\":`").await?;
     bot.delete_message(msg.chat.id, msg.id).await?;
 
     Ok(())
@@ -252,7 +251,7 @@ pub async fn novedades(bot: MyBot, msg: Message) -> ResponseResult<()> {
 }
 
 pub async fn about(bot: MyBot, msg: Message) -> ResponseResult<()> {
-    bot.send_message(msg.chat.id, "Bot creado por @CrawKatt \n\nGitHub: \nhttps://github\\.com/CrawKatt").await?;
+    bot.send_message(msg.chat.id, "Bot creado por @CrawKatt \n\nGitHub: \nhttps://github\\.com/CrawKatt \n\nVersion del Bot: 1\\.2").await?;
     bot.delete_message(msg.chat.id, msg.id).await?;
 
     Ok(())

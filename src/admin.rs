@@ -79,7 +79,7 @@ pub async fn unban_user(bot: comandos::MyBot, msg: Message) -> ResponseResult<()
 }
 
 // silenciar a un usuario por tiempo indeterminado
-pub async fn mute_user_two(bot: comandos::MyBot, msg: Message) -> ResponseResult<()> {
+pub async fn mute_user(bot: comandos::MyBot, msg: Message) -> ResponseResult<()> {
 
     let user = msg.reply_to_message().unwrap().from().unwrap();
     println!("Info : {:?}", user);
