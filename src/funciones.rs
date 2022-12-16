@@ -256,3 +256,22 @@ pub async fn about(bot: MyBot, msg: Message) -> ResponseResult<()> {
 
     Ok(())
 }
+
+pub async fn get_chat_administrators(bot: MyBot, msg: Message) -> ResponseResult<()> {
+    let chat_administrators = bot.get_chat_administrators(msg.chat.id).await?;
+    println!("{:?}", chat_administrators);
+    bot.send_message(msg.chat.id, format!("Chat Administrators: \\{:#?}", chat_administrators)).await?;
+    bot.delete_message(msg.chat.id, msg.id).await?;
+
+    Ok(())
+}
+
+// get @username from message from command and async function
+pub async fn get_username(bot: MyBot, msg: Message) -> ResponseResult<()> {
+    let username = msg.text().unwrap().split_whitespace().nth(1).unwrap();
+    println!("{:?}", username);
+    bot.send_message(msg.chat.id, format!("´Username {:#?}´", username)).await?;
+    bot.delete_message(msg.chat.id, msg.id).await?;
+
+    Ok(())
+}

@@ -112,6 +112,12 @@ pub enum Command {
     About,
     #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
     Novedades,
+    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+    Get,
+    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+    Admin,
+    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+    User,
 }
 
 // Función de acción para cada comando.
@@ -131,7 +137,7 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         // Comandos de Administración
         Command::Ban => admin::ban_user(bot, msg).await?,
         Command::Unban => admin::unban_user(bot, msg).await?,
-        Command::Mute => admin::mute_user(bot, msg).await?,
+        Command::Mute => admin::mute_user_admin(bot, msg).await?,
         Command::Unmute => admin::unmute_user(bot, msg).await?,
 
         // Comandos de Información
@@ -169,6 +175,9 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Iterators => funciones::iterators(bot, msg).await?,
         Command::Scopes => funciones::scopes(bot, msg).await?,
         Command::Async => funciones::asyncs(bot, msg).await?,
+        Command::Get => admin::get_chat_member(bot, msg).await?,
+        Command::Admin => funciones::get_chat_administrators(bot, msg).await?,
+        Command::User => funciones::get_username(bot, msg).await?,
 
         // Comandos de Diversión
         Command::Pat => fun::send_pat(bot, msg).await?, //
