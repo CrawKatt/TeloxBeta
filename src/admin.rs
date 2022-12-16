@@ -160,7 +160,7 @@ pub async fn mute_user_admin(bot: comandos::MyBot, msg: Message) -> ResponseResu
     println!("@username : {:?}", username_user);
 
     let chat_member = bot.get_chat_member(msg.chat.id, msg.from().unwrap().id).await?;
-    println!("ID : {:?}", chat_member);
+    println!("Chat_member : {:?}", chat_member);
 
     let user_id = chat_member.user.id;
     println!("ID usuario : {:?}", user_id);
