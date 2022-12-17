@@ -32,7 +32,6 @@ pub async fn ban_user(bot: comandos::MyBot, msg: Message) -> ResponseResult<()> 
             println!("@username : {:?}", username_user);
 
             let chat_member = bot.get_chat_member(msg.chat.id, msg.from().unwrap().id).await?;
-            println!("ID : {:?}", chat_member);
 
             let user_id = chat_member.user.id;
             println!("ID usuario : {:?}", user_id);
@@ -95,7 +94,6 @@ pub async fn unban_user(bot: comandos::MyBot, msg: Message) -> ResponseResult<()
             println!("@username : {:?}", username_user);
 
             let chat_member = bot.get_chat_member(msg.chat.id, msg.from().unwrap().id).await?;
-            println!("ID : {:?}", chat_member);
 
             let user_id = chat_member.user.id;
             println!("ID usuario : {:?}", user_id);
@@ -120,30 +118,6 @@ pub async fn unban_user(bot: comandos::MyBot, msg: Message) -> ResponseResult<()
     Ok(())
 }
 
-// silenciar a un usuario por tiempo indeterminado
-pub async fn mute_user(bot: comandos::MyBot, msg: Message) -> ResponseResult<()> {
-
-    let user = msg.reply_to_message().unwrap().from().unwrap();
-    println!("Info : {:?}", user);
-
-    let chat = msg.chat.id;
-    println!("Chat ID : {:?}", chat);
-
-    let usuario = user.clone().first_name;
-    println!("usuario : {:?}", usuario);
-
-    let username_user = user.clone().username;
-    println!("@username : {:?}", username_user);
-
-    bot.delete_message(msg.chat.id, msg.id).await?;
-    bot.restrict_chat_member(msg.chat.id, user.id, ChatPermissions::empty()).await?;
-
-    bot.send_message(msg.chat.id, format!("@{} ha sido silenciado", username_user.unwrap())).await?;
-    println!("Silenciado : {}", user.first_name);
-
-    Ok(())
-}
-
 // silenciar a un usuario por tiempo indeterminado pero solo si el usuario que emplea el comando es administrador
 pub async fn mute_user_admin(bot: comandos::MyBot, msg: Message) -> ResponseResult<()> {
 
@@ -160,7 +134,6 @@ pub async fn mute_user_admin(bot: comandos::MyBot, msg: Message) -> ResponseResu
     println!("@username : {:?}", username_user);
 
     let chat_member = bot.get_chat_member(msg.chat.id, msg.from().unwrap().id).await?;
-    println!("Chat_member : {:?}", chat_member);
 
     let user_id = chat_member.user.id;
     println!("ID usuario : {:?}", user_id);
@@ -168,7 +141,7 @@ pub async fn mute_user_admin(bot: comandos::MyBot, msg: Message) -> ResponseResu
     if chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner || chat_member.status() == ChatMemberStatus::Administrator {
         bot.delete_message(msg.chat.id, msg.id).await?;
         bot.restrict_chat_member(msg.chat.id, user.id, ChatPermissions::empty()).await?;
-        bot.send_message(msg.chat.id, format!("@{} ha sido desbaneado", username_user.unwrap())).await?;
+        bot.send_message(msg.chat.id, format!("@{} ha sido silenciado", username_user.unwrap())).await?;
         println!("Silenciado : @{}", user.first_name);
 
         let mut rng: StdRng = SeedableRng::from_entropy();
@@ -222,17 +195,20 @@ pub async fn unmute_user(bot: comandos::MyBot, msg: Message) -> ResponseResult<(
     } else {
         bot.delete_message(msg.chat.id, msg.id).await?;
         bot.send_message(msg.chat.id, "No tienes permisos para remover el silencio a un usuario").await?;
-    }
+    };
 
-    return Ok(());
+    Ok(())
 
 }
 
 pub async fn get_chat_member(bot: comandos::MyBot, msg: Message) -> ResponseResult<()> {
-    let chat_member = bot.get_chat_member(msg.chat.id, msg.from().unwrap().id).await?;
-    println!("Info : {:?}", chat_member);
-    bot.send_message(msg.chat.id, format!("Chat Member: {:#?}", chat_member)).await?;
-    bot.delete_message(msg.chat.id, msg.id).await?;
+    let usuario = msg.reply_to_message().unwrap().from().unwrap();
+    println!("Info : {:?}", usuario);
+
+    let user_id = usuario.id;
+    println!("ID usuario : {:?}", user_id);
+
+    bot.send_message(msg.chat.id, format!("ID usuario : {user_id}")).await?;
 
     Ok(())
 }

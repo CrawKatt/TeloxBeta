@@ -268,10 +268,14 @@ pub async fn get_chat_administrators(bot: MyBot, msg: Message) -> ResponseResult
 
 // get @username from message from command and async function
 pub async fn get_username(bot: MyBot, msg: Message) -> ResponseResult<()> {
-    let username = msg.text().unwrap().split_whitespace().nth(1).unwrap();
-    println!("{:?}", username);
-    bot.send_message(msg.chat.id, format!("´Username {:#?}´", username)).await?;
+
+    let user = msg.reply_to_message().unwrap().from().unwrap();
+
+    let username_user = user.clone().username;
+    println!("@username : {:?}", username_user);
+
+    bot.send_message(msg.chat.id, format!("Tu @Username es : @{}", username_user.unwrap())).await?;
     bot.delete_message(msg.chat.id, msg.id).await?;
 
-    Ok(())
+    return Ok(())
 }
