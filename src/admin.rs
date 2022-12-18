@@ -10,6 +10,7 @@ use rand::Rng;
 use teloxide::types::InputFile;
 use teloxide::types::ChatPermissions;
 use teloxide::prelude::Requester;
+use teloxide_core::prelude::{ChatId, UserId};
 use teloxide_core::types::ChatMemberStatus;
 
 
@@ -208,7 +209,30 @@ pub async fn get_chat_member(bot: comandos::MyBot, msg: Message) -> ResponseResu
     let user_id = usuario.id;
     println!("ID usuario : {:?}", user_id);
 
-    bot.send_message(msg.chat.id, format!("ID usuario : {user_id}")).await?;
+    bot.send_message(msg.chat.id, format!("ID usuario : \\-{user_id}")).await?;
 
     Ok(())
 }
+
+// banear a un usuario mediante su @username
+pub async fn ban_user_username(bot: comandos::MyBot, msg: Message) -> ResponseResult<()> {
+
+    let chat_member = bot.get_chat_member(msg.chat.id, msg.from().unwrap().id).await?;
+
+    let user_id = chat_member.user.id;
+    println!("ID usuario : {:?}", user_id);
+
+    if chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner || chat_member.status() == ChatMemberStatus::Administrator {
+        bot.delete_message(msg.chat.id, msg.id).await?;
+        bot.ban_chat_member(ChatId(5723641776), UserId(5723641776)).await?;
+        bot.send_message(msg.chat.id, format!("Has sido baneado del grupo")).await?;
+        println!("Baneado : {}", msg.from().unwrap().first_name);
+
+    } else {
+        bot.delete_message(msg.chat.id, msg.id).await?;
+        bot.send_message(msg.chat.id, "No tienes permisos para banear a un usuario").await?;
+    }
+
+    Ok(())
+}
+

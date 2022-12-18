@@ -118,6 +118,8 @@ pub enum Command {
     Admin,
     #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
     User,
+    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+    Banid,
 }
 
 // Función de acción para cada comando.
@@ -178,6 +180,7 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Get => admin::get_chat_member(bot, msg).await?,
         Command::Admin => funciones::get_chat_administrators(bot, msg).await?,
         Command::User => funciones::get_username(bot, msg).await?,
+        Command::Banid => admin::ban_user_username(bot, msg).await?,
 
         // Comandos de Diversión
         Command::Pat => fun::send_pat(bot, msg).await?, //
