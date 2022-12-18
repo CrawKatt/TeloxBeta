@@ -35,11 +35,7 @@ pub async fn send_pat(bot: comandos::MyBot, msg: Message) -> ResponseResult<()> 
     let file_path = format!("./assets/pat/{}", get_file_name(random_number));
 
     if Path::new(&file_path).is_file() {
-
-        if file_path.ends_with(".gif") {
-            bot.send_animation(msg.chat.id, InputFile::file(&file_path)).await?;
-        }
-
+        bot.send_animation(msg.chat.id, InputFile::file(&file_path)).await?;
     }
 
     Ok(())
