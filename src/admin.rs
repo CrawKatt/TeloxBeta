@@ -1,6 +1,5 @@
 //use std::time::Duration;
 use crate::comandos;
-use crate::Message;
 use crate::ResponseResult;
 
 use rand::rngs::StdRng;
@@ -11,7 +10,7 @@ use teloxide::types::InputFile;
 use teloxide::types::ChatPermissions;
 use teloxide::prelude::Requester;
 use teloxide_core::prelude::{ChatId, UserId};
-use teloxide_core::types::ChatMemberStatus;
+use teloxide_core::types::{ChatMemberStatus, Message};
 
 
 // Banear a un usuario respondiendo un mensaje
