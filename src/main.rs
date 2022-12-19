@@ -20,7 +20,7 @@ async fn main() {
     pretty_env_logger::init();
     run().await;
     log::info!("Starting admin bot...");
-    println!("Bot Iniciado!");
+    println!("Bot Iniciado! \n");
     let bot = Bot::from_env().parse_mode(comandos::MarkdownV2);
     comandos::Command::repl(bot, comandos::action).await;
 }

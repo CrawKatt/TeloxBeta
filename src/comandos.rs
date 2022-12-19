@@ -1,3 +1,4 @@
+
 use crate::{admin, fun, funciones};
 
 pub use teloxide_core::types::ParseMode::MarkdownV2;
@@ -5,6 +6,7 @@ pub type MyBot = DefaultParseMode<Bot>;
 
 use teloxide::{prelude::*, utils::command::BotCommands};
 use teloxide::adaptors::DefaultParseMode;
+
 
 // Derive BotCommands para analizar texto con un comando en esta enumeración.
 //
@@ -124,6 +126,13 @@ pub enum Command {
 
 // Función de acción para cada comando.
 pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()> {
+    let text = &msg.text().unwrap();
+    let (_command, arguments) = text.split_at(text.find(' ').unwrap_or(text.len()));
+    let user_id = arguments.trim().parse::<i64>().unwrap();
+
+
+
+    println!("ID usuario : {:?}", user_id);
     match cmd {
 
         Command::Help => {
@@ -180,7 +189,8 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Get => admin::get_chat_member(bot, msg).await?,
         Command::Admin => funciones::get_chat_administrators(bot, msg).await?,
         Command::User => funciones::get_username(bot, msg).await?,
-        Command::Banid => admin::ban_user_username(bot, msg).await?,
+
+        Command::Banid => admin::ban_user_id(bot.clone(), msg.clone(), user_id).await?,
 
         // Comandos de Diversión
         Command::Pat => fun::send_pat(bot, msg).await?, //
