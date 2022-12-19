@@ -222,6 +222,50 @@ pub async fn mute_user_admin(bot: MyBot, msg: Message) -> ResponseResult<()> {
 }
 
 // Mute por ID
+pub async fn mute_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
+    let text = &msg.text().unwrap();
+    let (_, arguments) = text.split_at(text.find(' ').unwrap_or(text.len()));
+    let user_id = arguments.trim().parse::<i64>().unwrap();
+
+    let chat_id = msg.chat.id;
+
+    let chat_member = bot.get_chat_member(chat_id, msg.from().unwrap().id).await?;
+
+    let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
+
+    if is_admin_or_owner {
+        bot.restrict_chat_member(chat_id, UserId(user_id as u64), ChatPermissions::empty()).await?;
+        bot.delete_message(msg.chat.id, msg.id).await?;
+        bot.send_message(msg.chat.id, "Usuario Silenciado").await?;
+        let mut rng: StdRng = SeedableRng::from_entropy();
+        let random_number = rng.gen_range(0..=6);
+
+        let file_names = [
+            "1.gif", "2.gif", "3.gif", "4.gif", "5.jpg",
+        ];
+
+        let get_file_name = |index: usize| -> &'static str {
+            file_names.get(index).unwrap_or_else(|| file_names.last().unwrap())
+        };
+
+        let file_path = format!("./assets/mute/{}", get_file_name(random_number));
+
+
+        if file_path.ends_with(".gif") {
+            bot.send_animation(chat_id, InputFile::file(file_path)).await?;
+
+        } else {
+            bot.send_photo(chat_id, InputFile::file(file_path)).await?;
+        }
+
+    } else {
+        bot.send_message(msg.chat.id, "No tienes permisos para silenciar a un usuario").await?;
+    }
+
+    Ok(())
+}
+
+// unmute Respondiendo un mensaje
 pub async fn unmute_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
     let user = msg.reply_to_message().unwrap().from().unwrap();
     println!("Info : {:?}", user);
@@ -256,6 +300,31 @@ pub async fn unmute_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
     Ok(())
 }
 
+// unmute por ID
+pub async fn unmute_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
+    let text = &msg.text().unwrap();
+    let (_, arguments) = text.split_at(text.find(' ').unwrap_or(text.len()));
+    let user_id = arguments.trim().parse::<i64>().unwrap();
+
+    let chat_id = msg.chat.id;
+
+    let chat_member = bot.get_chat_member(chat_id, msg.from().unwrap().id).await?;
+
+    let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
+
+    if is_admin_or_owner {
+        bot.restrict_chat_member(chat_id, UserId(user_id as u64), ChatPermissions::all()).await?;
+        bot.delete_message(msg.chat.id, msg.id).await?;
+        bot.send_message(msg.chat.id, "El Usuario ya no esta silenciado").await?;
+        bot.send_video(msg.chat.id, InputFile::file("./assets/unmute/unmute.mp4")).await?;
+
+    } else {
+        bot.send_message(msg.chat.id, "No tienes permisos para remover el silencio a un usuario").await?;
+    }
+
+    Ok(())
+}
+
 pub async fn get_chat_member(bot: MyBot, msg: Message) -> ResponseResult<()> {
     let usuario = msg.reply_to_message().unwrap().from().unwrap();
     println!("Info : {:?}", usuario);
@@ -263,7 +332,7 @@ pub async fn get_chat_member(bot: MyBot, msg: Message) -> ResponseResult<()> {
     let user_id = usuario.id;
     println!("ID usuario : {:?}", user_id);
 
-    bot.send_message(msg.chat.id, format!("ID usuario : \\-{user_id}")).await?;
+    bot.send_message(msg.chat.id, format!("{user_id}")).await?;
 
     Ok(())
 }

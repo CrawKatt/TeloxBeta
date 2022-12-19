@@ -124,8 +124,10 @@ pub enum Command {
     Banid,
     #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
     Unbanid,
-    //#[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
-    //Muteid,
+    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+    Muteid,
+    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+    Unmuteid,
 }
 
 // Función de acción para cada comando.
@@ -150,7 +152,8 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Unmute => admin::unmute_user(bot, msg.clone()).await?,
         Command::Banid => admin::ban_id(bot, msg).await?,
         Command::Unbanid => admin::unban_id(bot, msg).await?,
-        //Command::Muteid => admin::mute_id(bot, msg).await?,
+        Command::Muteid => admin::mute_id(bot, msg).await?,
+        Command::Unmuteid => admin::unmute_id(bot, msg).await?,
 
         // Comandos de Información
         Command::Variables =>  funciones::variables(bot, msg).await?,
