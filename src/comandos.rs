@@ -122,17 +122,15 @@ pub enum Command {
     User,
     #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
     Banid,
+    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+    Unbanid,
+    //#[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+    //Muteid,
 }
 
 // Función de acción para cada comando.
 pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()> {
-    let text = &msg.text().unwrap();
-    let (_command, arguments) = text.split_at(text.find(' ').unwrap_or(text.len()));
-    let user_id = arguments.trim().parse::<i64>().unwrap();
 
-
-
-    println!("ID usuario : {:?}", user_id);
     match cmd {
 
         Command::Help => {
@@ -149,7 +147,10 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Ban => admin::ban_user(bot, msg).await?,
         Command::Unban => admin::unban_user(bot, msg).await?,
         Command::Mute => admin::mute_user_admin(bot, msg).await?,
-        Command::Unmute => admin::unmute_user(bot, msg).await?,
+        Command::Unmute => admin::unmute_user(bot, msg.clone()).await?,
+        Command::Banid => admin::ban_id(bot, msg).await?,
+        Command::Unbanid => admin::unban_id(bot, msg).await?,
+        //Command::Muteid => admin::mute_id(bot, msg).await?,
 
         // Comandos de Información
         Command::Variables =>  funciones::variables(bot, msg).await?,
@@ -190,7 +191,6 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Admin => funciones::get_chat_administrators(bot, msg).await?,
         Command::User => funciones::get_username(bot, msg).await?,
 
-        Command::Banid => admin::ban_user_id(bot.clone(), msg.clone(), user_id).await?,
 
         // Comandos de Diversión
         Command::Pat => fun::send_pat(bot, msg).await?, //
