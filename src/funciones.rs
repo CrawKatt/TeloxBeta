@@ -209,7 +209,7 @@ pub async fn modulos(bot: MyBot, msg: Message) -> ResponseResult<()> {
 }
 
 pub async fn strings(bot: MyBot, msg: Message) -> ResponseResult<()> {
-    bot.send_message(msg.chat.id, "Las cadenas son una estructura de datos que almacena una secuencia de caracteres\\. \n\nEjemplo en Rust: \n`fn main() { \n   let mut s = String::new(); \n\n   let datos = \"Hola\"; \n\n   let s = datos.to_string(); \n\n   let s = `").await?;
+    bot.send_message(msg.chat.id, "Las cadenas de caracteres son una estructura de datos que nos permite almacenar texto\\. \n\nEjemplo en Rust: \n`fn main() { \n   let mut s = String::new(); \n\n   let data = \"Hola\"; \n\n   let s = data.to_string(); \n\n   let s = \" mundo\".to_string(); \n\n   let s = String::from(\"Hola\"); \n}`").await?;
     bot.delete_message(msg.chat.id, msg.id).await?;
 
     Ok(())
@@ -244,14 +244,14 @@ pub async fn scopes(bot: MyBot, msg: Message) -> ResponseResult<()> {
 }
 
 pub async fn novedades(bot: MyBot, msg: Message) -> ResponseResult<()> {
-    bot.send_message(msg.chat.id, "Cambios de la Versión 1\\.2 \n\n*Añadido:* Comando /unmute que remueve el silencio a un usuario silenciado \n\n*Uso:* /unmute respondiendo un mensaje del usuario silenciado \n\n*Añadido:* Más memes a los assets del Bot para mayor variedad del comando /meme \n\n*Añadido:* Más videos y gifs a los assets del Bot para mayor variedad al banear a un usuario con /ban \n\n*Removido:* Comando /image creado solo con fines de debug y test de las funciones del Bot \n\n*Removido:* Comando /gif creado solo con fines de debug y test de las funciones del Bot \n\n*Removido:* Comando /video creado solo con fines de debug y test de las funciones del Bot").await?;
+    bot.send_message(msg.chat.id, "Cambios de la Versión 1\\.3 \n\n*Añadido:* Comandos: \n\n/muteid\n/unmuteid\n/banid\n/unbanid\n\nCuya acción es la misma que sus comandos antecesores, la diferencia se encuentra en que estos nuevos comandos permiten la acción mediante el user_id\\. \n\\(todos estos comandos incluyen los mismos assets que los comandos \n/ban /unban /mute y /unmute\\)\\. \n\n*Uso:* /banid *1234567890* \\(reemplazar *1234567890* por el user_id del usuario que se quiere banear/remover ban/silenciar/remover silencio\\) \n\n*Añadido:* Más memes a los assets del Bot para mayor variedad del comando /meme \n\n*Añadido:* Más videos y gifs a los assets del Bot para mayor variedad al banear a un usuario con /ban\\. \n\n*Corregido:* el comando /strings tenia un ejemplo de código incompleto, se ha completado el ejemplo").await?;
     bot.delete_message(msg.chat.id, msg.id).await?;
 
     Ok(())
 }
 
 pub async fn about(bot: MyBot, msg: Message) -> ResponseResult<()> {
-    bot.send_message(msg.chat.id, "Bot creado por @CrawKatt \n\nGitHub: \nhttps://github\\.com/CrawKatt \n\nVersion del Bot: 1\\.2").await?;
+    bot.send_message(msg.chat.id, "Bot creado por @CrawKatt \n\nGitHub: \nhttps://github\\.com/CrawKatt \n\nVersion del Bot: 1\\.3").await?;
     bot.delete_message(msg.chat.id, msg.id).await?;
 
     Ok(())
@@ -261,7 +261,7 @@ pub async fn get_chat_administrators(bot: MyBot, msg: Message) -> ResponseResult
     let chat_administrators = bot.get_chat_administrators(msg.chat.id).await?;
     println!("{:?}", chat_administrators);
 
-    bot.send_message(msg.chat.id, format!("`Chat Administrators: {:?}`", chat_administrators)).await?;
+    bot.send_message(msg.chat.id, format!("`Chat Administrators: {:#?}`", chat_administrators)).await?;
     bot.delete_message(msg.chat.id, msg.id).await?;
 
     Ok(())

@@ -110,23 +110,24 @@ pub enum Command {
     Meme,
     #[command(description = "Envía este mensaje\\. \n")]
     Help,
-    #[command(description = "Acerca de este Bot\\. \n")]
+
     About,
+
     #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
     Novedades,
-    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+
     Get,
-    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+
     Admin,
-    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+
     User,
-    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+    #[command(description = "Misma función que el Comando /ban\\. \n\n*Uso:* /banid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a banear\\.\\) \n")]
     Banid,
-    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+    #[command(description = "Misma función que el Comando /unban\\. \n\n*Uso:* /unbanid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a remover ban\\.\\) \n")]
     Unbanid,
-    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+    #[command(description = "Misma función que el Comando /mute\\. \n\n*Uso:* /muteid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a silenciar\\.\\) \n")]
     Muteid,
-    #[command(description = "Comando para ver las novedades de la ultima versión del Bot\\. \n")]
+    #[command(description = "Misma función que el Comando /unmute\\. \n\n*Uso:* /unmuteid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a remover silencio\\.\\) \n")]
     Unmuteid,
 }
 

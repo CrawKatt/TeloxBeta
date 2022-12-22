@@ -66,17 +66,15 @@ pub async fn ban_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
     let text = &msg.text().unwrap();
     let (_, arguments) = text.split_at(text.find(' ').unwrap_or(text.len()));
     let user_id = arguments.trim().parse::<i64>().unwrap();
-
     let chat_id = msg.chat.id;
-
     let chat_member = bot.get_chat_member(chat_id, msg.from().unwrap().id).await?;
-
     let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
 
     if is_admin_or_owner {
         bot.ban_chat_member(chat_id, UserId(user_id as u64)).await?;
         bot.delete_message(msg.chat.id, msg.id).await?;
         bot.send_message(msg.chat.id, "Usuario Baneado").await?;
+
         let mut rng: StdRng = SeedableRng::from_entropy();
         let random_number = rng.gen_range(0..=14);
 
