@@ -90,7 +90,6 @@ pub async fn ban_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
 
         let file_path = format!("./assets/ban/{}", get_file_name(random_number));
 
-
         if file_path.ends_with(".gif") {
             bot.send_animation(chat_id, InputFile::file(file_path)).await?;
 
@@ -112,7 +111,7 @@ pub async fn unban_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
         Some(replied) => {
 
             let user = replied.from().unwrap();
-            println!("Usuario a desbanear: {}", user.id);
+            println!("Usuario a desbanear: {}", &user.id);
 
             let chat_id = msg.chat.id;
             println!("Chat id: {}", chat_id);
@@ -131,6 +130,7 @@ pub async fn unban_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
                 bot.unban_chat_member(chat_id, user.id).await?;
                 bot.send_message(chat_id, format!("@{} ha sido desbaneado", username_user)).await?;
                 bot.send_video(chat_id, InputFile::file("./assets/unban/1.mp4")).await?;
+                bot.send_message(chat_id, format!("`{:#?}\n\nUsername : @{}\n\n{:#?}\n\n{:#?}`", chat_id, username_user, user.id, chat_id)).await?;
 
             } else {
                 bot.delete_message(chat_id, msg.id).await?;
