@@ -129,6 +129,8 @@ pub enum Command {
     Muteid,
     #[command(description = "Misma función que el Comando /unmute\\. \n\n*Uso:* /unmuteid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a remover silencio\\.\\) \n")]
     Unmuteid,
+
+    Test,
 }
 
 // Función de acción para cada comando.
@@ -155,6 +157,7 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Unbanid => admin::unban_id(bot, msg).await?,
         Command::Muteid => admin::mute_id(bot, msg).await?,
         Command::Unmuteid => admin::unmute_id(bot, msg).await?,
+        Command::Test => admin::test(bot, msg).await?,
 
         // Comandos de Información
         Command::Variables =>  funciones::variables(bot, msg).await?,

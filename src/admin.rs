@@ -1,3 +1,4 @@
+use std::fs;
 //use std::time::Duration;
 use crate::ResponseResult;
 
@@ -107,7 +108,6 @@ pub async fn ban_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
 // Unban respondiendo mensaje
 pub async fn unban_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
     match msg.reply_to_message() {
-
         Some(replied) => {
 
             let user = replied.from().unwrap();
@@ -155,11 +155,8 @@ pub async fn unban_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
     let text = &msg.text().unwrap();
     let (_, arguments) = text.split_at(text.find(' ').unwrap_or(text.len()));
     let user_id = arguments.trim().parse::<i64>().unwrap();
-
     let chat_id = msg.chat.id;
-
     let chat_member = bot.get_chat_member(chat_id, msg.from().unwrap().id).await?;
-
     let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
 
     if is_admin_or_owner {
@@ -170,6 +167,7 @@ pub async fn unban_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
 
     } else {
         bot.send_message(msg.chat.id, "No tienes permisos para remover el ban a un usuario").await?;
+
     }
 
     Ok(())
@@ -331,6 +329,38 @@ pub async fn get_chat_member(bot: MyBot, msg: Message) -> ResponseResult<()> {
     println!("ID usuario : {:?}", user_id);
 
     bot.send_message(msg.chat.id, format!("{user_id}")).await?;
+
+    Ok(())
+}
+
+use std::fs::{OpenOptions};
+use std::io::prelude::*;
+
+fn create_csv_file_and_add_username(username: &str, user_id : UserId) -> Result<(), std::io::Error> {
+    let contents = fs::read_to_string("database.csv")?;
+    if !contents.contains(username) {
+        let mut file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open("database.csv")?;
+        file.write_all(format!("{},{}\n", username, user_id).as_bytes())?;
+    }
+    Ok(())
+}
+
+pub async fn test(bot: MyBot, msg: Message) -> ResponseResult<()> {
+    let username = msg.from()
+        .as_ref()
+        .and_then(|user| user.username.as_deref())
+        .unwrap_or_else(|| "sin nombre de usuario");
+    let user_id = msg.from().unwrap().id;
+
+    if let Err(_) = create_csv_file_and_add_username(&username, user_id) {
+        // maneja el error
+    } else {
+        println!("Se ha añadido el usuario: @{} con ID: {} al archivo CSV", username, user_id);
+        bot.send_message(msg.chat.id, format!("Se ha añadido al usuario: \n@{} con ID: {} a la Base de Datos", username, user_id)).await?;
+    }
 
     Ok(())
 }

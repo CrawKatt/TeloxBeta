@@ -2,6 +2,9 @@ mod admin;
 mod comandos;
 mod fun;
 mod funciones;
+mod database {
+    pub(crate) mod db;
+}
 
 // Librería para manejar las variables de entorno
 use dotenv::dotenv;
@@ -17,6 +20,9 @@ async fn run() {
 // Función principal que inicia el Bot
 #[tokio::main]
 async fn main() {
+
+    dotenv().ok();
+    database::db::conectar().await.expect("Error al conectar con la Base de Datos");
     pretty_env_logger::init();
     run().await;
     log::info!("Starting admin bot...");
