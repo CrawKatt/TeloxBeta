@@ -57,7 +57,7 @@ pub async fn ban_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
         }
     } else {
         bot.delete_message(chat_id, msg.id).await?;
-        bot.send_message(chat_id, "No tienes permisos para usar este comando",).await?;
+        bot.send_message(chat_id, "❌ No tienes permisos para usar este comando",).await?;
     }
     Ok(())
 }
@@ -99,7 +99,7 @@ pub async fn ban_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
         }
 
     } else {
-        bot.send_message(msg.chat.id, "No tienes permisos para banear a un usuario").await?;
+        bot.send_message(msg.chat.id, "❌ No tienes permisos para banear a un usuario").await?;
     }
 
     Ok(())
@@ -134,14 +134,14 @@ pub async fn unban_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
 
             } else {
                 bot.delete_message(chat_id, msg.id).await?;
-                bot.send_message(chat_id, "No tienes permisos para remover el ban a un usuario.").await?;
+                bot.send_message(chat_id, "❌ No tienes permisos para remover el ban a un usuario.").await?;
             }
 
         }
 
         None => {
             bot.delete_message(msg.chat.id, msg.id).await?;
-            bot.send_message(msg.chat.id, "Usa este comando respondiendo a otro mensaje").await?;
+            bot.send_message(msg.chat.id, "❌ Usa este comando respondiendo a otro mensaje").await?;
         }
 
     }
@@ -166,7 +166,7 @@ pub async fn unban_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
         bot.send_video(chat_id, InputFile::file("./assets/unban/1.mp4")).await?;
 
     } else {
-        bot.send_message(msg.chat.id, "No tienes permisos para remover el ban a un usuario").await?;
+        bot.send_message(msg.chat.id, "❌ No tienes permisos para remover el ban a un usuario").await?;
 
     }
 
@@ -211,7 +211,7 @@ pub async fn mute_user_admin(bot: MyBot, msg: Message) -> ResponseResult<()> {
 
     } else {
         bot.delete_message(chat_id, msg.id).await?;
-        bot.send_message(chat_id, "No tienes permisos para silenciar a un usuario").await?;
+        bot.send_message(chat_id, "❌ No tienes permisos para silenciar a un usuario").await?;
     };
 
     Ok(())
@@ -255,7 +255,7 @@ pub async fn mute_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
         }
 
     } else {
-        bot.send_message(msg.chat.id, "No tienes permisos para silenciar a un usuario").await?;
+        bot.send_message(msg.chat.id, "❌ No tienes permisos para silenciar a un usuario").await?;
     }
 
     Ok(())
@@ -286,11 +286,11 @@ pub async fn unmute_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
     if is_admin_or_owner {
         bot.delete_message(msg.chat.id, msg.id).await?;
         bot.restrict_chat_member(msg.chat.id, user.id, ChatPermissions::all()).await?;
-        bot.send_message(msg.chat.id, format!("@{} ya no está silenciado", username_user.unwrap())).await?;
+        bot.send_message(msg.chat.id, format!("✅ @{} ya no está silenciado", username_user.unwrap())).await?;
         bot.send_video(msg.chat.id, InputFile::file("./assets/unmute/unmute.mp4")).await?;
     } else {
         bot.delete_message(msg.chat.id, msg.id).await?;
-        bot.send_message(msg.chat.id, "No tienes permisos para remover el silencio a un usuario").await?;
+        bot.send_message(msg.chat.id, "❌ No tienes permisos para remover el silencio a un usuario").await?;
     }
 
     Ok(())
@@ -315,7 +315,7 @@ pub async fn unmute_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
         bot.send_video(msg.chat.id, InputFile::file("./assets/unmute/unmute.mp4")).await?;
 
     } else {
-        bot.send_message(msg.chat.id, "No tienes permisos para remover el silencio a un usuario").await?;
+        bot.send_message(msg.chat.id, "❌ No tienes permisos para remover el silencio a un usuario").await?;
     }
 
     Ok(())
@@ -343,7 +343,7 @@ fn create_csv_file_and_add_username(username: &str, user_id : UserId) -> Result<
             .write(true)
             .append(true)
             .open("database.csv")?;
-        file.write_all(format!("{},{}\n", username, user_id).as_bytes())?;
+        file.write_all(format!("@{},{}\n", username, user_id).as_bytes())?;
     }
     Ok(())
 }
@@ -358,9 +358,19 @@ pub async fn test(bot: MyBot, msg: Message) -> ResponseResult<()> {
     if let Err(_) = create_csv_file_and_add_username(&username, user_id) {
         // maneja el error
     } else {
-        println!("Se ha añadido el usuario: @{} con ID: {} al archivo CSV", username, user_id);
-        bot.send_message(msg.chat.id, format!("Se ha añadido al usuario: \n@{} con ID: {} a la Base de Datos", username, user_id)).await?;
+        println!("✅ Se ha añadido el usuario: @{} con ID: {} al archivo CSV", username, user_id);
+        bot.send_message(msg.chat.id, format!("✅ Se ha añadido al usuario: \n@{} con ID: {} a la Base de Datos", username, user_id)).await?;
     }
+
+    Ok(())
+}
+
+pub async fn list(bot: MyBot, msg: Message) -> ResponseResult<()> {
+    // Abre el archivo y lee su contenido
+    let contents = fs::read_to_string("database.csv").unwrap_or_else(|_| "No hay registros".to_string());
+
+    // Envía el contenido del archivo como mensaje
+    bot.send_message(msg.chat.id, format!("✅ Usuarios Registrados {}", contents)).await?;
 
     Ok(())
 }

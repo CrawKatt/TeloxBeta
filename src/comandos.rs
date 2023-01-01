@@ -131,6 +131,9 @@ pub enum Command {
     Unmuteid,
 
     Test,
+
+    List,
+
 }
 
 // Función de acción para cada comando.
@@ -158,6 +161,7 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Muteid => admin::mute_id(bot, msg).await?,
         Command::Unmuteid => admin::unmute_id(bot, msg).await?,
         Command::Test => admin::test(bot, msg).await?,
+        Command::List => admin::list(bot, msg).await?,
 
         // Comandos de Información
         Command::Variables =>  funciones::variables(bot, msg).await?,
