@@ -33,7 +33,7 @@ pub async fn ban_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
     if is_admin_or_owner {
         bot.delete_message(chat_id, msg.id).await?;
         bot.ban_chat_member(chat_id, user.id).await?;
-        bot.send_message(chat_id, format!("@{} ha sido baneado", username_user), ).await?;
+        bot.send_message(chat_id, format!("✅ @{} ha sido baneado", username_user), ).await?;
 
         let mut rng: StdRng = SeedableRng::from_entropy();
         let random_number = rng.gen_range(0..=14);
@@ -74,7 +74,7 @@ pub async fn ban_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
     if is_admin_or_owner {
         bot.ban_chat_member(chat_id, UserId(user_id as u64)).await?;
         bot.delete_message(msg.chat.id, msg.id).await?;
-        bot.send_message(msg.chat.id, "Usuario Baneado").await?;
+        bot.send_message(msg.chat.id, "✅ Usuario Baneado").await?;
 
         let mut rng: StdRng = SeedableRng::from_entropy();
         let random_number = rng.gen_range(0..=14);
@@ -128,7 +128,7 @@ pub async fn unban_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
             if is_admin_or_owner {
                 bot.delete_message(chat_id, msg.id).await?;
                 bot.unban_chat_member(chat_id, user.id).await?;
-                bot.send_message(chat_id, format!("@{} ha sido desbaneado", username_user)).await?;
+                bot.send_message(chat_id, format!("✅ @{} ha sido desbaneado", username_user)).await?;
                 bot.send_video(chat_id, InputFile::file("./assets/unban/1.mp4")).await?;
                 bot.send_message(chat_id, format!("`{:#?}\n\nUsername : @{}\n\n{:#?}\n\n{:#?}`", chat_id, username_user, user.id, chat_id)).await?;
 
@@ -162,7 +162,7 @@ pub async fn unban_id(bot: MyBot, msg: Message) -> ResponseResult<()> {
     if is_admin_or_owner {
         bot.unban_chat_member(chat_id, UserId(user_id as u64)).await?;
         bot.delete_message(msg.chat.id, msg.id).await?;
-        bot.send_message(msg.chat.id, "Usuario Desbaneado").await?;
+        bot.send_message(msg.chat.id, "✅ Usuario Desbaneado").await?;
         bot.send_video(chat_id, InputFile::file("./assets/unban/1.mp4")).await?;
 
     } else {
@@ -191,7 +191,7 @@ pub async fn mute_user_admin(bot: MyBot, msg: Message) -> ResponseResult<()> {
     if is_admin_or_owner {
         bot.delete_message(chat_id, msg.id).await?;
         bot.restrict_chat_member(chat_id, user.id, ChatPermissions::empty()).await?;
-        bot.send_message(chat_id, format!("@{} ha sido silenciado", username_user)).await?;
+        bot.send_message(chat_id, format!("✅ @{} ha sido silenciado", username_user)).await?;
 
         let mut rng: StdRng = SeedableRng::from_entropy();
 
@@ -206,7 +206,7 @@ pub async fn mute_user_admin(bot: MyBot, msg: Message) -> ResponseResult<()> {
         match file_extension {
             "gif" => bot.send_animation(chat_id, InputFile::file(file_path)).await?,
             "jpg" => bot.send_photo(chat_id, InputFile::file(file_path)).await?,
-            _ => bot.send_message(chat_id, "No se pudo enviar el archivo").await?,
+            _ => bot.send_message(chat_id, "❌ No se pudo enviar el archivo").await?,
         };
 
     } else {
