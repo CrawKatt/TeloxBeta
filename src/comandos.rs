@@ -121,14 +121,14 @@ pub enum Command {
     Admin,
 
     User,
-    #[command(description = "Misma función que el Comando /ban\\. \n\n*Uso:* /banid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a banear\\.\\) \n")]
-    Banid,
-    #[command(description = "Misma función que el Comando /unban\\. \n\n*Uso:* /unbanid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a remover ban\\.\\) \n")]
-    Unbanid,
-    #[command(description = "Misma función que el Comando /mute\\. \n\n*Uso:* /muteid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a silenciar\\.\\) \n")]
-    Muteid,
-    #[command(description = "Misma función que el Comando /unmute\\. \n\n*Uso:* /unmuteid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a remover silencio\\.\\) \n")]
-    Unmuteid,
+    //#[command(description = "Misma función que el Comando /ban\\. \n\n*Uso:* /banid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a banear\\.\\) \n")]
+    //Banid,
+    //#[command(description = "Misma función que el Comando /unban\\. \n\n*Uso:* /unbanid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a remover ban\\.\\) \n")]
+    //Unbanid,
+    //#[command(description = "Misma función que el Comando /mute\\. \n\n*Uso:* /muteid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a silenciar\\.\\) \n")]
+    //Muteid,
+    //#[command(description = "Misma función que el Comando /unmute\\. \n\n*Uso:* /unmuteid 1234567890 \\(Reemplazar 1234567890 por el id del usuario a remover silencio\\.\\) \n")]
+    //Unmuteid,
 
     Test,
 
@@ -156,10 +156,10 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Unban => admin::unban_user(bot, msg).await?,
         Command::Mute => admin::mute_user_admin(bot, msg).await?,
         Command::Unmute => admin::unmute_user(bot, msg.clone()).await?,
-        Command::Banid => admin::ban_id(bot, msg).await?,
-        Command::Unbanid => admin::unban_id(bot, msg).await?,
-        Command::Muteid => admin::mute_id(bot, msg).await?,
-        Command::Unmuteid => admin::unmute_id(bot, msg).await?,
+        //Command::Banid => admin::ban_id(bot, msg).await?,
+        //Command::Unbanid => admin::unban_id(bot, msg).await?,
+        //Command::Muteid => admin::mute_id(bot, msg).await?,
+        //Command::Unmuteid => admin::unmute_id(bot, msg).await?,
         Command::Test => admin::test(bot, msg).await?,
         Command::List => admin::list(bot, msg).await?,
 

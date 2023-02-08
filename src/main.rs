@@ -23,9 +23,7 @@ async fn main() {
 
     dotenv().ok();
     database::db::conectar().await.expect("Error al conectar con la Base de Datos");
-    pretty_env_logger::init();
     run().await;
-    log::info!("Starting admin bot...");
     println!("Bot Iniciado! \n");
     let bot = Bot::from_env().parse_mode(comandos::MarkdownV2);
     comandos::Command::repl(bot, comandos::action).await;
