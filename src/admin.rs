@@ -356,6 +356,7 @@ pub async fn test(bot: MyBot, msg: Message) -> ResponseResult<()> {
     Ok(())
 }
 
+
 pub async fn list(bot: MyBot, msg: Message) -> ResponseResult<()> {
     // Abre el archivo y lee su contenido
     let contents = fs::read_to_string("database.csv").unwrap_or_else(|_| "No hay registros".to_string());
