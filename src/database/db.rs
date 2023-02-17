@@ -1,7 +1,4 @@
-use std::env;
-use std::error::Error;
-use mongodb::Client;
-use mongodb::options::ClientOptions;
+use crate::database::*;
 
 pub async fn conectar() -> Result<(), Box<dyn Error>> {
     let client_uri =
