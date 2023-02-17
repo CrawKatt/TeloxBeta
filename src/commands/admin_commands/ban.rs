@@ -101,7 +101,6 @@ pub async fn ban_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
                 bot.send_message(msg.chat.id, "❌ No tienes permisos para banear a un usuario", ).await?;
             };
         }
-
     }
 
     Ok(())
