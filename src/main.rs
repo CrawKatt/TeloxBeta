@@ -10,7 +10,14 @@ async fn main() {
     dotenv().ok();
     conectar().await.expect("Error al conectar con la Base de Datos");
 
-    println!("Bot Iniciado! \n");
+    println!("
+╔═════════════════════════════════════════════════════╗
+║                                                     ║
+║      Bot Iniciado /-/ Creado por @CrawKatt /-/      ║
+║                                                     ║
+╚═════════════════════════════════════════════════════╝\n
+");
+
     let bot = Bot::from_env().parse_mode(MarkdownV2);
     Command::repl(bot, action).await;
 }

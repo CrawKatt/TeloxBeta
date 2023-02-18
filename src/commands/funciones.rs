@@ -1,5 +1,9 @@
 use crate::commands::*;
 
+pub fn textos() {
+    const VARIABLES: &str = "Variables: Son un espacio en memoria cuyo valor puede asignarse y cambiar \n\nEjemplo en Rust: \n`let mi_variable = \"valor\":`";
+}
+
 pub async fn variables(bot: MyBot, msg: Message) -> ResponseResult<()> {
     bot.send_message(msg.chat.id, "Variables: Son un espacio en memoria cuyo valor puede asignarse y cambiar \n\nEjemplo en Rust: \n`let mi_variable = \"valor\":`").await?;
     bot.delete_message(msg.chat.id, msg.id).await?;

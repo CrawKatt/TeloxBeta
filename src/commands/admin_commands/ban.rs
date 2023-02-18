@@ -105,3 +105,10 @@ pub async fn ban_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
 
     Ok(())
 }
+
+/*
+╔═════════════════════════════════════════════════════╗
+║    || - || Desarrollado por @CrawKatt || - ||       ║
+║    --| https://github.com/CrawKatt/TeloxBeta |--    ║
+╚═════════════════════════════════════════════════════╝
+*/
