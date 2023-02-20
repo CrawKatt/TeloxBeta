@@ -55,7 +55,7 @@ pub enum Command {
     #[command(description = "Explica el uso de Match en Rust\\. \n")]
     Match,
     #[command(description = "Explica el uso de los Enums en Rust\\. \n")]
-    Enums,
+    Enum,
     #[command(description = "Explica el uso de Funciones en Rust\\. \n")]
     Funciones,
     #[command(description = "Explica el uso de Return en Rust\\. \n")]
@@ -64,8 +64,8 @@ pub enum Command {
     Metodos,
     #[command(description = "Explica el uso de Closures en Rust\\. \n")]
     Closures,
-    #[command(description = "Explica el uso de Structs en Rust\\. \n")]
-    Structs,
+    #[command(description = "Explica el uso de Struct en Rust\\. \n")]
+    Struct,
     #[command(description = "Explica el uso de Traits en Rust\\. \n")]
     Traits,
     #[command(description = "Explica el uso de Option en Rust\\. \n")]
@@ -91,7 +91,7 @@ pub enum Command {
     #[command(description = "Explica el uso de los Slices en Rust\\. \n")]
     Slices,
     #[command(description = "Explica el uso de los Strings en Rust\\. \n")]
-    Strings,
+    String,
     #[command(description = "Explica el uso de los Iterators en Rust\\. \n")]
     Iterators,
     #[command(description = "Explica los Scopes en Rust\\. \n")]
@@ -146,40 +146,40 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Info => get_chat_member(bot, msg).await?,
 
         // Comandos de Información
-        Command::Variables => variables(bot, msg).await?,
-        Command::Constantes => constantes(bot, msg).await?,
-        Command::TiposDeDatos => tipos_de_datos(bot, msg).await?,
-        Command::Operadores => operadores(bot, msg).await?,
-        Command::Arrays => arrays(bot, msg).await?,
-        Command::Tuplas => tuplas(bot, msg).await?,
-        Command::Vectores => vectores(bot, msg).await?,
-        Command::Condicionales => condicionales(bot, msg).await?,
-        Command::Loop => loops(bot, msg).await?,
-        Command::For => fors(bot, msg).await?,
-        Command::While => whiles(bot, msg).await?,
-        Command::Match => matchs(bot, msg).await?,
-        Command::Enums => enums(bot, msg).await?,
-        Command::Funciones => funciones(bot, msg).await?,
-        Command::Return => returns(bot, msg).await?,
-        Command::Metodos => metodos(bot, msg).await?,
-        Command::Closures => closures(bot, msg).await?,
-        Command::Structs => estructuras(bot, msg).await?,
-        Command::Traits => traits(bot, msg).await?,
-        Command::Option => option(bot, msg).await?,
-        Command::Result => result(bot, msg).await?,
-        Command::Generics => generics(bot, msg).await?,
-        Command::Lifetimes => lifetimes(bot, msg).await?,
-        Command::Macros => macros(bot, msg).await?,
-        Command::Ownership => ownership(bot, msg).await?,
-        Command::Referencias => referencias(bot, msg).await?,
-        Command::Borrowing => borrowing(bot, msg).await?,
-        Command::Modulos => modulos(bot, msg).await?,
-        Command::Shadowing => shadowing(bot, msg).await?,
-        Command::Slices => slices(bot, msg).await?,
-        Command::Strings => strings(bot, msg).await?,
-        Command::Iterators => iterators(bot, msg).await?,
-        Command::Scopes => scopes(bot, msg).await?,
-        Command::Async => asyncs(bot, msg).await?,
+        Command::Variables => ejemplos(bot, msg).await?,
+        Command::Constantes => ejemplos(bot, msg).await?,
+        Command::TiposDeDatos => ejemplos(bot, msg).await?,
+        Command::Operadores => ejemplos(bot, msg).await?,
+        Command::Arrays => ejemplos(bot, msg).await?,
+        Command::Tuplas => ejemplos(bot, msg).await?,
+        Command::Vectores => ejemplos(bot, msg).await?,
+        Command::Condicionales => ejemplos(bot, msg).await?,
+        Command::Loop => ejemplos(bot, msg).await?,
+        Command::For => ejemplos(bot, msg).await?,
+        Command::While => ejemplos(bot, msg).await?,
+        Command::Match => ejemplos(bot, msg).await?,
+        Command::Enum => ejemplos(bot, msg).await?,
+        Command::Funciones => ejemplos(bot, msg).await?,
+        Command::Return => ejemplos(bot, msg).await?,
+        Command::Metodos => ejemplos(bot, msg).await?,
+        Command::Closures => ejemplos(bot, msg).await?,
+        Command::Struct => ejemplos(bot, msg).await?,
+        Command::Traits => ejemplos(bot, msg).await?,
+        Command::Option => ejemplos(bot, msg).await?,
+        Command::Result => ejemplos(bot, msg).await?,
+        Command::Generics => ejemplos(bot, msg).await?,
+        Command::Lifetimes => ejemplos(bot, msg).await?,
+        Command::Macros => ejemplos(bot, msg).await?,
+        Command::Ownership => ejemplos(bot, msg).await?,
+        Command::Referencias => ejemplos(bot, msg).await?,
+        Command::Borrowing => ejemplos(bot, msg).await?,
+        Command::Modulos => ejemplos(bot, msg).await?,
+        Command::Shadowing => ejemplos(bot, msg).await?,
+        Command::Slices => ejemplos(bot, msg).await?,
+        Command::String => ejemplos(bot, msg).await?,
+        Command::Iterators => ejemplos(bot, msg).await?,
+        Command::Scopes => ejemplos(bot, msg).await?,
+        Command::Async => ejemplos(bot, msg).await?,
         Command::Admin => get_chat_administrators(bot, msg).await?,
         Command::User => get_username(bot, msg).await?,
 
@@ -189,8 +189,8 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Meme => send_random_meme(bot, msg).await?,
 
         // Comandos de Acerca del Bot y Novedades
-        Command::About => about(bot, msg).await?,
-        Command::Novedades => novedades(bot, msg).await?,
+        Command::About => ejemplos(bot, msg).await?,
+        Command::Novedades => ejemplos(bot, msg).await?,
     };
 
     Ok(())

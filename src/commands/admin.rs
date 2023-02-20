@@ -48,28 +48,26 @@ pub fn create_csv_file_and_add_username(username: &str, user_id: UserId) -> Resu
 }
 
 pub async fn test(bot: MyBot, msg: Message) -> ResponseResult<()> {
-    let username = msg
-        .from()
-        .as_ref()
-        .and_then(|user| user.username.as_deref())
-        .unwrap_or_else(|| "sin nombre de usuario");
-    let user_id = msg.from().unwrap().id;
+    match msg.reply_to_message() {
+        Some(replied) => {
+            let username = replied
+                .from()
+                .as_ref()
+                .and_then(|user| user.username.as_deref())
+                .unwrap_or("sin nombre de usuario");
 
-    if let Err(_) = create_csv_file_and_add_username(&username, user_id) {
-        // maneja el error
-    } else {
-        println!(
-            "✅ Se ha añadido a: @{} con ID: [{}] al archivo CSV",
-            username, user_id
-        );
-        bot.send_message(
-            msg.chat.id,
-            format!(
-                "✅ Añadido: \n@{} \\[{}\\] a la Base de Datos",
-                username, user_id
-            ),
-        )
-        .await?;
+            let user_id = replied.from().unwrap().id;
+            bot.send_message(msg.chat.id, format!("✅ Añadido: \n@{} \\[{}\\] a la Base de Datos", username, user_id), ).await?;
+
+            if create_csv_file_and_add_username(username, user_id).is_err() {
+                // maneja el error
+            } else {
+                println!("✅ Se ha añadido a: @{} con ID: [{}] al archivo CSV", username, user_id);
+            }
+        }
+        None => {
+            bot.send_message(msg.chat.id, "❌ No se ha respondido a ningún mensaje").await?;
+        }
     }
 
     Ok(())

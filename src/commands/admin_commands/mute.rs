@@ -31,7 +31,7 @@ pub async fn mute_user_admin(bot: MyBot, msg: Message) -> ResponseResult<()> {
 
                 let random_number = rng.gen_range(0..=file_names.len() - 1);
                 let file_path = format!("./assets/mute/{}", file_names[random_number]);
-                let file_extension = file_path.split(".").last().unwrap_or("");
+                let file_extension = file_path.split('.').last().unwrap_or("");
 
                 match file_extension {
                     "gif" => {
