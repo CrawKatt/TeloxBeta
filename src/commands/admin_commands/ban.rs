@@ -20,6 +20,7 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
             // Get the chat ID and user ID, and check if the person using the command is an admin or owner.
             let chat_id = msg.chat.id;
             println!("Chat id: {}", chat_id);
+            log::info!("Chat id: {}", chat_id);
 
             let id_usuario = user.id;
             println!("Id usuario: {}", id_usuario);

@@ -1,5 +1,9 @@
 use crate::commands::*;
 
+/* ////////////||\\\\\\\\\\\\  */
+/* // Experimental commands \\ */
+/* \\\\\\\\\\\\||///////////// */
+
 pub async fn get_chat_member(bot: Bot, msg: Message) -> ResponseResult<()> {
     match msg.reply_to_message() {
         Some(replied) => {
@@ -81,6 +85,39 @@ pub async fn list(bot: Bot, msg: Message) -> ResponseResult<()> {
     // Envía el contenido del archivo como mensaje
     bot.send_message(msg.chat.id, format!("✅ Usuarios Registrados {}", contents))
         .await?;
+
+    Ok(())
+}
+
+// get chat administrators and async function
+pub async fn get_chat_administrators(bot: Bot, msg: Message) -> ResponseResult<()> {
+    let chat_administrators = bot.get_chat_administrators(msg.chat.id).await?;
+    println!("{:?}", chat_administrators);
+
+    bot.send_message(msg.chat.id, format!("`Chat Administrators: {:#?}`", chat_administrators)).await?;
+    bot.delete_message(msg.chat.id, msg.id).await?;
+
+    Ok(())
+}
+
+// get @username from message from command and async function
+pub async fn get_username(bot: Bot, msg: Message) -> ResponseResult<()> {
+    match msg.reply_to_message() {
+        Some(replied) => {
+            let user = replied.from().unwrap();
+
+            let username_user = user.clone().username;
+            println!("@username : {:?}", username_user);
+
+            bot.send_message(msg.chat.id, format!("Tu @Username es : @{}", username_user.unwrap())).await?;
+            bot.delete_message(msg.chat.id, msg.id).await?;
+        }
+
+        None => {
+            bot.send_message(msg.chat.id, "No has respondido a ningún mensaje").await?;
+            bot.delete_message(msg.chat.id, msg.id).await?;
+        }
+    }
 
     Ok(())
 }

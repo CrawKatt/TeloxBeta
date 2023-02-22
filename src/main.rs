@@ -4,6 +4,7 @@ use crate::database::*;
 
 // Define a module database
 pub mod database;
+
 // Define a module commands
 mod commands;
 

@@ -1,13 +1,8 @@
-// Import modules for banning, unbanning, muting, and unmuting
-pub mod ban;
-pub mod unban;
-pub mod mute;
-pub mod unmute;
-pub mod lib;
+// Import and use modules for banning, unbanning, muting, and unmuting
+pub mod ban;    /*mod*|*use*/  pub use ban::*;
+pub mod unban;  /*mod*|*use*/  pub use unban::*;
+pub mod mute;   /*mod*|*use*/  pub use mute::*;
+pub mod unmute; /*mod*|*use*/  pub use unmute::*;
+pub mod lib;    /*mod*|*use*/  pub use lib::*;
 
 // Use modules for banning, unbanning, muting, and unmuting
-pub use ban::*;
-pub use unban::*;
-pub use mute::*;
-pub use unmute::*;
-pub use lib::*;

@@ -2,18 +2,29 @@
 pub use std::fs;
 
 // Import rand modules for generating random numbers
-pub use rand::rngs::StdRng;
-pub use rand::Rng;
-pub use rand::SeedableRng;
+pub use rand::{
+    SeedableRng,
+    Rng,
+    rngs::StdRng,
+};
 
 // Import Teloxide modules for interacting with the Telegram API
-pub use teloxide::types::*;
-pub use teloxide::{prelude::*, utils::command::BotCommands};
-pub use teloxide::adaptors::DefaultParseMode;
+pub use teloxide::{
+    prelude::*,
+    types::*,
+    adaptors::DefaultParseMode,
+    utils::command::BotCommands,
+};
 
 // Import Teloxide_core modules for interacting with the Telegram API
-pub use teloxide_core::prelude::UserId;
-pub use teloxide_core::types::{ChatMemberStatus, Message, ParseMode::MarkdownV2};
+pub use teloxide_core::{
+    prelude::UserId,
+    types::{
+        ChatMemberStatus,
+        Message,
+        ParseMode::MarkdownV2,
+    }
+};
 
 // type Bot for using the DefaultParseMode adapter
 pub type Bot = DefaultParseMode<teloxide::Bot>;
