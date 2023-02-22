@@ -23,12 +23,7 @@ pub async fn get_chat_member(bot: Bot, msg: Message) -> ResponseResult<()> {
 
             bot.send_message(
                 msg.chat.id,
-                format!(
-                    "*Nombre:* {} *Username:* @{username_user} \n*ID:*{}",
-                    first_name, id_usuario
-                ),
-            )
-            .await?;
+                format!("*Nombre:* {} *Username:* @{username_user} \n*ID:*{}", first_name, id_usuario), ).await?;
         }
         None => {
             bot.send_message(msg.chat.id, "❌ No se ha respondido a ningún mensaje")
