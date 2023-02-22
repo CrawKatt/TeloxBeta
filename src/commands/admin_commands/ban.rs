@@ -11,7 +11,7 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                 from
             } else {
                 // Manejar el caso de que `from()` devuelva `None`
-                println!("No se pudo obtener el usuario {:?}", replied.new_chat_members());
+                println!("No se pudo obtener el usuario {:#?}", msg.id);
                 bot.send_message(msg.chat.id, "❌ No se pudo obtener el usuario").await?;
                 bot.delete_message(msg.chat.id, msg.id).await?;
                 return Ok(());
@@ -19,31 +19,23 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
 
             // Get the chat ID and user ID, and check if the person using the command is an admin or owner.
             let chat_id = msg.chat.id;
-            println!("Chat id: {}", chat_id);
-            log::info!("Chat id: {}", chat_id);
 
             let id_usuario = user.id;
-            println!("Id usuario: {}", id_usuario);
 
             let username_user = user.username.clone().unwrap_or_default();
-            println!("Username: {}", username_user);
 
             let chat_member = bot.get_chat_member(chat_id, msg.from().unwrap().id).await?;
 
             // If the user is an admin or owner, ban the user and send a message to the chat.
             // Also send a random GIF or MP4 file from the "./assets/ban/" folder.
-            let is_admin_or_owner =
-                chat_member.status().is_administrator() || chat_member.status().is_owner();
+            let is_admin_or_owner = chat_member.status().is_administrator() || chat_member.status().is_owner();
             println!("Es admin o owner: {}", is_admin_or_owner);
+            println!("JSON Info: {:#?}", msg);
 
             if is_admin_or_owner {
                 bot.delete_message(chat_id, msg.id).await?;
                 bot.ban_chat_member(chat_id, user.id).await?;
-                bot.send_message(
-                    chat_id,
-                    format!("✅ @{} \\[`{}`\\] baneado", username_user, id_usuario),
-                )
-                    .await?;
+                bot.send_message(chat_id, format!("✅ @{} \\[`{}`\\] baneado", username_user, id_usuario),).await?;
 
                 // Choose a random ban animation to send.
                 let mut rng: StdRng = SeedableRng::from_entropy();
@@ -86,6 +78,14 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
 
             // get the arguments after the command trigger
             let (_, arguments) = text.split_at(text.find(' ').unwrap_or(text.len()));
+
+            // check if the arguments are empty
+            if arguments.is_empty() {
+                bot.send_message(msg.chat.id, "❌ No has especificado un ID para obtener el usuario").await?;
+                bot.delete_message(msg.chat.id, msg.id).await?;
+                println!("❌ No has especificado un ID para obtener el usuario {:#?}", msg);
+                return Ok(());
+            }
 
             // extract the user ID from the arguments
             let user_id = arguments.trim().parse::<i64>().unwrap();
