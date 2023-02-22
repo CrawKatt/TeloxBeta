@@ -1,6 +1,6 @@
 use crate::commands::*;
 
-pub async fn send_pat(bot: MyBot, msg: Message) -> ResponseResult<()> {
+pub async fn send_pat(bot: Bot, msg: Message) -> ResponseResult<()> {
     let file_names = [
         "1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif", "9.gif", "10.gif",
         "11.gif", "12.gif", "13.gif", "14.gif", "15.gif", "16.gif", "17.gif", "18.gif", "19.gif",
@@ -26,7 +26,7 @@ pub async fn send_pat(bot: MyBot, msg: Message) -> ResponseResult<()> {
     Ok(())
 }
 
-pub async fn send_random_meme(bot: MyBot, msg: Message) -> ResponseResult<()> {
+pub async fn send_random_meme(bot: Bot, msg: Message) -> ResponseResult<()> {
     // Declara un vector llamado `file_names` que almacena una lista de nombres de archivos (linea 51).
     // Los nombres de archivos son cadenas de caracteres que terminan en `.mp4` o `.jpg`.
     let file_names = [

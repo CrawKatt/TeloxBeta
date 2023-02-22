@@ -1,6 +1,6 @@
 use crate::admin_commands::*;
 
-pub async fn unban_user(bot: MyBot, msg: Message) -> ResponseResult<()> {
+pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
     match msg.reply_to_message() {
         Some(replied) => {
             let user = replied.from().unwrap();

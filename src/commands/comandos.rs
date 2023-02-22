@@ -19,6 +19,7 @@ parse_with = "split"
 )]
 
 // Los comandos disponibles.
+// Available commands.
 pub enum Command {
     #[command(description = "Banea a un usuario del chat\\. \n\nUso: /ban respondiendo un mensaje de un usuario\\. \n\n")]
     Ban,
@@ -122,7 +123,8 @@ pub enum Command {
 }
 
 // Función de acción para cada comando.
-pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()> {
+// Action function for each command.
+pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
 
     match cmd {
 
@@ -137,6 +139,7 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         }
 
         // Comandos de Administración
+        // Admin Commands
         Command::Ban => ban_user(bot, msg).await?,
         Command::Unban => unban_user(bot, msg).await?,
         Command::Mute => mute_user_admin(bot, msg).await?,
@@ -146,6 +149,7 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
         Command::Info => get_chat_member(bot, msg).await?,
 
         // Comandos de Información
+        // Info to Rust code examples Commands
         Command::Variables => ejemplos(bot, msg).await?,
         Command::Constantes => ejemplos(bot, msg).await?,
         Command::TiposDeDatos => ejemplos(bot, msg).await?,
@@ -185,10 +189,12 @@ pub async fn action(bot: MyBot, msg: Message, cmd: Command) -> ResponseResult<()
 
 
         // Comandos de Diversión
+        // Fun Commands
         Command::Pat => send_pat(bot, msg).await?, //
         Command::Meme => send_random_meme(bot, msg).await?,
 
         // Comandos de Acerca del Bot y Novedades
+        // About and Updates Commands
         Command::About => ejemplos(bot, msg).await?,
         Command::Novedades => ejemplos(bot, msg).await?,
     };

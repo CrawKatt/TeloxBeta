@@ -1,44 +1,20 @@
 use crate::commands::*;
 
+// enum for the examples of the bot
 enum Ejemplo {
-    About,
-    Arrays,
-    Async,
-    Borrowing,
-    Closures,
-    Condicionales,
-    Constantes,
-    Enum,
-    For,
-    Funciones,
-    Generics,
-    Iterators,
-    Lifetimes,
-    Loop,
-    Macros,
-    Match,
-    Metodos,
-    Modulos,
-    Novedades,
-    Operadores,
-    Option,
-    Ownership,
-    Result,
-    Return,
-    Scopes,
-    Shadowing,
-    Slices,
-    String,
-    Struct,
-    TiposDeDatos,
-    Traits,
-    Tuplas,
-    Variables,
-    Vectores,
-    While,
+    About, Arrays, Async, Borrowing,
+    Closures, Condicionales, Constantes, Enum,
+    For, Funciones, Generics, Iterators,
+    Lifetimes, Loop, Macros, Match,
+    Metodos, Modulos, Novedades, Operadores,
+    Option, Ownership, Result, Return,
+    Scopes, Shadowing, Slices, String,
+    Struct, TiposDeDatos, Traits, Tuplas,
+    Variables, Vectores, While,
 }
 
-pub async fn ejemplos(bot: MyBot, msg: Message) -> ResponseResult<()> {
+// examples of the use of the bot
+pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
     let ejemplo = match msg.text() {
         Some("/variables") => Ejemplo::Variables,
         Some("/constantes") => Ejemplo::Constantes,
@@ -81,6 +57,7 @@ pub async fn ejemplos(bot: MyBot, msg: Message) -> ResponseResult<()> {
         }
     };
 
+    // Call MarkDown file example
     let text = match ejemplo {
         Ejemplo::Variables => include_str!("funciones_utils/variables.md"),
         Ejemplo::Constantes => include_str!("funciones_utils/constantes.md"),
@@ -125,7 +102,12 @@ pub async fn ejemplos(bot: MyBot, msg: Message) -> ResponseResult<()> {
     Ok(())
 }
 
-pub async fn get_chat_administrators(bot: MyBot, msg: Message) -> ResponseResult<()> {
+/* ////////////||\\\\\\\\\\\\  */
+/* // Experimental commands \\ */
+/* \\\\\\\\\\\\||///////////// */
+
+// get chat administrators and async function
+pub async fn get_chat_administrators(bot: Bot, msg: Message) -> ResponseResult<()> {
     let chat_administrators = bot.get_chat_administrators(msg.chat.id).await?;
     println!("{:?}", chat_administrators);
 
@@ -136,7 +118,7 @@ pub async fn get_chat_administrators(bot: MyBot, msg: Message) -> ResponseResult
 }
 
 // get @username from message from command and async function
-pub async fn get_username(bot: MyBot, msg: Message) -> ResponseResult<()> {
+pub async fn get_username(bot: Bot, msg: Message) -> ResponseResult<()> {
     match msg.reply_to_message() {
         Some(replied) => {
             let user = replied.from().unwrap();

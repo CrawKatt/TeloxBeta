@@ -1,6 +1,6 @@
 use crate::commands::*;
 
-pub async fn get_chat_member(bot: MyBot, msg: Message) -> ResponseResult<()> {
+pub async fn get_chat_member(bot: Bot, msg: Message) -> ResponseResult<()> {
     match msg.reply_to_message() {
         Some(replied) => {
             let user = replied.from().unwrap();
@@ -47,7 +47,7 @@ pub fn create_csv_file_and_add_username(username: &str, user_id: UserId) -> Resu
     Ok(())
 }
 
-pub async fn test(bot: MyBot, msg: Message) -> ResponseResult<()> {
+pub async fn test(bot: Bot, msg: Message) -> ResponseResult<()> {
     match msg.reply_to_message() {
         Some(replied) => {
             let username = replied
@@ -73,7 +73,7 @@ pub async fn test(bot: MyBot, msg: Message) -> ResponseResult<()> {
     Ok(())
 }
 
-pub async fn list(bot: MyBot, msg: Message) -> ResponseResult<()> {
+pub async fn list(bot: Bot, msg: Message) -> ResponseResult<()> {
     // Abre el archivo y lee su contenido
     let contents =
         fs::read_to_string("database.csv").unwrap_or_else(|_| "No hay registros".to_string());
