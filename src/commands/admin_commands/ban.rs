@@ -10,32 +10,37 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
             let user = if let Some(from) = replied.from() {
                 from
             } else {
-                // Manejar el caso de que `from()` devuelva `None`
-                println!("No se pudo obtener el usuario {:#?}", msg.id);
-                bot.send_message(msg.chat.id, "❌ No se pudo obtener el usuario").await?;
+                let error_msg = bot.send_message(msg.chat.id, "❌ No se pudo obtener el usuario").await?;
+                let error_msg_id = error_msg.id;
+
+                tokio::time::sleep(Duration::from_secs(5)).await;
+                bot.delete_message(msg.chat.id, error_msg_id).await?;
+
+                tokio::time::sleep(Duration::from_secs(1)).await;
                 bot.delete_message(msg.chat.id, msg.id).await?;
                 return Ok(());
             };
 
             // Get the chat ID and user ID, and check if the person using the command is an admin or owner.
             let chat_id = msg.chat.id;
-
-            let id_usuario = user.id;
-
             let username_user = user.username.clone().unwrap_or_default();
-
             let chat_member = bot.get_chat_member(chat_id, msg.from().unwrap().id).await?;
 
             // If the user is an admin or owner, ban the user and send a message to the chat.
             // Also send a random GIF or MP4 file from the "./assets/ban/" folder.
             let is_admin_or_owner = chat_member.status().is_administrator() || chat_member.status().is_owner();
-            println!("Es admin o owner: {}", is_admin_or_owner);
+            println!("Es admin o owner: {is_admin_or_owner}");
             println!("JSON Info: {:#?}", msg);
 
             if is_admin_or_owner {
-                bot.delete_message(chat_id, msg.id).await?;
                 bot.ban_chat_member(chat_id, user.id).await?;
-                bot.send_message(chat_id, format!("✅ @{} \\[`{}`\\] baneado", username_user, id_usuario),).await?;
+                let ban_msg = bot.send_message(chat_id, format!("✅ @{} \\[`{}`\\] baneado", username_user, user.id)).reply_to_message_id(msg.id).await?;
+
+                sleep(Duration::from_secs(5)).await;
+                bot.delete_message(chat_id, ban_msg.id).await?;
+
+                sleep(Duration::from_secs(1)).await;
+                bot.delete_message(chat_id, msg.id).await?;
 
                 // Choose a random ban animation to send.
                 let mut rng: StdRng = SeedableRng::from_entropy();
@@ -55,19 +60,32 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                 };
 
                 let file_path = format!("./assets/ban/{}", get_file_name(random_number));
-
                 match file_path.ends_with(".gif") {
+
                     true => {
-                        bot.send_animation(chat_id, InputFile::file(file_path))
-                            .await?
+                        let gif = bot.send_animation(chat_id, InputFile::file(file_path)).await?;
+                        sleep(Duration::from_secs(60)).await;
+                        bot.delete_message(chat_id, gif.id).await?;
+                        bot.delete_message(chat_id, msg.id).await?;
                     }
-                    false => bot.send_video(chat_id, InputFile::file(file_path)).await?,
+
+                    false => {
+                        let video = bot.send_video(chat_id, InputFile::file(file_path)).await?;
+                        sleep(Duration::from_secs(60)).await;
+                        bot.delete_message(chat_id, video.id).await?;
+                        bot.delete_message(chat_id, msg.id).await?;
+                    }
+
                 };
             } else {
                 // If the user is not an admin or owner, send an error message.
+                let err = bot.send_message(chat_id, "❌ No tienes permisos para usar este comando").reply_to_message_id(msg.id).await?;
+
+                sleep(Duration::from_secs(5)).await;
+                bot.delete_message(chat_id, err.id).await?;
                 bot.delete_message(chat_id, msg.id).await?;
-                bot.send_message(chat_id, "❌ No tienes permisos para usar este comando").await?;
             };
+
         }
         None => {
             // If the message is not a reply, extract the user ID from the command's arguments.
@@ -86,15 +104,29 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                 println!("❌ No has especificado un ID para obtener el usuario {:#?}", msg);
                 return Ok(());
             }
+            // if arguments is String, then use this
+            if arguments.contains('@') {
+
+                let ban_msg = bot.send_message(msg.chat.id, "❌ No has especificado un ID para obtener el usuario").reply_to_message_id(msg.id).await?;
+                sleep(Duration::from_secs(5)).await;
+                bot.delete_message(msg.chat.id, ban_msg.id).await?;
+
+                sleep(Duration::from_secs(1)).await;
+                bot.delete_message(msg.chat.id, msg.id).await?;
+
+                println!("❌ No has especificado un ID para obtener el usuario {:#?}", msg);
+                return Ok(());
+            }
 
             // extract the user ID from the arguments
-            let user_id = arguments.trim().parse::<i64>().unwrap();
+            let user_id = arguments.trim().parse::<u64>().unwrap();
 
             // get the ID of the chat where the message was sent
             let chat_id = msg.chat.id;
 
             // get information about the user who sent the message
             let chat_member = bot.get_chat_member(chat_id, msg.from().unwrap().id).await?;
+            println!("JSON Info: {:#?}", chat_member);
 
             // check if the user is an admin or owner of the chat
             let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
@@ -102,13 +134,14 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
             // If the user is an admin or owner, ban the target user and send a ban message.
             if is_admin_or_owner {
                 // ban the target user
-                bot.ban_chat_member(chat_id, UserId(user_id as u64)).await?;
-
-                // delete the command message
-                bot.delete_message(msg.chat.id, msg.id).await?;
+                bot.ban_chat_member(msg.chat.id, UserId(user_id)).await?;
 
                 // send a ban message with the target user's ID
-                bot.send_message(msg.chat.id, format!("✅ Baneado \\[`{}`\\]", user_id)).await?;
+                let ban_ok = bot.send_message(msg.chat.id, format!("✅ Baneado \\[`{}`\\]", user_id)).await?;
+
+                // delete the command message
+                sleep(Duration::from_secs(5)).await;
+                bot.delete_message(msg.chat.id, ban_ok.id).await?;
 
                 // Choose a random ban animation to send.
                 let mut rng: StdRng = SeedableRng::from_entropy();
@@ -119,14 +152,12 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                 // list of possible ban animation file names
                 let file_names = [
                     "1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif",
-                    "9.gif", "10.gif", "11.gif", "12.mp4", "13.mp4", "14.mp4", "15.mp4",
+                    "9.gif", "10.gif","11.gif","12.mp4","13.mp4","14.mp4","15.mp4",
                 ];
 
                 // helper function to get the file name at a given index
                 let get_file_name = |index: usize| -> &'static str {
-                    file_names
-                        .get(index)
-                        .unwrap_or_else(|| file_names.last().unwrap())
+                    file_names.get(index).unwrap_or_else(|| file_names.last().unwrap())
                 };
 
                 // choose a ban animation file based on the random number
@@ -134,16 +165,35 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
 
                 // check if the file is a GIF or video
                 match file_path.ends_with(".gif") {
-                    true  => bot.send_animation(chat_id, InputFile::file(file_path)).await?,
-                    false => bot.send_video(chat_id, InputFile::file(file_path)).await?,
+
+                    true  => {
+                        let gif = bot.send_animation(chat_id, InputFile::file(file_path)).reply_to_message_id(msg.id).await?;
+
+                        sleep(Duration::from_secs(60)).await;
+                        bot.delete_message(msg.chat.id, gif.id).await?;
+                        bot.delete_message(msg.chat.id, msg.id).await?;
+
+                    },
+
+                    false => {
+                        let video = bot.send_video(chat_id, InputFile::file(file_path)).reply_to_message_id(msg.id).await?;
+
+                        sleep(Duration::from_secs(60)).await;
+                        bot.delete_message(msg.chat.id, video.id).await?;
+                        bot.delete_message(msg.chat.id, msg.id).await?;
+
+                    },
+
                 };
                 // If the user is not an admin or owner, delete the command message and send an error message.
             } else {
-                // delete the command message
-                bot.delete_message(msg.chat.id, msg.id).await?;
-
                 // send an error message
-                bot.send_message(msg.chat.id, "❌ No tienes permisos para banear a un usuario", ).await?;
+                let err = bot.send_message(msg.chat.id, "❌ No tienes permisos para banear a un usuario", ).await?;
+
+                // delete the command message and the error message
+                sleep(Duration::from_secs(5)).await;
+                bot.delete_message(msg.chat.id, err.id).await?;
+                bot.delete_message(msg.chat.id, msg.id).await?;
             };
         }
     }
