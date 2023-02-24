@@ -11,7 +11,7 @@ mod commands;
 // Función principal que inicia el Bot
 // Main function that starts the bot
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn Error>> {
 
     // Initialize the logging environment for Teloxide
     // Para ver los logs de Teloxide en la consola
@@ -37,5 +37,13 @@ async fn main() {
     let bot = teloxide::Bot::from_env().parse_mode(MarkdownV2);
 
     // Call the `repl` function of the `Command` struct with the bot instance and the `action` function
-    Command::repl(bot, action).await;
+    let handler = dptree::entry()
+        .branch(Update::filter_message().endpoint(message_handler))
+        .branch(Update::filter_callback_query().endpoint(callback_handler))
+        .branch(Update::filter_inline_query().endpoint(inline_query_handler));
+
+    Dispatcher::builder(bot.clone(), handler).enable_ctrlc_handler().build().dispatch().await;
+    Command::repl(bot,action).await;
+    Ok(())
 }
+
