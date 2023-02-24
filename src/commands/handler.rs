@@ -119,6 +119,10 @@ pub enum Command {
 
     List,
 
+    Testing,
+
+    Prueba,
+
 }
 
 // Función de acción para cada comando.
@@ -128,16 +132,6 @@ pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> 
     match cmd {
         Command::Help => start(bot, msg).await?,
         Command::Start => start(bot, msg).await?,
-
-        // Comandos de Administración
-        // Admin Commands
-        Command::Ban => ban_user(bot, msg).await?,
-        Command::Unban => unban_user(bot, msg).await?,
-        Command::Mute => mute_user_admin(bot, msg).await?,
-        Command::Unmute => unmute_user(bot, msg.clone()).await?,
-        Command::Test => test(bot, msg).await?,
-        Command::List => list(bot, msg).await?,
-        Command::Info => get_chat_member(bot, msg).await?,
 
         // Comandos de Información
         // Info to Rust code examples Commands
@@ -181,19 +175,188 @@ pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> 
 
         // Comandos de Diversión
         // Fun Commands
-        Command::Pat => send_pat(bot, msg).await?,
-        Command::Meme => send_random_meme(bot, msg).await?,
+
 
         // Comandos de Acerca del Bot y Novedades
         // About and Updates Commands
         Command::About => ejemplos(bot, msg).await?,
         Command::Novedades => ejemplos(bot, msg).await?,
+        _ => (),
     };
 
     Ok(())
 }
 
-async fn start(bot: Bot, msg: Message) -> ResponseResult<()> {
+/// Creates a keyboard made by buttons in a big column.
+pub fn make_keyboard() -> InlineKeyboardMarkup {
+    let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
+
+    let options = [
+        "Rust", "Ajustes", "Donar", "Acerca de",
+        "Comandos", "Languages", "Ayuda", "Novedades",
+    ];
+
+    for option in options.chunks(3) {
+        let row = option
+            .iter()
+            .map(|&option| InlineKeyboardButton::callback(option.to_owned(), option.to_owned()))
+            .collect();
+
+        keyboard.push(row);
+    }
+
+    InlineKeyboardMarkup::new(keyboard)
+}
+
+pub fn make_buzz_keyboard() -> InlineKeyboardMarkup {
+    let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
+
+    let buzz_versions = [
+        "Básico", "Intermedio", "Avanzado", "Volver"
+    ];
+
+    for versions in buzz_versions.chunks(3) {
+        let row = versions
+            .iter()
+            .map(|&version| {
+                let callback_data = if version == "Volver" {
+                    "back_to_main_keyboard".to_owned()
+                } else {
+                    version.to_owned()
+                };
+                InlineKeyboardButton::callback(version.to_owned(), callback_data)
+            }).collect();
+
+        keyboard.push(row);
+    }
+
+    InlineKeyboardMarkup::new(keyboard)
+}
+
+pub async fn message_handler(bot: Bot, msg: Message, me: Me,) -> Result<(), Box<dyn Error + Send + Sync>> {
+    if let Some(text) = msg.text() {
+        match BotCommands::parse(text, me.username()) {
+            Ok(Command::Prueba) => {
+                // Create a list of buttons and send them.
+                let keyboard = make_keyboard();
+                bot.send_message(msg.chat.id,
+                                 "Hola, soy un Bot que administra grupos de Telegram y seré tu \
+                                 asistente personal en tu aprendizaje de Rust, \
+                                 El Lenguaje de Programación\\.").reply_markup(keyboard).await?;
+            }
+
+            Ok(Command::Testing) => {
+                bot.send_message(msg.chat.id, "Test").await?;
+            }
+
+            // Comandos de Administración >> Admin Commands
+            Ok(Command::Ban) => ban_user(bot, msg).await?,
+            Ok(Command::Unban) => unban_user(bot, msg).await?,
+            Ok(Command::Mute) => mute_user_admin(bot, msg).await?,
+            Ok(Command::Unmute) => unmute_user(bot, msg.clone()).await?,
+            Ok(Command::Test) => test(bot, msg).await?,
+            Ok(Command::List) => list(bot, msg).await?,
+            Ok(Command::Info) => get_chat_member(bot, msg).await?,
+
+            // Comandos de Diversión >> Fun Commands
+            Ok(Command::Meme) => send_random_meme(bot, msg).await?,
+            Ok(Command::Pat) => send_pat(bot, msg).await?,
+
+            Err(_) => {
+                bot.send_message(msg.chat.id, "Comando no encontrado").await?;
+            }
+
+            _ => action(bot, msg, Command::Variables).await?,
+        }
+    }
+
+    Ok(())
+}
+
+pub async fn inline_query_handler(bot: Bot, q: InlineQuery, ) -> Result<(), Box<dyn Error + Send + Sync>> {
+
+    let choose_debian_version = InlineQueryResultArticle::new(
+        "0",
+        "Chose debian version",
+        InputMessageContent::Text(InputMessageContentText::new("Debian versions:")),
+    ).reply_markup(make_keyboard());
+
+    bot.answer_inline_query(q.id, vec![choose_debian_version.into()]).await?;
+
+    Ok(())
+}
+
+pub fn make_back_button_keyboard() -> InlineKeyboardMarkup {
+    let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
+    let languages = ["Español", "English", "日本語","Volver"];
+
+    for language in languages.chunks(3) {
+        let row = language.iter().map(|&option| {
+            match option {
+                "Volver" => InlineKeyboardButton::callback(option.to_owned(), "back_to_main_keyboard".to_owned()),
+                _ => InlineKeyboardButton::callback(option.to_owned(), option.to_owned())
+            }
+        }).collect();
+        keyboard.push(row);
+    }
+
+    InlineKeyboardMarkup::new(keyboard)
+}
+
+pub async fn callback_handler(bot: Bot, q: CallbackQuery) -> Result<(), Box<dyn Error + Send + Sync>> {
+    match q.data.as_deref() {
+        Some("Rust") => {
+            match q.message {
+                Some(Message { id, chat, .. }) => {
+                    let keyboard = make_buzz_keyboard();
+                    let text = "Selecciona tu nivel de Rust:".to_owned();
+                    bot.edit_message_text(chat.id, id, text).reply_markup(keyboard).await?;
+                }
+
+                _ => (),
+            }
+        }
+
+        Some("back_to_main_keyboard") => {
+            match q.message {
+                Some(Message { id, chat, .. }) => {
+                    let keyboard = make_keyboard();
+                    let text = "Selecciona una Opción:".to_owned();
+                    bot.edit_message_text(chat.id, id, text).reply_markup(keyboard).await?;
+                }
+
+                _ => (),
+            }
+        }
+
+        Some("Languages") => {
+            match q.message {
+                Some(Message { id, chat, .. }) => {
+                    let text = "Próximamente".to_owned();
+                    let back_keyboard = make_back_button_keyboard();
+                    bot.edit_message_text(chat.id, id, text).reply_markup(back_keyboard).await?;
+                }
+                _ => (),
+            }
+        }
+
+        Some(version) => {
+            match q.message {
+                Some(Message { id, chat, .. }) => {
+                    let text = format!("Tu Idioma se ha configurado en: {}", version);
+                    bot.edit_message_text(chat.id, id, text).await?;
+                }
+
+                _ => (),
+            }
+        }
+        _ => {}
+    }
+
+    Ok(())
+}
+
+pub async fn start(bot: Bot, msg: Message) -> ResponseResult<()> {
     bot.send_message(msg.chat.id, Command::descriptions().to_string()).await?;
     bot.delete_message(msg.chat.id, msg.id).await?;
     Ok(())
