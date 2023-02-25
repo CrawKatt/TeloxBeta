@@ -8,13 +8,11 @@ pub mod database;
 // Define a module commands
 mod commands;
 
-// Función principal que inicia el Bot
 // Main function that starts the bot
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
 
     // Initialize the logging environment for Teloxide
-    // Para ver los logs de Teloxide en la consola
     pretty_env_logger::init();
     log::info!("Iniciando Bot...");
 
