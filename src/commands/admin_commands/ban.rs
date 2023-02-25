@@ -10,13 +10,14 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
             let user = if let Some(from) = replied.from() {
                 from
             } else {
+                // Send an error message and delete it after 5 seconds.
                 let error_msg = bot.send_message(msg.chat.id, "❌ No se pudo obtener el usuario").await?;
                 let error_msg_id = error_msg.id;
 
-                tokio::time::sleep(Duration::from_secs(5)).await;
+                sleep(Duration::from_secs(5)).await;
                 bot.delete_message(msg.chat.id, error_msg_id).await?;
 
-                tokio::time::sleep(Duration::from_secs(1)).await;
+                sleep(Duration::from_secs(1)).await;
                 bot.delete_message(msg.chat.id, msg.id).await?;
                 return Ok(());
             };
@@ -48,20 +49,24 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                 // generate a random number from 0 to 14
                 let random_number = rng.gen_range(0..=14);
 
+                // List of ban animations
                 let file_names = [
                     "1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif",
                     "9.gif", "10.gif", "11.gif", "12.mp4", "13.mp4", "14.mp4", "15.mp4",
                 ];
 
+                // Get the file name from the list
                 let get_file_name = |index: usize| -> &'static str {
                     file_names
                         .get(index)
                         .unwrap_or_else(|| file_names.last().unwrap())
                 };
 
+                // Send the ban animation and match the file extension to send the correct type of file.
                 let file_path = format!("./assets/ban/{}", get_file_name(random_number));
                 match file_path.ends_with(".gif") {
 
+                    // If the file is a GIF, send it as an animation.
                     true => {
                         let gif = bot.send_animation(chat_id, InputFile::file(file_path)).await?;
                         sleep(Duration::from_secs(60)).await;
@@ -69,6 +74,7 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                         bot.delete_message(chat_id, msg.id).await?;
                     }
 
+                    // Else, send it as a video.
                     false => {
                         let video = bot.send_video(chat_id, InputFile::file(file_path)).await?;
                         sleep(Duration::from_secs(60)).await;
@@ -78,7 +84,7 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
 
                 };
             } else {
-                // If the user is not an admin or owner, send an error message.
+                // If the user is not an admin or owner, send an error message and delete this message in 5 seconds.
                 let err = bot.send_message(chat_id, "❌ No tienes permisos para usar este comando").reply_to_message_id(msg.id).await?;
 
                 sleep(Duration::from_secs(5)).await;
@@ -87,9 +93,9 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
             };
 
         }
+        // If the message is not a reply, extract the user ID from the command's arguments.
+        // Check if the person using the command is an admin or owner.
         None => {
-            // If the message is not a reply, extract the user ID from the command's arguments.
-            // Check if the person using the command is an admin or owner.
 
             // extract the text content of the message
             let text = &msg.text().unwrap();
@@ -166,6 +172,7 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                 // check if the file is a GIF or video
                 match file_path.ends_with(".gif") {
 
+                    // If the file is a GIF, send it as a GIF.
                     true  => {
                         let gif = bot.send_animation(chat_id, InputFile::file(file_path)).reply_to_message_id(msg.id).await?;
 
@@ -175,6 +182,7 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
 
                     },
 
+                    // Else, send it as a video.
                     false => {
                         let video = bot.send_video(chat_id, InputFile::file(file_path)).reply_to_message_id(msg.id).await?;
 
