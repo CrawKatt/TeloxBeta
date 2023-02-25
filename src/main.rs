@@ -14,7 +14,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // Initialize the logging environment for Teloxide
     pretty_env_logger::init();
-    log::info!("Iniciando Bot...");
+    log::info!("Iniciando Bot...");3
 
     // Load environment variables from a .env file
     dotenv().ok();
