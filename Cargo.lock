@@ -93,6 +93,8 @@ dependencies = [
  "rand",
  "regex",
  "reqwest",
+ "serde",
+ "serde_json",
  "teloxide",
  "teloxide-core",
  "tokio",
@@ -1599,9 +1601,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.90"
+version = "1.0.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8778cc0b528968fe72abec38b5db5a20a70d148116cd9325d2bc5f5180ca3faf"
+checksum = "cad406b69c91885b5107daf2c29572f6c8cdb3c66826821e286c533490c0bc76"
 dependencies = [
  "indexmap",
  "itoa 1.0.5",
