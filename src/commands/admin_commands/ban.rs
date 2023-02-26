@@ -196,7 +196,7 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                 // If the user is not an admin or owner, delete the command message and send an error message.
             } else {
                 // send an error message
-                let err = bot.send_message(msg.chat.id, "❌ No tienes permisos para banear a un usuario", ).await?;
+                let err = bot.send_message(msg.chat.id, "❌ No tienes permisos para banear a un usuario",).await?;
 
                 // delete the command message and the error message
                 sleep(Duration::from_secs(5)).await;
