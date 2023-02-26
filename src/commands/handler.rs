@@ -121,7 +121,7 @@ pub enum Command {
 
     Testing,
 
-    Prueba,
+    Get,
 
 }
 
@@ -130,9 +130,6 @@ pub enum Command {
 pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
 
     match cmd {
-        Command::Help => start(bot, msg).await?,
-        Command::Start => start(bot, msg).await?,
-
         // Comandos de Información
         // Info to Rust code examples Commands
         Command::Variables => ejemplos(bot, msg).await?,
@@ -171,11 +168,6 @@ pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> 
         Command::Async => ejemplos(bot, msg).await?,
         Command::Admin => get_chat_administrators(bot, msg).await?,
         Command::User => get_username(bot, msg).await?,
-
-
-        // Comandos de Diversión
-        // Fun Commands
-
 
         // Comandos de Acerca del Bot y Novedades
         // About and Updates Commands
@@ -236,34 +228,42 @@ pub fn make_buzz_keyboard() -> InlineKeyboardMarkup {
 pub async fn message_handler(bot: Bot, msg: Message, me: Me,) -> Result<(), Box<dyn Error + Send + Sync>> {
     if let Some(text) = msg.text() {
         match BotCommands::parse(text, me.username()) {
-            Ok(Command::Prueba) => {
+            Ok(Command::Start) => {
                 // Create a list of buttons and send them.
                 let keyboard = make_keyboard();
                 bot.send_message(msg.chat.id,
                                  "Hola, soy un Bot que administra grupos de Telegram y seré tu \
                                  asistente personal en tu aprendizaje de Rust, \
-                                 El Lenguaje de Programación\\.").reply_markup(keyboard).await?;
+                                 El Lenguaje de Programación\\."
+                ).reply_markup(keyboard).await?;
             }
 
-            Ok(Command::Testing) => {
-                bot.send_message(msg.chat.id, "Test").await?;
+            Ok(Command::Help) => {
+                let keyboard = make_keyboard();
+                bot.send_message(msg.chat.id, "¿Necesitas ayuda? Prueba alguna de las opciones disponibles:").reply_markup(keyboard).await?;
             }
-
             // Comandos de Administración >> Admin Commands
             Ok(Command::Ban) => ban_user(bot, msg).await?,
             Ok(Command::Unban) => unban_user(bot, msg).await?,
             Ok(Command::Mute) => mute_user_admin(bot, msg).await?,
             Ok(Command::Unmute) => unmute_user(bot, msg.clone()).await?,
-            Ok(Command::Test) => test(bot, msg).await?,
-            Ok(Command::List) => list(bot, msg).await?,
+            Ok(Command::List) => list_json(bot, msg).await?,
             Ok(Command::Info) => get_chat_member(bot, msg).await?,
+            Ok(Command::Get) => get_user_id_by_username(bot, msg).await?,
 
             // Comandos de Diversión >> Fun Commands
             Ok(Command::Meme) => send_random_meme(bot, msg).await?,
             Ok(Command::Pat) => send_pat(bot, msg).await?,
 
             Err(_) => {
-                bot.send_message(msg.chat.id, "Comando no encontrado").await?;
+                if text.starts_with("https://t.me") {
+                    bot.send_message(msg.chat.id, "Enlace Spam Detectado\\!\nAcción: Baneado").await?;
+                    bot.ban_chat_member(msg.chat.id, msg.from().unwrap().id).await?;
+                }
+
+                test_json(bot, msg.clone()).await?;
+
+                println!("{:#?}", msg);
             }
 
             _ => action(bot, msg, Command::Variables).await?,
@@ -353,11 +353,5 @@ pub async fn callback_handler(bot: Bot, q: CallbackQuery) -> Result<(), Box<dyn 
         _ => {}
     }
 
-    Ok(())
-}
-
-pub async fn start(bot: Bot, msg: Message) -> ResponseResult<()> {
-    bot.send_message(msg.chat.id, Command::descriptions().to_string()).await?;
-    bot.delete_message(msg.chat.id, msg.id).await?;
     Ok(())
 }
