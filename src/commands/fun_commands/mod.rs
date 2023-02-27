@@ -1,10 +1,8 @@
 pub mod pat;
 pub mod meme;
-pub mod lib;
 
 pub use pat::*;
 pub use meme::*;
-pub use lib::*;
 /*
 pub mod hug;
 pub mod kiss;

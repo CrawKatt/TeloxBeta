@@ -13,8 +13,3 @@ pub use handler::*;
 pub use funciones::*;
 pub use admin_commands::*; // Llama a la carpeta admin_commands >> calls the admin_commands folder and mod.rs into the admin_commands folder
 pub use fun_commands::*; // Llama a la carpeta fun_commands >> calls the fun_commands folder and mod.rs into the fun_commands folder
-
-// Imports de Librerías
-use std::io::{self, Write};
-use serde::{Serialize, Deserialize};
-use std::fs::{self, OpenOptions};
