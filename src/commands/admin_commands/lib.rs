@@ -23,6 +23,8 @@ pub use teloxide_core::{
     }
 };
 
+pub use serde::{Serialize, Deserialize};
+
 // type Bot for using the DefaultParseMode adapter
 pub type Bot = DefaultParseMode<teloxide::Bot>;
 
@@ -36,6 +38,7 @@ pub use std::io::prelude::*;
 pub use std::error::Error;
 pub use std::time::Duration;
 pub use std::fs;
+pub use std::io::{self, Write};
 
 // Import Tokio modules for asynchronous programming
 pub use tokio::time::sleep;
