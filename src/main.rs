@@ -7,6 +7,8 @@ pub mod database;
 
 // Define a module commands
 mod commands;
+mod utils;
+mod buttons;
 
 // Main function that starts the bot
 #[tokio::main]
