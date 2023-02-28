@@ -1,0 +1,20 @@
+{
+  "language": "es",
+  "messages": {
+    "en": {
+      "greeting": "Hello!",
+      "goodbye": "Goodbye!",
+      "error": "Error!"
+    },
+    "es": {
+      "greeting": "¡Hola!",
+      "goodbye": "¡Adiós!",
+      "error": "¡Error!"
+    },
+    "ja": {
+      "greeting": "こんにちは！",
+      "goodbye": "さようなら！",
+      "error": "エラー！"
+    }
+  }
+}
