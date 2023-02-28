@@ -19,11 +19,11 @@ parse_with = "split"
 // Los comandos disponibles.
 // Available commands.
 pub enum Command {
-    Ban,        Unban,        Mute,       Unmute,         Start,      Variables,  Constantes,  TiposDeDatos,  Operadores,
-    Arrays,     Tuplas,       Vectores,   Condicionales,  Loop,       For,        While,       Match,         Enum,        Funciones,
-    Return,     Metodos,      Closures,   Struct,         Traits,     Option,     Result,      Generics,      Lifetimes,   Macros,
-    Ownership,  Referencias,  Borrowing,  Modulos,        Shadowing,  Slices,     String,      Iterators,     Scopes,      Async,
-    Pat,        Meme,         Help,       Novedades,      Info,       About,      Test,        List,          Testing,     Get,
+    Ban,        Unban,        Mute,       Unmute,         Start,      Variables,  Constantes,  TiposDeDatos,  Operadores,  Funciones,
+    Arrays,     Tuplas,       Vectores,   Condicionales,  Loop,       For,        While,       Match,         Enum,        Macros,
+    Return,     Metodos,      Closures,   Struct,         Traits,     Option,     Result,      Generics,      Lifetimes,   Async,
+    Ownership,  Referencias,  Borrowing,  Modulos,        Shadowing,  Slices,     String,      Iterators,     Scopes,
+    Pat,        Meme,         Help,       Novedades,      Info,       About,      Test,        List,          Testing,
 }
 
 // Función de acción para cada comando.
@@ -82,7 +82,6 @@ pub async fn message_handler(bot: Bot, msg: Message, me: Me,) -> Result<(), Box<
             Ok(Command::Ban)  => ban_user(bot, msg).await?,                 Ok(Command::Unban)  => unban_user(bot, msg).await?,
             Ok(Command::Mute) => mute_user_admin(bot, msg).await?,          Ok(Command::Unmute) => unmute_user(bot, msg).await?,
             Ok(Command::List) => list_json(bot, msg).await?,                Ok(Command::Info)   => get_chat_member(bot, msg).await?,
-            Ok(Command::Get)  => get_user_id_by_username(bot, msg).await?,
 
             // Comandos de Diversión >> Fun Commands
             Ok(Command::Meme) => send_random_meme(bot, msg).await?,         Ok(Command::Pat)    => send_pat(bot, msg).await?,
