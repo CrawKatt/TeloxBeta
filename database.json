@@ -1,50 +1,8 @@
 [
   {
-    "username": "@Axle901",
-    "user_id": 5685723955,
-    "first_name": "Alex",
-    "last_name": null
-  },
-  {
-    "username": "@Shinobi64",
-    "user_id": 5723641776,
-    "first_name": "Shinobi",
-    "last_name": null
-  },
-  {
-    "username": "@pineiden",
-    "user_id": 395350241,
-    "first_name": "David",
-    "last_name": "Pineiden"
-  },
-  {
-    "username": "@CrawKatt",
-    "user_id": 1315585920,
-    "first_name": "Craw Katt®Rust Jr Dev🦀",
-    "last_name": "@Kanizawa_Sensei_bot"
-  },
-  {
-    "username": "@miguelraz",
-    "user_id": 384724215,
-    "first_name": "mrg",
-    "last_name": null
-  },
-  {
-    "username": "@xorgconfig",
-    "user_id": 185493862,
-    "first_name": "xorg config",
-    "last_name": null
-  },
-  {
-    "username": "@lil_code",
-    "user_id": 661259690,
-    "first_name": "Artur",
-    "last_name": null
-  },
-  {
-    "username": "patriciods 🇨🇱",
-    "user_id": 1022248821,
-    "first_name": "patriciods 🇨🇱",
-    "last_name": null
+    "username": "@userma,e",
+    "user_id": 1234567890,
+    "first_name": "name",
+    "last_name": "last name or null"
   }
 ]
