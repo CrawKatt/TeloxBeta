@@ -32,7 +32,15 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
         Some("/tuplas")         => Ejemplo::Tuplas,        Some("/vectores")   => Ejemplo::Vectores,
         Some("/while")          => Ejemplo::While,
         _ => {
-            bot.send_message(msg.chat.id, format!("Comando desconocido `{:#?}`", msg.text().unwrap())).await?;
+            if let Some(text) = msg.text() {
+                let ok =bot.send_message(msg.chat.id, format!("Comando desconocido `{:#?}`", text)).await?;
+                sleep(Duration::from_secs(5)).await;
+                bot.delete_message(msg.chat.id, ok.id).await?;
+
+            } else {
+                // Manejo del caso en el que msg.text() es None
+            }
+
             return Ok(());
         }
     };
