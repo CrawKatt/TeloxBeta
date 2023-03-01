@@ -53,8 +53,8 @@ pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> 
 
         // Comandos de Acerca del Bot y Novedades
         // About and Updates Commands
-        Command::About        => ejemplos(bot, msg).await?,
-        Command::Novedades    => ejemplos(bot, msg).await?,
+        Command::About        => ejemplos(bot, msg).await?, Command::Novedades     => ejemplos(bot, msg).await?,
+
         _ => (),
     };
 
@@ -62,22 +62,11 @@ pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> 
 }
 
 pub async fn message_handler(bot: Bot, msg: Message, me: Me,) -> Result<(), Box<dyn Error + Send + Sync>> {
+
     if let Some(text) = msg.text() {
         match BotCommands::parse(text, me.username()) {
-            Ok(Command::Start) => {
-                // Create a list of buttons and send them.
-                let keyboard = make_main_keyboard();
-                bot.send_message(msg.chat.id,
-                                 "Hola, soy un Bot que administra grupos de Telegram y seré tu \
-                                 asistente personal en tu aprendizaje de Rust, \
-                                 El Lenguaje de Programación\\."
-                ).reply_markup(keyboard).await?;
-            }
+            Ok(Command::Start) => create_buttons(bot, msg).await?,          Ok(Command::Help)   => help_action(bot, msg).await?,
 
-            Ok(Command::Help) => {
-                let keyboard = make_main_keyboard();
-                bot.send_message(msg.chat.id, "¿Necesitas ayuda? Prueba alguna de las opciones disponibles:").reply_markup(keyboard).await?;
-            }
             // Comandos de Administración                           >>>>    Admin Commands
             Ok(Command::Ban)  => ban_user(bot, msg).await?,                 Ok(Command::Unban)  => unban_user(bot, msg).await?,
             Ok(Command::Mute) => mute_user_admin(bot, msg).await?,          Ok(Command::Unmute) => unmute_user(bot, msg).await?,
@@ -88,15 +77,17 @@ pub async fn message_handler(bot: Bot, msg: Message, me: Me,) -> Result<(), Box<
 
             Err(_) => {
                 if text.starts_with("https://t.me") {
-                    bot.send_message(msg.chat.id, "Enlace Spam Detectado\\!\nAcción: Baneado").await?;
-                    bot.ban_chat_member(msg.chat.id, msg.from().unwrap().id).await?;
+                    anti_spam(bot, msg.clone()).await?;
                 }
+
                 test_json(msg.clone()).await?;
                 println!("{:#?}", msg);
             }
 
             _ => action(bot, msg, Command::Variables).await?,
+
         }
+
     }
 
     Ok(())
