@@ -10,7 +10,7 @@ pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<(
     // List of ban animations
     let file_names = [
         "1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif",
-        "9.gif", "10.gif", "11.gif", "12.mp4", "13.mp4", "14.mp4", "15.mp4",
+        "9.gif", "10.gif", "11.gif", "12.mp4", "13.mp4", "14.mp4",
     ];
 
     // Get the file name from the list
@@ -43,8 +43,6 @@ pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<(
 
 pub async fn mute_animation_generator(bot: Bot, msg: Message) -> ResponseResult<()> {
 
-    let chat_id = msg.chat.id;
-
     let mut rng: StdRng = SeedableRng::from_entropy();
     let file_names = ["1.gif", "2.gif", "3.gif", "4.gif", "5.jpg"];
     let random_number = rng.gen_range(0..=file_names.len() - 1);
@@ -55,21 +53,21 @@ pub async fn mute_animation_generator(bot: Bot, msg: Message) -> ResponseResult<
     match file_extension {
 
         "gif" => {
-            let gif = bot.send_animation(chat_id, InputFile::file(file_path)).await?;
+            let gif = bot.send_animation(msg.chat.id, InputFile::file(file_path)).await?;
             sleep(Duration::from_secs(60)).await;
-            bot.delete_message(chat_id, gif.id).await?;
+            bot.delete_message(msg.chat.id, gif.id).await?;
         },
 
         "jpg" => {
-            let jpg = bot.send_photo(chat_id, InputFile::file(file_path)).await?;
+            let jpg = bot.send_photo(msg.chat.id, InputFile::file(file_path)).await?;
             sleep(Duration::from_secs(60)).await;
-            bot.delete_message(chat_id, jpg.id).await?;
+            bot.delete_message(msg.chat.id, jpg.id).await?;
         },
 
         _ => {
-            let err = bot.send_message(chat_id, "❌ No se pudo enviar el archivo").await?;
+            let err = bot.send_message(msg.chat.id, "❌ No se pudo enviar el archivo").await?;
             sleep(Duration::from_secs(60)).await;
-            bot.delete_message(chat_id, err.id).await?;
+            bot.delete_message(msg.chat.id, err.id).await?;
         }
 
     };
