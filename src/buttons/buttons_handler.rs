@@ -1,5 +1,23 @@
 use crate::admin_commands::*;
 
+pub async fn create_buttons(bot: Bot, msg: Message) -> ResponseResult<()> {
+    // Create a list of buttons and send them.
+    let keyboard = make_main_keyboard();
+    bot.send_message(msg.chat.id,
+                     "Hola, soy un Bot que administra grupos de Telegram y seré tu \
+                                 asistente personal en tu aprendizaje de Rust, \
+                                 El Lenguaje de Programación\\."
+    ).reply_markup(keyboard).await?;
+
+    Ok(())
+}
+
+pub async fn help_action(bot: Bot, msg: Message) -> ResponseResult<()> {
+    let keyboard = make_main_keyboard();
+    bot.send_message(msg.chat.id, "¿Necesitas ayuda? Prueba alguna de las opciones disponibles:").reply_markup(keyboard).await?;
+    Ok(())
+}
+
 pub fn make_main_keyboard() -> InlineKeyboardMarkup {
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
 
@@ -97,24 +115,6 @@ pub fn make_back_button_keyboard() -> InlineKeyboardMarkup {
     let keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
     InlineKeyboardMarkup::new(keyboard)
 }
-
-/*
-        Some("Rust") | Some("Principiante") | Some("Intermedio") | Some("Avanzado") => {
-            if let Some(Message { id, chat, .. }) = q.message {
-                let text = match q.data.as_deref() {
-                    Some("Rust") => "Selecciona tu nivel de Rust:".to_owned(),
-                    Some("Principiante") => "Recomendado para Principiantes: \n\n/variables \n/constantes \n/tiposdeDatos \n/shadowing \n/operadores".to_owned(),
-                    Some("Intermedio") => "Recomendado para conocimiento Intermedio: \n\n/arrays \n/tuplas \n/vectores \n/condicionales \n/loop /for /while \n/match".to_owned(),
-                    Some("Avanzado") => "Recomendado para conocimiento Avanzado: \n\n/enum \n/return \n/funciones \n/closures".to_owned(),
-                    _ => "".to_owned(),
-                };
-
-                let keyboard = make_rust_keyboard();
-                bot.edit_message_text(chat.id, id, text).reply_markup(keyboard).await?;
-            }
-        }
-
- */
 
 pub async fn callback_handler(bot: Bot, q: CallbackQuery) -> Result<(), Box<dyn Error + Send + Sync>> {
     match q.data.as_deref() {
