@@ -1,3 +1,4 @@
+use tokio::fs::read_to_string;
 use crate::admin_commands::*;
 
 /* ////////////||\\\\\\\\\\\\  */
@@ -7,65 +8,108 @@ use crate::admin_commands::*;
 // Guardar Username y UserID en un archivo JSON
 #[derive(Serialize, Deserialize)]
 pub struct UserData {
-    username:   Option<String>,
-    user_id:    UserId,
-    first_name: Option<String>,
-    last_name:  Option<String>,
+    pub username:   Option<String>,
+    pub id:    UserId,
+    pub first_name: Option<String>,
+    pub last_name:  Option<String>,
 }
 
-pub fn create_json_file_and_add_username(
-    username:   &str,
-    user_id:    UserId,
-    first_name: Option<String>,
-    last_name:  Option<String>,
-
-) -> Result<(), io::Error> {
+pub async fn read_database_file() -> ResponseResult<String> {
     let contents = fs::read_to_string("database.json")?;
-    let mut user_data_vec: Vec<UserData> = match serde_json::from_str(&contents) {
-        Ok(vec) => vec,
-        Err(e) => {
-            println!("Error parsing JSON: {}", e);
-            Vec::new()
-        }
-    };
-
-    if !user_data_vec.iter().any(|data| data.username == Some(username.to_string())) {
-        let user_data = UserData {
-            username: Some(username.to_owned()),
-            user_id,
-            first_name,
-            last_name,
-        };
-        user_data_vec.push(user_data);
-
-        let file = OpenOptions::new()
-            .write(true)
-            .create(true)
-            .truncate(true)
-            .open("database.json")?;
-
-        let json_data = serde_json::to_string_pretty(&user_data_vec)?;
-        let mut writer = io::BufWriter::new(file);
-        writer.write_all(json_data.as_bytes())?;
-    }
-
-    Ok(())
+    Ok(contents)
 }
 
-pub async fn test_json(msg: Message) -> ResponseResult<()> {
+pub async fn test_json(bot : Bot, msg: Message) -> ResponseResult<()> {
     if let Some(user) = msg.from() {
         let username = match user.username {
             Some(ref username) => format!("@{}", username),
             None => user.first_name.clone(),
         };
+
         let user_id = user.id;
         let first_name = user.first_name.clone();
         let last_name = user.last_name.clone();
 
-        if create_json_file_and_add_username(&username, user_id, Some(first_name), last_name).is_err() {
-            println!("Error al añadir a la Base de Datos");
+        let json_str = match read_to_string("database.json").await {
+            Ok(json_str) => json_str,
+            Err(_) => String::from("[]"), // Si no existe el archivo, se crea uno vacío
+        };
+
+        let mut users: Vec<User> = serde_json::from_str(&json_str).unwrap_or_else(|_| vec![]);
+        let mut is_registered = false;
+        let mut db_username = None;
+        let mut db_first_name = None;
+        let mut db_last_name = None;
+
+
+        for user in &mut users {
+            if user.id == user_id {
+                db_username = user.username.clone();
+                db_first_name = Some(user.first_name.clone());
+                db_last_name = Some(user.last_name.clone());
+
+                is_registered = true;
+                break;
+            }
+        }
+
+        if !is_registered {
+            let new_first_name = first_name.clone();
+            let new_last_name = last_name.clone();
+
+            let new_user = User {
+                username : Some(username.clone()),
+                language_code: None,
+                is_premium: false,
+                id : user.id,
+                is_bot: false,
+                first_name : new_first_name,
+                last_name : new_last_name,
+                added_to_attachment_menu: false,
+            };
+            users.push(new_user);
         } else {
-            println!("Base de Datos: {:}, {:}", username, user_id);
+            for user in &mut users {
+                if user.id == user_id {
+                    user.username = Some(username.clone());
+                    user.first_name = first_name.clone();
+                    user.last_name = last_name.clone();
+                }
+            }
+        }
+
+        let json_str = serde_json::to_string_pretty(&users).unwrap();
+        let result = fs::write("database.json", json_str);
+        match result {
+            Ok(()) => println!("User saved to database."),
+            Err(e) => println!("Error writing to database: {:?}", e),
+        }
+
+        if let Some(db_username) = db_username {
+            if username != db_username {
+                bot.send_message(msg.chat.id, format!(
+                    "El usuario {} cambió su nombre de usuario de {} a {}.",
+                    user.first_name, db_username, username
+                )).parse_mode(ParseMode::Html).await?;
+            }
+        }
+
+        if let Some(db_first_name) = db_first_name {
+            if first_name != db_first_name {
+                bot.send_message(msg.chat.id, format!(
+                    "El usuario {} cambió su nombre de [{}] a [{}].",
+                    username, db_first_name, first_name
+                )).parse_mode(ParseMode::Html).await?;
+            }
+        }
+
+        if let Some(db_last_name) = db_last_name {
+            if last_name != db_last_name {
+                bot.send_message(msg.chat.id, format!(
+                    "El usuario {:} cambió su apellido de [{:?}] a [{:?}].",
+                    username, db_last_name, last_name
+                )).parse_mode(ParseMode::Html).await?;
+            }
         }
     }
 
@@ -112,7 +156,7 @@ pub async fn list_json(bot: Bot, msg: Message) -> ResponseResult<()> {
         } else {
             format!("{} {}", first_name, last_name)
         };
-        user_list += &format!("{} [<code>{}</code>] {}\n", username, user_data.user_id, full_name);
+        user_list += &format!("{} [<code>{}</code>] {}\n", username, user_data.id, full_name);
     }
 
     bot.send_message(msg.chat.id, user_list).parse_mode(ParseMode::Html).await?;
@@ -142,7 +186,7 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
     if username.contains('@') {
 
         // Obtener todos los usuarios registrados en el archivo database.json
-        let contents = fs::read_to_string("database.json")?;
+        let contents = read_database_file().await?;
         let user_data_vec: Vec<UserData> = match serde_json::from_str(&contents) {
             Ok(vec) => vec,
             Err(e) => {
@@ -156,7 +200,7 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
             .find_map(|data| {
                 if let Some(name) = &data.username {
                     if name == username {
-                        Some(data.user_id.to_string())
+                        Some(data.id.to_string())
                     } else {
                         None
                     }
@@ -184,32 +228,78 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
             };
 
             if message.contains("/unban") {
-                bot.unban_chat_member(msg.chat.id, UserId(user_id)).await?;
-                let ok = bot.send_message(msg.chat.id, format!("{} [<code>{}</code>] desbaneado.", username, user_id)).parse_mode(ParseMode::Html).await?;
-                let video = bot.send_video(msg.chat.id, InputFile::file("./assets/unban/1.mp4")).await?;
-                sleep(Duration::from_secs(60)).await;
-                bot.delete_message(msg.chat.id, ok.id).await?;
-                bot.delete_message(msg.chat.id, video.id).await?;
+                // Obtener información sobre el miembro del chat
+                let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
+
+                // Verificar si el usuario está baneado
+                if let ChatMemberStatus::Banned = chat_member.status() {
+                    // Si está baneado, desbanear al usuario
+                    bot.unban_chat_member(msg.chat.id, UserId(user_id)).await?;
+                    let video = bot.send_video(msg.chat.id, InputFile::file("./assets/unban/1.mp4"))
+                        .caption(format!("{} [<code>{}</code>] desbaneado.", username, user_id)).parse_mode(ParseMode::Html).await?;
+
+                    sleep(Duration::from_secs(60)).await;
+                    bot.delete_message(msg.chat.id, video.id).await?;
+                } else {
+                    // Si no está baneado, enviar un mensaje de error
+                    bot.send_message(msg.chat.id, format!(
+                        "{} [<code>{}</code>] No está baneado. Usa este comando solo para remover el Ban de alguien que ya haya sido baneado",
+                        username,
+                        user_id
+                    )).parse_mode(ParseMode::Html).await?;
+                }
 
             } else if message.contains("/ban") {
+
+                let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
+                if let ChatMemberStatus::Banned = chat_member.status() {
+
+                    bot.send_message(msg.chat.id, format!(
+                        "{} [<code>{}</code>] Ya está baneado. Usa este comando solo para banear a alguien que no haya sido baneado",
+                        username,
+                        user_id
+                    )).parse_mode(ParseMode::Html).await?;
+
+                } else {
+                    bot.ban_chat_member(msg.chat.id, UserId(user_id)).await?;
+                    ban_animation_generator(bot.clone(), msg.clone()).await?;
+                }
+
                 bot.ban_chat_member(msg.chat.id, UserId(user_id)).await?;
-                bot.send_message(msg.chat.id, format!("{} [<code>{}</code>] baneado", username, user_id)).parse_mode(ParseMode::Html).await?;
-                bot.delete_message(msg.chat.id, msg.id).await?;
                 ban_animation_generator(bot, msg).await?;
 
             } else if message.contains("/mute") {
-                bot.restrict_chat_member(msg.chat.id, UserId(user_id), ChatPermissions::empty()).await?;
-                bot.send_message(msg.chat.id, format!("{} [<code>{}</code>] silenciado", username, user_id)).parse_mode(ParseMode::Html).await?;
-                bot.delete_message(msg.chat.id, msg.id).await?;
-                mute_animation_generator(bot, msg.clone()).await?;
+
+                let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
+                if let ChatMemberStatus::Restricted { ..} = chat_member.status() {
+                    bot.send_message(msg.chat.id, format!(
+                        "{} [<code>{}</code>] Ya está silenciado. Usa este comando solo para silenciar a alguien que no haya sido silenciado",
+                        username,
+                        user_id
+                    )).parse_mode(ParseMode::Html).await?;
+                } else {
+                    bot.restrict_chat_member(msg.chat.id, UserId(user_id), ChatPermissions::empty()).await?;
+                    mute_animation_generator(bot.clone(), msg.clone()).await?;
+                }
 
             } else if message.contains("/unmute") {
-                bot.restrict_chat_member(msg.chat.id, UserId(user_id), ChatPermissions::all()).await?;
-                let ok = bot.send_message(msg.chat.id, format!("{} [<code>{}</code>] desilenciado", username, user_id)).parse_mode(ParseMode::Html).await?;
-                let video = bot.send_video(msg.chat.id, InputFile::file("./assets/unmute/unmute.mp4")).await?;
-                sleep(Duration::from_secs(60)).await;
-                bot.delete_message(msg.chat.id, ok.id).await?;
-                bot.delete_message(msg.chat.id, video.id).await?;
+
+                let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
+                if let ChatMemberStatus::Restricted { .. } = chat_member.status() {
+                    bot.restrict_chat_member(msg.chat.id, UserId(user_id), ChatPermissions::all()).await?;
+                    let ok = bot.send_video(msg.chat.id, InputFile::file("./assets/unmute/unmute.mp4"))
+                        .caption(format!("{} [<code>{}</code>] Ya no está silenciado.", username, user_id)).parse_mode(ParseMode::Html).await?;
+
+                    sleep(Duration::from_secs(60)).await;
+                    bot.delete_message(msg.chat.id, ok.id).await?;
+                    bot.delete_message(msg.chat.id, msg.id).await?;
+                } else {
+                    bot.send_message(msg.chat.id, format!(
+                        "{} [<code>{}</code>] No está silenciado. Usa este comando solo para remover el silencio de alguien que ya haya sido silenciado",
+                        username,
+                        user_id
+                    )).parse_mode(ParseMode::Html).await?;
+                }
 
             } else {
                 bot.send_message(msg.chat.id, format!("{} [<code>{}</code>]", username, user_id)).parse_mode(ParseMode::Html).await?;
@@ -223,6 +313,7 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
 
     } else {
         let err = bot.send_message(msg.chat.id, "Debes proporcionar un username").await?;
+        sleep(Duration::from_secs(5)).await;
         bot.delete_message(msg.chat.id, err.id).await?;
         println!("Debes proporcionar un username {}", username);
     }
@@ -289,12 +380,9 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
             }
         };
 
-        // get the ID of the chat where the message was sent
-        let chat_id = msg.chat.id;
-
         // get information about the user who sent the message
         if let Some(from) = msg.from() {
-            let chat_member = bot.get_chat_member(chat_id, from.id).await?;
+            let chat_member = bot.get_chat_member(msg.chat.id, from.id).await?;
             // check if the user is an admin or owner of the chat
             let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
             // If the user is an admin or owner, ban the target user and send a ban message.
@@ -331,3 +419,4 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
 
     Ok(())
 }
+
