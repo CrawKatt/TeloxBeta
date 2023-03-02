@@ -29,17 +29,36 @@ pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
 
                 if is_admin_or_owner {
 
-                    bot.unban_chat_member(msg.chat.id, user.id).await?;
-                    let ok_unban = bot.send_message(msg.chat.id, format!("✅ @{} desbaneado", username_user)).await?;
+                    let chat_member = bot.get_chat_member(msg.chat.id, user.id).await?;
+                    if chat_member.status().is_banned() {
+                        bot.unban_chat_member(msg.chat.id, user.id).await?;
 
-                    bot.send_video(msg.chat.id, InputFile::file("./assets/unban/1.mp4")).await?;
+                        let ok = bot.send_video(msg.chat.id, InputFile::file("./assets/unban/1.mp4"))
+                            .caption(format!("✅ @{} desbaneado", username_user))
+                            .parse_mode(ParseMode::Html)
+                            .reply_to_message_id(msg.id)
+                            .await?;
 
-                    sleep(Duration::from_secs(5)).await;
-                    bot.delete_message(msg.chat.id, ok_unban.id).await?;
-                    bot.delete_message(msg.chat.id, msg.id).await?;
+                        sleep(Duration::from_secs(60)).await;
+                        bot.delete_message(msg.chat.id, ok.id).await?;
+
+                    } else {
+                        let err = bot.send_message(msg.chat.id, format!(
+                            "❌ @{} No está baneado. Usa este comando solo para remover el ban de alguien que esté baneado",
+                            username_user))
+                            .parse_mode(ParseMode::Html)
+                            .reply_to_message_id(msg.id)
+                            .await?;
+
+                        sleep(Duration::from_secs(10)).await;
+                        bot.delete_message(msg.chat.id, err.id).await?;
+                        bot.delete_message(msg.chat.id, msg.id).await?;
+                        return Ok(());
+                    }
 
                 } else {
                     let err = bot.send_message(msg.chat.id, "❌ No tienes permisos para remover el ban a un usuario.").await?;
+                    sleep(Duration::from_secs(5)).await;
                     bot.delete_message(msg.chat.id, err.id).await?;
                 }
 
