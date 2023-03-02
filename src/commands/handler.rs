@@ -22,8 +22,8 @@ pub enum Command {
     Ban,        Unban,        Mute,       Unmute,         Start,      Variables,  Constantes,  TiposDeDatos,  Operadores,  Funciones,
     Arrays,     Tuplas,       Vectores,   Condicionales,  Loop,       For,        While,       Match,         Enum,        Macros,
     Return,     Metodos,      Closures,   Struct,         Traits,     Option,     Result,      Generics,      Lifetimes,   Async,
-    Ownership,  Referencias,  Borrowing,  Modulos,        Shadowing,  Slices,     String,      Iterators,     Scopes,
-    Pat,        Meme,         Help,       Novedades,      Info,       About,      Test,        List,          Testing,
+    Ownership,  Referencias,  Borrowing,  Modulos,        Shadowing,  Slices,     String,      Iterators,     Scopes,      SpamOn,
+    Pat,        Meme,         Help,       Novedades,      Info,       About,      Test,        List,          Testing,     SpamOff,
 }
 
 // Función de acción para cada comando.
@@ -75,13 +75,19 @@ pub async fn message_handler(bot: Bot, msg: Message, me: Me,) -> Result<(), Box<
             // Comandos de Diversión >> Fun Commands
             Ok(Command::Meme) => send_random_meme(bot, msg).await?,         Ok(Command::Pat)    => send_pat(bot, msg).await?,
 
+            // Comandos de Anti_Spam (unsafe maldito LOL) >> Anti_Spam Commands (This is cursed LOL)
+            Ok(Command::SpamOn) => handle_command(bot.clone(), msg.clone()).await?,
+            Ok(Command::SpamOff) => handle_command(bot.clone(), msg.clone()).await?,
+
             Err(_) => {
-                if text.starts_with("https://t.me") {
-                    anti_spam(bot, msg.clone()).await?;
+                if text.contains("https://t.me") {
+                    anti_spam(bot.clone(), msg.clone()).await?;
                 }
 
-                test_json(msg.clone()).await?;
+                test_json(bot.clone(), msg.clone()).await?;
                 println!("{:#?}", msg);
+
+                handle_command(bot, msg.clone()).await?;
             }
 
             _ => action(bot, msg, Command::Variables).await?,
@@ -90,5 +96,22 @@ pub async fn message_handler(bot: Bot, msg: Message, me: Me,) -> Result<(), Box<
 
     }
 
+    Ok(())
+}
+
+async fn handle_command(bot: Bot, message: Message) -> ResponseResult<()> {
+    if let Some(text) = message.text() {
+        match text {
+            "/spam_on" => {
+                unsafe { ANTI_SPAM_ENABLED = true };
+                bot.send_message(message.chat.id, "Anti-spam activado").parse_mode(ParseMode::Html).await?;
+            }
+            "/spam_off" => {
+                unsafe { ANTI_SPAM_ENABLED = false };
+                bot.send_message(message.chat.id, "Anti-spam desactivado").parse_mode(ParseMode::Html).await?;
+            }
+            _ => (),
+        }
+    }
     Ok(())
 }
