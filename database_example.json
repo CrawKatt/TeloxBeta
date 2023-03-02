@@ -1,8 +1,9 @@
 [
   {
-    "username": "@username",
-    "user_id": 1234567890,
-    "first_name": "Example Name",
-    "last_name": "Example Last Name"
+    "id": 1234567890,
+    "is_bot": false,
+    "first_name": "first_name",
+    "last_name": "last_name",
+    "username": "@username"
   }
 ]
