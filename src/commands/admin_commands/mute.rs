@@ -8,7 +8,11 @@ pub async fn mute_user_admin(bot: Bot, msg: Message) -> ResponseResult<()> {
                 from
             } else {
                 // Send an error message and delete it after 5 seconds.
-                let error_msg = bot.send_message(msg.chat.id, "❌ No se pudo obtener el usuario").reply_to_message_id(msg.id).await?;
+                let error_msg = bot.send_message(msg.chat.id, "❌ No se pudo obtener el usuario")
+                    .reply_to_message_id
+                    (msg.id)
+                    .await?;
+
                 let error_msg_id = error_msg.id;
 
                 sleep(Duration::from_secs(5)).await;
