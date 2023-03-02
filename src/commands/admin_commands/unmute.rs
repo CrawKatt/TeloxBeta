@@ -25,19 +25,35 @@ pub async fn unmute_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                 };
 
                 let chat_member = bot.get_chat_member(msg.chat.id, from.id).await?;
-
                 let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
-                println!("Es admin o owner: {:#?} \n", is_admin_or_owner);
 
                 if is_admin_or_owner {
 
-                    bot.restrict_chat_member(msg.chat.id, user.id, ChatPermissions::all()).await?;
-                    let ok_unmute = bot.send_message(msg.chat.id, format!("✅ @{} ya no está silenciado", username_user)).await?;
-                    bot.send_video(msg.chat.id, InputFile::file("./assets/unmute/unmute.mp4")).await?;
+                    let chat_member = bot.get_chat_member(msg.chat.id, user.id).await?.can_send_messages();
+                        if !chat_member {
+                            bot.restrict_chat_member(msg.chat.id, user.id, ChatPermissions::all()).await?;
+                            let ok_unmute = bot.send_video(msg.chat.id, InputFile::file("./assets/unmute/unmute.mp4"))
+                                .caption(format!("✅ @{} Ya no está silenciado", username_user))
+                                .parse_mode(ParseMode::Html)
+                                .reply_to_message_id(msg.id)
+                                .await?;
 
-                    sleep(Duration::from_secs(5)).await;
-                    bot.delete_message(msg.chat.id, ok_unmute.id).await?;
-                    bot.delete_message(msg.chat.id, msg.id).await?;
+                            sleep(Duration::from_secs(5)).await;
+                            bot.delete_message(msg.chat.id, ok_unmute.id).await?;
+                            bot.delete_message(msg.chat.id, msg.id).await?;
+                        } else {
+                            let err = bot.send_message(msg.chat.id, format!(
+                                "❌ @{} No está silenciado. Usa este comando solo para remover el silencia de alguien que esté silenciado",
+                                username_user))
+                                .parse_mode(ParseMode::Html)
+                                .reply_to_message_id(msg.id)
+                                .await?;
+
+                            sleep(Duration::from_secs(10)).await;
+                            bot.delete_message(msg.chat.id, err.id).await?;
+                            bot.delete_message(msg.chat.id, msg.id).await?;
+                            return Ok(());
+                        }
 
                 } else {
 
