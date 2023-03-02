@@ -304,11 +304,14 @@ pub async fn send_random_meme_generator(bot: Bot, msg: Message) -> ResponseResul
         if file_path.ends_with(".mp4") { // If the file name ends with ".mp4", send the video file to the chat using the `send_video` method of the `bot` object.
             // Si el nombre de archivo termina con ".mp4", se envía el archivo de video al chat utilizando el método `send_video` del objeto `bot`.
             // El argumento proporcionado a `send_video` es un objeto `InputFile` que se crea a partir de la ruta de archivo.
-            bot.send_video(msg.chat.id, InputFile::file(&file_path)).reply_to_message_id(msg.id).await?; // The argument provided to `send_video` is an `InputFile` object that is created from the file path.
+            bot.send_video(msg.chat.id, InputFile::file(&file_path)).caption("Aquí tienes un meme de programación").reply_to_message_id(msg.id).await?; // The argument provided to `send_video` is an `InputFile` object that is created from the file path.
         } else { // If the file name does not end with ".mp4", assume it is an image file and send it to the chat using the `send_photo` method of the `bot` object.
             // Si el nombre de archivo no termina con ".mp4", se asume que es un archivo de imagen y se envía al chat utilizando el método `send_photo` del objeto `bot`.
             // El argumento proporcionado a `send_photo` es un objeto `InputFile` que se crea a partir de la ruta de archivo.
-            bot.send_photo(msg.chat.id, InputFile::file(&file_path)).reply_to_message_id(msg.id).await?; // The argument provided to `send_photo` is an `InputFile` object that is created from the file path.
+            bot.send_photo(msg.chat.id, InputFile::file(&file_path))
+                .caption("Aquí tienes un meme de programación") // Use .caption() for send a message with the photo
+                .reply_to_message_id(msg.id)
+                .await?; // The argument provided to `send_photo` is an `InputFile` object that is created from the file path.
         }
     }
 
@@ -330,12 +333,12 @@ pub async fn random_pat(bot: Bot, msg: Message) ->ResponseResult<()> {
     let random_number = rng.gen_range(0..=file_names.len() - 1);
     println!("Resultado : {}", random_number);
 
-    bot.delete_message(msg.chat.id, msg.id).await?;
-
     let file_path = format!("./assets/pat/{}", get_file_name(random_number));
 
     if Path::new(&file_path).is_file() {
-        bot.send_animation(msg.chat.id, InputFile::file(&file_path)).await?;
+        let ok = bot.send_animation(msg.chat.id, InputFile::file(&file_path)).await?;
+        sleep(Duration::from_secs(5)).await;
+        bot.delete_message(msg.chat.id, ok.id).await?;
     }
 
     Ok(())
