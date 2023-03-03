@@ -10,11 +10,7 @@ use crate::admin_commands::*;
 // %GENERAL-DESCRIPTION% /// %DESCRIPCIÓN GENERAL%
 // %PREFIX%%COMMAND% - %DESCRIPTION% /// %PREFIJO%%COMANDO% - %DESCRIPCIÓN%
 #[derive(BotCommands, Clone)]
-#[command(
-rename_rule = "lowercase",
-description = "",
-parse_with = "split"
-)]
+#[command(rename_rule = "lowercase", parse_with = "split")]
 
 // Los comandos disponibles.
 // Available commands.
