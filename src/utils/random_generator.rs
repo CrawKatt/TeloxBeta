@@ -81,7 +81,19 @@ pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<(
 
             // Get the file name from the list
             let get_file_name = |index: usize| -> &'static str {
-                file_names.get(index).unwrap_or_else(|| file_names.last().unwrap())
+                if let Some(file_name) = file_names.get(index) {
+                    file_name
+                } else {
+                    match file_names.last() {
+                        Some(last_file) => last_file,
+                        None => {
+                            // Manejo de error en caso de que `last()` devuelva `None`
+                            // Aquí puedes devolver un valor por defecto, lanzar una excepción, o tomar alguna otra acción
+                            // En este ejemplo, se devuelve una cadena vacía
+                            ""
+                        }
+                    }
+                }
             };
 
             // Send the ban animation and match the file extension to send the correct type of file.
@@ -161,33 +173,15 @@ pub async fn mute_animation_generator(bot: Bot, msg: Message) -> ResponseResult<
                 }
             };
 
-            let text = if let Some(msg_text) = msg.text() {
-                msg_text
-            } else {
-                println!("❌ No se pudo obtener el texto del mensaje {:#?}", msg);
-                return Ok(())
-            };
-
-            // get the arguments after the command trigger
-            let (_, arguments) = match text.find(' ') {
-                Some(index) => text.split_at(index),
-                None => ("", text),
-            };
-
-            // check if the arguments are empty
-            if arguments.is_empty() {
-                bot.send_message(msg.chat.id, "❌ No has especificado un ID para obtener el usuario").await?;
-                bot.delete_message(msg.chat.id, msg.id).await?;
-                println!("❌ No has especificado un ID para obtener el usuario {:#?}", msg);
-
-                return Ok(());
-            }
             let mut rng: StdRng = SeedableRng::from_entropy();
             let file_names = ["1.gif", "2.gif", "3.gif", "4.gif", "5.jpg"];
             let random_number = rng.gen_range(0..=file_names.len() - 1);
 
             let file_path = format!("./assets/mute/{}", file_names[random_number]);
-            let file_extension = file_path.split('.').last().unwrap_or("");
+            let file_extension = match file_path.split('.').last() {
+                Some(extension) => extension,
+                None => "",
+            };
 
             match file_extension {
 
@@ -251,15 +245,19 @@ pub async fn send_random_meme_generator(bot: Bot, msg: Message) -> ResponseResul
     // Esta es una función anónima, también conocida como "lambda" (linea 64).
     // Esta función toma un argumento de tipo `usize` y devuelve una cadena de caracteres 'static str'
     let get_file_name = |index: usize| -> &'static str {
-        // Aquí en la linea 69, se utiliza el método `get` del tipo `Vec` para obtener un elemento en una posición específica.
-        // Si el índice es válido, se devuelve el elemento en esa posición.
-        // Si el índice es inválido (es decir, si el índice es mayor que el tamaño del vector), se devuelve `None`.
-        file_names
-            .get(index)
-            // Aquí en la linea 74, se utiliza el método `unwrap_or` para desempaquetar el valor de `Option` devuelto por `get`.
-            // Si el valor es `Some`, se devuelve el valor almacenado en `Some`.
-            // Si el valor es `None`, se devuelve el valor proporcionado como argumento a `unwrap_or`, en este caso el primer elemento del vector `file_names`.
-            .unwrap_or(&file_names[0])
+        if let Some(file_name) = file_names.get(index) {
+            file_name
+        } else {
+            match file_names.last() {
+                Some(last_file) => last_file,
+                None => {
+                    // Manejo de error en caso de que `last()` devuelva `None`
+                    // Aquí puedes devolver un valor por defecto, lanzar una excepción, o tomar alguna otra acción
+                    // En este ejemplo, se devuelve una cadena vacía
+                    ""
+                }
+            }
+        }
     };
 
     /*Español/Spanish*/
@@ -325,7 +323,21 @@ pub async fn random_pat(bot: Bot, msg: Message) ->ResponseResult<()> {
         "29.gif",
     ];
 
-    let get_file_name = |index: usize| -> &'static str { file_names.get(index).unwrap_or(&file_names[0]) };
+    let get_file_name = |index: usize| -> &'static str {
+        if let Some(file_name) = file_names.get(index) {
+            file_name
+        } else {
+            match file_names.last() {
+                Some(last_file) => last_file,
+                None => {
+                    // Manejo de error en caso de que `last()` devuelva `None`
+                    // Aquí puedes devolver un valor por defecto, lanzar una excepción, o tomar alguna otra acción
+                    // En este ejemplo, se devuelve una cadena vacía
+                    ""
+                }
+            }
+        }
+    };
 
     let mut rng: StdRng = SeedableRng::from_entropy();
     let random_number = rng.gen_range(0..=file_names.len() - 1);
