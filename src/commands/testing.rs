@@ -34,7 +34,12 @@ pub async fn test_json(bot : Bot, msg: Message) -> ResponseResult<()> {
             Err(_) => String::from("[]"), // Si no existe el archivo, se crea uno vacío
         };
 
-        let mut users: Vec<User> = serde_json::from_str(&json_str).unwrap_or_else(|_| vec![]);
+        let users = match serde_json::from_str(&json_str) {
+            Ok(u) => u,
+            Err(_) => vec![],
+        };
+
+        let mut users: Vec<User> = users;
         let mut is_registered = false;
         let mut db_username = None;
         let mut db_first_name = None;
@@ -77,7 +82,15 @@ pub async fn test_json(bot : Bot, msg: Message) -> ResponseResult<()> {
             }
         }
 
-        let json_str = serde_json::to_string_pretty(&users).unwrap();
+        let json_str = match serde_json::to_string_pretty(&users) {
+            Ok(json) => json,
+            Err(e) => {
+                eprintln!("Error al convertir a JSON: {}", e);
+                // Devolver un valor predeterminado o hacer otra cosa en caso de error
+                String::new()
+            }
+        };
+
         let result = fs::write("database.json", json_str);
         match result {
             Ok(()) => println!("User saved to database."),
