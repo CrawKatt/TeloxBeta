@@ -39,6 +39,7 @@ pub use std::error::Error;
 pub use std::time::Duration;
 pub use std::fs;
 pub use std::io::{self, Write};
+pub use tokio::fs::read_to_string;
 
 // Import Tokio modules for asynchronous programming
 pub use tokio::time::sleep;

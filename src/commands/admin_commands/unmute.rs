@@ -1,5 +1,4 @@
 use crate::admin_commands::*;
-use crate::commands::get_user_id_by_arguments;
 
 pub async fn unmute_user(bot: Bot, msg: Message) -> ResponseResult<()> {
     match msg.reply_to_message() {

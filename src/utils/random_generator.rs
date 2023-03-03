@@ -1,6 +1,4 @@
 use crate::admin_commands::*;
-use crate::UserData;
-use crate::read_database_file;
 
 pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<()> {
 

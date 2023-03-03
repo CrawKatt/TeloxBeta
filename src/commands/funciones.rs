@@ -1,4 +1,4 @@
-use crate::commands::*;
+use crate::admin_commands::*;
 
 // enum for the examples of the bot
 enum Ejemplo {

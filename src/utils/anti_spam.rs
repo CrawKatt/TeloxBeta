@@ -1,4 +1,4 @@
-use crate::commands::*;
+use crate::admin_commands::*;
 
 pub static mut ANTI_SPAM_ENABLED: bool = true;
 

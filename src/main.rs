@@ -1,14 +1,9 @@
 // Import the commands and database modules
 use crate::commands::*;
-use crate::database::*;
-
-// Define a module database
 pub mod database;
-
-// Define a module commands
-mod commands;
-mod utils;
-mod buttons;
+pub mod commands;
+pub mod utils;
+pub mod buttons;
 
 // Main function that starts the bot
 #[tokio::main]

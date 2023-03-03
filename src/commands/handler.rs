@@ -1,4 +1,4 @@
-use crate::commands::*;
+use crate::admin_commands::*;
 
 // Derive BotCommands para analizar texto con un comando en esta enumeración.
 //

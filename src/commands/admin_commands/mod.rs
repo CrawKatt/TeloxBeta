@@ -7,3 +7,10 @@ pub mod lib;    /*mod*|*use*/  pub use lib::*;
 
 pub use crate::utils::*;
 pub use crate::buttons::*;
+pub use crate::database::*;
+pub use crate::testing::*;
+pub use crate::handler::*;
+pub use crate::funciones::*;
+pub use crate::fun_commands::*;
+pub use crate::commands::*;
+pub use crate::testing::*;
