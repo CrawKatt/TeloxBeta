@@ -9,7 +9,7 @@ edition = "2021"
 teloxide = { version = "0.11.1", features = ["macros", "auto-send"] }
 teloxide-core = "0.8.0"
 log = "0.4.17"
-pretty_env_logger = "0.4.0"
+pretty_env_logger = "0.5.0"
 tokio = { version =  "1.21.2", features = ["full"] }
 dotenv= "0.15.0"
 dotenv_codegen = "0.15.0"
@@ -21,3 +21,5 @@ reqwest = "0.11.13"
 futures = "0.3.25"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.93"
+ron = "0.8.0"
+rusqlite = "0.28.0"

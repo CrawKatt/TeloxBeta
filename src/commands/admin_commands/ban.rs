@@ -11,11 +11,10 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                 from
             } else {
                 // Send an error message and delete it after 5 seconds.
-                let error_msg = bot.send_message(msg.chat.id, "❌ No se pudo obtener el usuario").reply_to_message_id(msg.id).await?;
-                let error_msg_id = error_msg.id;
+                let err = bot.send_message(msg.chat.id, "❌ No se pudo obtener el usuario").reply_to_message_id(msg.id).await?;
 
                 sleep(Duration::from_secs(5)).await;
-                bot.delete_message(msg.chat.id, error_msg_id).await?;
+                bot.delete_message(msg.chat.id, err.id).await?;
                 bot.delete_message(msg.chat.id, msg.id).await?;
 
                 return Ok(());

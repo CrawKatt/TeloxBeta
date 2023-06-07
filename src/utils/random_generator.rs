@@ -67,7 +67,6 @@ pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<(
 
                 return Ok(());
             }
-
             let mut rng: StdRng = SeedableRng::from_entropy();
 
             // generate a random number from 0 to 14

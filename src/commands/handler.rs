@@ -21,6 +21,17 @@ pub enum Command {
     Ownership,  Referencias,  Borrowing,  Modulos,        Shadowing,  Slices,     String,      Iterators,     Scopes,      SpamOn,
     Pat,        Meme,         Help,       Novedades,      Info,       About,      Test,        List,          Testing,     SpamOff,
 }
+/*
+impl Command {
+    pub fn is_ban(&self) -> bool {
+        matches!(self, Command::Ban)
+    }
+
+    pub fn is_unban(&self) -> bool {
+        matches!(self, Command::Unban)
+    }
+}
+*/
 
 // Función de acción para cada comando.
 // Action function for each command.
@@ -57,7 +68,7 @@ pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> 
     Ok(())
 }
 
-pub async fn message_handler(bot: Bot, msg: Message, me: Me,) -> Result<(), Box<dyn Error + Send + Sync>> {
+pub async fn message_handler(bot: Bot, msg: Message, me: Me) -> Result<(), Box<dyn Error + Send + Sync>> {
 
     if let Some(text) = msg.text() {
         match BotCommands::parse(text, me.username()) {
@@ -81,7 +92,6 @@ pub async fn message_handler(bot: Bot, msg: Message, me: Me,) -> Result<(), Box<
                 }
 
                 test_json(bot.clone(), msg.clone()).await?;
-                println!("{:#?}", msg);
 
                 handle_command(bot, msg.clone()).await?;
             }

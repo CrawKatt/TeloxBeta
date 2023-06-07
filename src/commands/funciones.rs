@@ -70,10 +70,6 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
 
     bot.send_message(msg.chat.id, text).await?;
     bot.delete_message(msg.chat.id, msg.id).await?;
-    println!("JSON Info: \n{:#?}", msg);
 
     Ok(())
 }
-
-
-
