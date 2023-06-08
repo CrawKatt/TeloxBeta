@@ -35,8 +35,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // Experimental
 
     let handler = dptree::entry().inspect(|u:Update| {
-        //println!("{u:#?}");
-        log::info!("{u:?}");
+        println!("{u:#?}");
+        //log::info!("{u:?}");
     })
         .branch(Update::filter_message().endpoint(message_handler))
         .branch(Update::filter_callback_query().endpoint(callback_handler))

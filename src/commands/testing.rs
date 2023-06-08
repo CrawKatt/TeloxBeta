@@ -23,7 +23,7 @@ pub async fn read_database_file() -> ResponseResult<String> {
 pub async fn test_json(bot : Bot, msg: Message) -> ResponseResult<()> {
     if let Some(user) = msg.from() {
         let username = match user.username {
-            Some(ref username) => format!("@{}", username),
+            Some(ref username) => format!("@{username}"),
             None => user.first_name.clone(),
         };
 
@@ -85,7 +85,7 @@ pub async fn test_json(bot : Bot, msg: Message) -> ResponseResult<()> {
         let json_str = match serde_json::to_string_pretty(&users) {
             Ok(json) => json,
             Err(e) => {
-                eprintln!("Error al convertir a JSON: {}", e);
+                eprintln!("Error al convertir a JSON: {e}");
                 // Devolver un valor predeterminado o hacer otra cosa en caso de error
                 String::new()
             }
@@ -94,7 +94,7 @@ pub async fn test_json(bot : Bot, msg: Message) -> ResponseResult<()> {
         let result = fs::write("database.json", json_str);
         match result {
             Ok(()) => println!("User saved to database."),
-            Err(e) => println!("Error writing to database: {:?}", e),
+            Err(e) => println!("Error writing to database: {e:?}"),
         }
 
         let Some(db_username) = db_username else {
@@ -103,7 +103,7 @@ pub async fn test_json(bot : Bot, msg: Message) -> ResponseResult<()> {
 
         if username != db_username {
             bot.send_message(msg.chat.id, format!(
-                "El usuario {} cambió su nombre de usuario de {} a {}.", username, db_username, username))
+                "El usuario {username} cambió su nombre de usuario de {} a {}.", db_username, username))
                 .parse_mode
                 (ParseMode::Html)
                 .await?;
@@ -130,12 +130,10 @@ pub async fn test_json(bot : Bot, msg: Message) -> ResponseResult<()> {
     Ok(())
 }
 
-
-
 pub async fn testing(bot : Bot, msg : Message) -> ResponseResult<()> {
 
     let new_chat_members = msg.new_chat_members().unwrap();
-    bot.send_message(msg.chat.id, format!("New chat members: {:?}", new_chat_members)).await?;
+    bot.send_message(msg.chat.id, format!("New chat members: {new_chat_members:?}")).await?;
 
     Ok(())
 }
@@ -165,7 +163,7 @@ pub async fn list_json(bot: Bot, msg: Message) -> ResponseResult<()> {
         };
 
         let full_name = match (user_data.first_name, user_data.last_name) {
-            (Some(first_name), Some(last_name)) => format!("{} {}", first_name, last_name),
+            (Some(first_name), Some(last_name)) => format!("{first_name} {last_name}"),
             (Some(first_name), None) => first_name,
             (None, Some(last_name)) => last_name,
             (None, None) => String::from(""),
@@ -214,7 +212,17 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
                     _ => None,
                 }
             });
-
+/*
+        let user_id = user_data_vec.iter()
+            .filter_map(|data| {
+                // Filtramos los elementos en base a la condición de username
+                data.username.as_ref().filter(|name| name == &username)
+                    // Mapeamos el resultado a un string con el ID si la condición se cumple
+                    .map(|_| data.id.to_string())
+            })
+            // Obtenemos el primer elemento que cumple la condición, o None si no hay ninguno
+            .next();
+*/
         // Enviar el user_id como respuesta al usuario
         if let Some(user_id) = user_id {
 
@@ -267,6 +275,7 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
             } else if message.contains("/mute") {
 
                 let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
+
                 let ChatMemberStatus::Restricted { .. } = chat_member.status() else {
                     bot.restrict_chat_member(msg.chat.id, UserId(user_id), ChatPermissions::empty()).await?;
                     mute_animation_generator(bot.clone(), msg.clone()).await?;

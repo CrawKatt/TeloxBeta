@@ -83,17 +83,17 @@ pub async fn message_handler(bot: Bot, msg: Message, me: Me) -> Result<(), Box<d
             Ok(Command::Meme) => send_random_meme(bot, msg).await?,         Ok(Command::Pat)    => send_pat(bot, msg).await?,
 
             // Comandos de Anti_Spam (unsafe maldito LOL) >> Anti_Spam Commands (This is cursed LOL)
-            Ok(Command::SpamOn) => handle_command(bot.clone(), msg.clone()).await?,
-            Ok(Command::SpamOff) => handle_command(bot.clone(), msg.clone()).await?,
+            //Ok(Command::SpamOn) => handle_command(bot.clone(), msg.clone()).await?,
+            //Ok(Command::SpamOff) => handle_command(bot.clone(), msg.clone()).await?,
 
             Err(_) => {
-                if text.contains("https://t.me") {
-                    anti_spam(bot.clone(), msg.clone()).await?;
-                }
+                //if text.contains("https://t.me") {
+                    //anti_spam(bot.clone(), msg.clone()).await?;
+                //}
 
                 test_json(bot.clone(), msg.clone()).await?;
 
-                handle_command(bot, msg.clone()).await?;
+                //handle_command(bot, msg.clone()).await?;
             }
 
             _ => action(bot, msg, Command::Variables).await?,
@@ -104,7 +104,7 @@ pub async fn message_handler(bot: Bot, msg: Message, me: Me) -> Result<(), Box<d
 
     Ok(())
 }
-
+/*
 async fn handle_command(bot: Bot, message: Message) -> ResponseResult<()> {
     if let Some(text) = message.text() {
         match text {
@@ -121,3 +121,4 @@ async fn handle_command(bot: Bot, message: Message) -> ResponseResult<()> {
     }
     Ok(())
 }
+*/

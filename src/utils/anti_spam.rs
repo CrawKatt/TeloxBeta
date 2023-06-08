@@ -1,3 +1,4 @@
+/*
 use crate::admin_commands::*;
 
 pub static mut ANTI_SPAM_ENABLED: bool = true;
@@ -28,3 +29,4 @@ pub async fn anti_spam(bot: Bot, msg: Message) -> ResponseResult<()> {
 
     Ok(())
 }
+*/

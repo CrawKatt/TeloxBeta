@@ -1,5 +1,7 @@
 use crate::admin_commands::*;
 
+//const VARIABLES: &str = include_str!("funciones_utils/variables.md");
+
 // enum for the examples of the bot
 enum Ejemplo {
     About,      Arrays,     Async,      Borrowing,   Closures,   Condicionales,  Constantes,  Enum,
