@@ -120,10 +120,7 @@ pub async fn get_user_id_by_arguments_for_unmute(bot: Bot, msg: Message) -> Resp
             return Ok(());
         };
 
-        let is_admin_or_owner = bot.get_chat_member(msg.chat.id, from.id)
-            .await?
-            .is_admin_or_owner();
-
+        let is_admin_or_owner = bot.get_chat_member(msg.chat.id, from.id).await?.is_admin_or_owner();
         let true = is_admin_or_owner else {
             bot.send_message(msg.chat.id, "❌ No tienes permisos para usar este comando").await?;
             bot.delete_message(msg.chat.id, msg.id).await?;

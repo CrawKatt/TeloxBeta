@@ -2,7 +2,7 @@ Los structs son tipos de datos personalizados que nos permiten agrupar diferente
 
 Ejemplo en Rust:
 
-```
+```rust
 struct Rectángulo {
    ancho: u32,
    alto: u32,

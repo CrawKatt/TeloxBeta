@@ -1,7 +1,7 @@
-Las funciones asincrónicas nos permiten ejecutar código de forma asincrónica\.
+Las funciones asincrónicas nos permiten ejecutar código de forma asíncrona\.
 
 Ejemplo en Rust: 
-```
+```rust
 async fn saluda() {
     println!("¡Hola, mundo!");
 }

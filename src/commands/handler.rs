@@ -20,6 +20,7 @@ pub enum Command {
     Return,     Metodos,      Closures,   Struct,         Traits,     Option,     Result,      Generics,      Lifetimes,   Async,
     Ownership,  Referencias,  Borrowing,  Modulos,        Shadowing,  Slices,     String,      Iterators,     Scopes,      SpamOn,
     Pat,        Meme,         Help,       Novedades,      Info,       About,      Test,        List,          Testing,     SpamOff,
+    IfLet,
 }
 /*
 impl Command {
@@ -57,6 +58,7 @@ pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> 
         Command::Shadowing    => ejemplos(bot, msg).await?, Command::Slices        => ejemplos(bot, msg).await?,
         Command::String       => ejemplos(bot, msg).await?, Command::Iterators     => ejemplos(bot, msg).await?,
         Command::Scopes       => ejemplos(bot, msg).await?, Command::Async         => ejemplos(bot, msg).await?,
+        Command::IfLet        => ejemplos(bot, msg).await?,
 
         // Comandos de Acerca del Bot y Novedades
         // About and Updates Commands

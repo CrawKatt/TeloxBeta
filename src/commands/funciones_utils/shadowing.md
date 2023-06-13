@@ -2,7 +2,7 @@ El Shadowing nos permite reutilizar el nombre de una variable con un nuevo valor
 
 Ejemplo en Rust:
 
-```
+```rust
 fn main() { 
     let x = 5; 
 

@@ -1,8 +1,8 @@
-Las cadenas de caracteres son una estructura de datos que nos permite almacenar texto\.
+Los Strings son una cadena de carácteres que representan texto\.
 
 Ejemplo en Rust:
 
-```
+```rust
 fn main() { 
    let mut texto = String::new(); 
 

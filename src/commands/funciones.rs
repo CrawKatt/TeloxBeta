@@ -8,7 +8,7 @@ enum Ejemplo {
     For,        Funciones,  Generics,   Iterators,   Lifetimes,  Loop,           Macros,      Match,
     Metodos,    Modulos,    Novedades,  Operadores,  Option,     Ownership,      Result,      Return,
     Scopes,     Shadowing,  Slices,     String,      Struct,     TiposDeDatos,   Traits,      Tuplas,
-    Variables,  Vectores,   While,
+    Variables,  Vectores,   While,      IfLet
 }
 
 // examples of the use of the bot
@@ -32,10 +32,10 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
         Some("/slices")         => Ejemplo::Slices,        Some("/string")     => Ejemplo::String,
         Some("/struct")         => Ejemplo::Struct,        Some("/traits")     => Ejemplo::Traits,
         Some("/tuplas")         => Ejemplo::Tuplas,        Some("/vectores")   => Ejemplo::Vectores,
-        Some("/while")          => Ejemplo::While,
+        Some("/while")          => Ejemplo::While,         Some("/iflet")      => Ejemplo::IfLet,
         _ => {
             if let Some(text) = msg.text() {
-                let ok =bot.send_message(msg.chat.id, format!("Comando desconocido `{:#?}`", text)).await?;
+                let ok = bot.send_message(msg.chat.id, format!("Comando desconocido `{:#?}`", text)).await?;
                 sleep(Duration::from_secs(5)).await;
                 bot.delete_message(msg.chat.id, ok.id).await?;
 
@@ -67,10 +67,11 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
         Ejemplo::Slices         => include_str!("funciones_utils/slices.md"),         Ejemplo::String      => include_str!("funciones_utils/string.md"),
         Ejemplo::Struct         => include_str!("funciones_utils/struct.md"),         Ejemplo::Traits      => include_str!("funciones_utils/traits.md"),
         Ejemplo::Tuplas         => include_str!("funciones_utils/tuplas.md"),         Ejemplo::Vectores    => include_str!("funciones_utils/vectores.md"),
-        Ejemplo::While          => include_str!("funciones_utils/while.md"),
+        Ejemplo::While          => include_str!("funciones_utils/while.md"),          Ejemplo::IfLet       => include_str!("funciones_utils/if_let.md"),
     };
 
     bot.send_message(msg.chat.id, text).await?;
+    sleep(Duration::from_secs(5)).await;
     bot.delete_message(msg.chat.id, msg.id).await?;
 
     Ok(())

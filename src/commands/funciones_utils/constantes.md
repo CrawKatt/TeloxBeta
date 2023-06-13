@@ -2,4 +2,6 @@
 
 Ejemplo en Rust: 
 
-`const MI_CONSTANTE : i32 = 10;`
+```rust
+const MI_CONSTANTE : i32 = 10;
+```

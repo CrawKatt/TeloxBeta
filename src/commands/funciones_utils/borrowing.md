@@ -1,10 +1,8 @@
-En Rust, el Borrowing es una característica que permite prestar una referencia a una variable en lugar de tomar la propiedad de ella\.
-Esto significa que puedes utilizar la variable sin tener que transferir la propiedad de la misma,
-lo que te permite usarla tanto dentro como fuera de la función donde la prestaste\.
+En Rust, el Borrowing es una característica que permite prestar una referencia a una variable en lugar de tomar la propiedad de ella\. Esto significa que puedes utilizar la variable sin tener que transferir la propiedad de la misma, lo que te permite usarla tanto dentro como fuera de la función donde la prestaste\.
 
 Ejemplo en Rust:
 
-```
+```rust
 fn main() {
    let mut hola = String::from("Hola");
    cambiar(&mut hola);
