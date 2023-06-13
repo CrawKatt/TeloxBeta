@@ -1,5 +1,23 @@
 use crate::admin_commands::*;
 
+pub trait AdminOrOwner {
+    fn is_admin(&self) -> bool;
+    fn is_owner(&self) -> bool;
+    fn is_admin_or_owner(&self) -> bool;
+}
+
+impl AdminOrOwner for ChatMember {
+    fn is_admin(&self) -> bool {
+        self.status() == ChatMemberStatus::Administrator
+    }
+    fn is_owner(&self) -> bool {
+        self.status() == ChatMemberStatus::Owner
+    }
+    fn is_admin_or_owner(&self) -> bool {
+        self.is_admin() || self.is_owner()
+    }
+}
+
 pub async fn unmute_user(bot: Bot, msg: Message) -> ResponseResult<()> {
     match msg.reply_to_message() {
         Some(replied) => {
@@ -17,17 +35,16 @@ pub async fn unmute_user(bot: Bot, msg: Message) -> ResponseResult<()> {
             };
 
             if let Some(from) = msg.from() {
-
                 let username_user = match user.clone().username {
                     Some(username) => username,
                     None => String::new(),
                 };
 
-                let chat_member = bot.get_chat_member(msg.chat.id, from.id).await?;
-                let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
+                let admin = bot.get_chat_member(msg.chat.id, from.id)
+                    .await?
+                    .is_admin_or_owner();
 
-                if is_admin_or_owner {
-
+                if admin {
                     let chat_member = bot.get_chat_member(msg.chat.id, user.id).await?.can_send_messages();
                         if !chat_member {
                             bot.restrict_chat_member(msg.chat.id, user.id, ChatPermissions::all()).await?;
@@ -99,12 +116,13 @@ pub async fn get_user_id_by_arguments_for_unmute(bot: Bot, msg: Message) -> Resp
     // if arguments is String, then use this
     if arguments.contains('@') {
 
-        let Some(from) = msg.from()  else {
+        let Some(from) = msg.from() else {
             return Ok(());
         };
 
-        let chat_member = bot.get_chat_member(msg.chat.id, from.id).await?;
-        let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
+        let is_admin_or_owner = bot.get_chat_member(msg.chat.id, from.id)
+            .await?
+            .is_admin_or_owner();
 
         let true = is_admin_or_owner else {
             bot.send_message(msg.chat.id, "❌ No tienes permisos para usar este comando").await?;
@@ -133,9 +151,10 @@ pub async fn get_user_id_by_arguments_for_unmute(bot: Bot, msg: Message) -> Resp
             return Ok(());
         };
 
-        let chat_member = bot.get_chat_member(msg.chat.id, from.id).await?;
         // check if the user is an admin or owner of the chat
-        let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
+        let is_admin_or_owner = bot.get_chat_member(msg.chat.id, from.id)
+            .await?
+            .is_admin_or_owner(); // Use Custom Method is_admin_or_owner()
         // If the user is an admin or owner, ban the target user and send a ban message.
 
         let false = !is_admin_or_owner else {

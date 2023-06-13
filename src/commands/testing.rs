@@ -103,7 +103,7 @@ pub async fn test_json(bot : Bot, msg: Message) -> ResponseResult<()> {
 
         if username != db_username {
             bot.send_message(msg.chat.id, format!(
-                "El usuario {username} cambió su nombre de usuario de {} a {}.", db_username, username))
+                "El usuario {username} cambió su nombre de usuario de {db_username} a {username}."))
                 .parse_mode
                 (ParseMode::Html)
                 .await?;

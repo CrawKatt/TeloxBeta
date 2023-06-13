@@ -1,4 +1,3 @@
-use teloxide::types::Message;
 //type Bot = DefaultParseMode<teloxide::Bot>;
 // Import the commands and database modules
 use crate::commands::*;
@@ -6,6 +5,22 @@ pub mod database;
 pub mod commands;
 pub mod utils;
 pub mod buttons;
+
+pub trait UnwrapOrErr<T> {
+    fn unwrap_or_exit(self, msg: &str) -> T;
+}
+
+impl <T: Default> UnwrapOrErr<T> for Option<T> {
+    fn unwrap_or_exit(self, msg: &str) -> T {
+        match self {
+            Some(val) => val,
+            None => {
+                eprintln!("{}", msg);
+                Default::default()
+            }
+        }
+    }
+}
 
 // Main function that starts the bot
 #[tokio::main]
@@ -40,63 +55,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     })
         .branch(Update::filter_message().endpoint(message_handler))
         .branch(Update::filter_callback_query().endpoint(callback_handler))
-        .branch(Update::filter_inline_query().endpoint(inline_query_handler))
-        .branch(Update::filter_message()
-            .branch(Message::filter_new_chat_members().endpoint(
-                |bot:Bot, msg:Message| async move {
-                    let user = msg.new_chat_members().expect("REASON").get(0).unwrap();
-
-                    bot.send_message(msg.chat.id, format!("Test {:#?}", user))
-                        .reply_to_message_id(msg.id)
-                        .await?;
-
-                    Ok(())
-                },
-            ))
-        );
-
-    // Funcional a medias (no funcionan los comandos)
-/*
-    let handler = dptree::entry()
-        .map_async(|u: Update| async move {
-            println!("{u:#?}");
-            respond(())
-        })
-        .branch(Update::filter_message().endpoint(|bot: teloxide::Bot, msg: Message| async move {
-            let user = msg.new_chat_members().expect("REASON").get(0).unwrap();
-
-            bot.send_message(msg.chat.id, format!("Bienvenido al grupo @{}\\!", user.username.clone().unwrap()))
-                .reply_to_message_id(msg.id)
-                .await?;
-
-            respond(())
-        }))
-        .branch(Update::filter_callback_query().endpoint(|bot: Bot, query: CallbackQuery| async move {
-            // Lógica para manejar los CallbackQuery aquí
-            respond(())
-        }))
-        .branch(Update::filter_inline_query().endpoint(|bot: Bot, query: InlineQuery| async move {
-            // Lógica para manejar las InlineQuery aquí
-            respond(())
-        }));
-
-*/
-
-    // No funciona (this is cursed LOL)
-/*
-    let handler = Update::filter_message().branch(
-        Message::filter_new_chat_members().endpoint(
-            |bot:teloxide::Bot, msg:Message| async move {
-                let user = msg.new_chat_members().expect("REASON").get(0).unwrap();
-
-                bot.send_message(msg.chat.id, format!("Bienvenido al grupo @{}!", user.username.clone().unwrap()))
-                    .reply_to_message_id(msg.id)
-                    .await?;
-                respond(())
-            },
-        )
-    );
-*/
+        .branch(Update::filter_inline_query().endpoint(inline_query_handler));
 
     // Funcional a medias (no funcionan los comandos)
 /*
@@ -134,7 +93,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .branch(Update::filter_callback_query().endpoint(callback_handler))
         .branch(Update::filter_inline_query().endpoint(inline_query_handler));
 */
-
     Dispatcher::builder(bot.clone(), handler)
         .enable_ctrlc_handler()
         .build()

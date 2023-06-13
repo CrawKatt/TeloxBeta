@@ -23,9 +23,7 @@ pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                     None => String::new(),
                 };
 
-                let chat_member = bot.get_chat_member(msg.chat.id, from.id).await?;
-                let is_admin_or_owner = chat_member.status().is_administrator() || chat_member.status().is_owner();
-
+                let is_admin_or_owner = bot.get_chat_member(msg.chat.id, from.id).await?.is_admin_or_owner();
                 if is_admin_or_owner {
 
                     let chat_member = bot.get_chat_member(msg.chat.id, user.id).await?;
@@ -56,7 +54,7 @@ pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                     }
 
                 } else {
-                    let err = bot.send_message(msg.chat.id, "❌ No tienes permisos para remover el ban a un usuario.").await?;
+                    let err = bot.send_message(msg.chat.id, "❌ No tienes permisos para remover el ban a un usuario\\.").await?;
                     sleep(Duration::from_secs(5)).await;
                     bot.delete_message(msg.chat.id, err.id).await?;
                 }
@@ -103,9 +101,7 @@ pub async fn get_user_id_by_arguments_for_unban(bot: Bot, msg: Message) -> Respo
             return Ok(());
         };
 
-        let chat_member = bot.get_chat_member(msg.chat.id, from.id).await?;
-        let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
-
+        let is_admin_or_owner = bot.get_chat_member(msg.chat.id, from.id).await?.is_admin_or_owner();
         let true = is_admin_or_owner else {
             bot.send_message(msg.chat.id, "❌ No tienes permisos para usar este comando").await?;
             bot.delete_message(msg.chat.id, msg.id).await?;
@@ -133,10 +129,13 @@ pub async fn get_user_id_by_arguments_for_unban(bot: Bot, msg: Message) -> Respo
             return Ok(());
         };
 
-        let chat_member = bot.get_chat_member(msg.chat.id, from.id).await?;
+        //let chat_member = bot.get_chat_member(msg.chat.id, from.id).await?;
         // check if the user is an admin or owner of the chat
-        let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
+        //let is_admin_or_owner = chat_member.status() == ChatMemberStatus::Administrator || chat_member.status() == ChatMemberStatus::Owner;
         // If the user is an admin or owner, ban the target user and send a ban message.
+        let is_admin_or_owner = bot.get_chat_member(msg.chat.id, from.id)
+            .await?
+            .is_admin_or_owner();
 
         let false = !is_admin_or_owner else {
             let err = bot.send_message(msg.chat.id, "❌ No tienes permisos para usar este comando").await?;

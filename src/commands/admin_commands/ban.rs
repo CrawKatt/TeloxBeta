@@ -28,10 +28,9 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                     None => String::new(),
                 };
 
-                let chat_member = bot.get_chat_member(msg.chat.id, from.id).await?;
                 // If the user is an admin or owner, ban the user and send a message to the chat.
                 // Also send a random GIF or MP4 file from the "./assets/ban/" folder.
-                let is_admin_or_owner = chat_member.status().is_administrator() || chat_member.status().is_owner();
+                let is_admin_or_owner = bot.get_chat_member(msg.chat.id, from.id).await?.is_admin_or_owner();
 
                 if is_admin_or_owner {
 
