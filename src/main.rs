@@ -99,8 +99,5 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .dispatch()
         .await;
 
-    Command::repl(bot,action).await;
-
     Ok(())
 }
-

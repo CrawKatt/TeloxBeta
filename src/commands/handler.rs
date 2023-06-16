@@ -79,7 +79,7 @@ pub async fn message_handler(bot: Bot, msg: Message, me: Me) -> Result<(), Box<d
             // Comandos de Administración                           >>>>    Admin Commands
             Ok(Command::Ban)  => ban_user(bot, msg).await?,                 Ok(Command::Unban)  => unban_user(bot, msg).await?,
             Ok(Command::Mute) => mute_user_admin(bot, msg).await?,          Ok(Command::Unmute) => unmute_user(bot, msg).await?,
-            Ok(Command::List) => list_json(bot, msg).await?,                Ok(Command::Info)   => get_chat_member(bot, msg).await?,
+            Ok(Command::List) => list_json(bot, msg).await?,     Ok(Command::Info)   => get_chat_member(bot, msg).await?,
 
             // Comandos de Diversión >> Fun Commands
             Ok(Command::Meme) => send_random_meme(bot, msg).await?,         Ok(Command::Pat)    => send_pat(bot, msg).await?,
@@ -93,7 +93,7 @@ pub async fn message_handler(bot: Bot, msg: Message, me: Me) -> Result<(), Box<d
                     //anti_spam(bot.clone(), msg.clone()).await?;
                 //}
 
-                test_json(bot.clone(), msg.clone()).await?;
+                test_json_two(bot.clone(), msg.clone()).await?;
 
                 //handle_command(bot, msg.clone()).await?;
             }
