@@ -1,6 +1,7 @@
 use crate::admin_commands::*;
 
 pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<()> {
+    println!("Test Generator");
 
     let text = if let Some(text) = msg.text() {
         text
