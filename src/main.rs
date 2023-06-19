@@ -7,16 +7,31 @@ pub mod utils;
 pub mod buttons;
 
 pub trait UnwrapOrErr<T> {
-    fn unwrap_or_exit(self, msg: &str) -> T;
+    fn unwrap_or_exit(self, msg: &str) -> ResponseResult<T>;
 }
 
-impl <T: Default> UnwrapOrErr<T> for Option<T> {
-    fn unwrap_or_exit(self, msg: &str) -> T {
+#[derive(Debug)]
+pub struct ResponseError {
+    pub message: String,
+}
+
+impl ResponseError {
+    fn new(message: &str) -> ResponseError {
+        ResponseError {
+            message: message.to_string(),
+        }
+    }
+}
+
+type ResponseResult<T> = Result<T, ResponseError>;
+
+impl<T: Default> UnwrapOrErr<T> for Option<T> {
+    fn unwrap_or_exit(self, msg: &str) -> ResponseResult<T> {
         match self {
-            Some(val) => val,
+            Some(val) => Ok(val),
             None => {
                 eprintln!("{}", msg);
-                Default::default()
+                Err(ResponseError::new("Error"))
             }
         }
     }
@@ -25,6 +40,14 @@ impl <T: Default> UnwrapOrErr<T> for Option<T> {
 // Main function that starts the bot
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+
+    let some_value : Option<i32> = Some(42);
+    let unwrapped = some_value.unwrap_or_exit("Error");
+    println!("unwrapped: {:?}", unwrapped);
+
+    let none_value : Option<i32> = None;
+    let unwrapped_default = none_value.unwrap_or_exit("Error");
+    println!("unwrapped_default: {:?}", unwrapped_default);
 
     // Initialize the logging environment for Teloxide
     pretty_env_logger::init();
@@ -46,58 +69,61 @@ async fn main() -> Result<(), Box<dyn Error>> {
 \n");
 
     let bot = teloxide::Bot::from_env().parse_mode(MarkdownV2);
-
-    // Experimental
-
     let handler = dptree::entry().inspect(|u:Update| {
         println!("{u:#?}");
         //log::info!("{u:?}");
     })
         .branch(Update::filter_message().endpoint(message_handler))
         .branch(Update::filter_callback_query().endpoint(callback_handler))
+        .branch(Update::filter_chat_member().endpoint(chat_member_handler))
         .branch(Update::filter_inline_query().endpoint(inline_query_handler));
 
-    // Funcional a medias (no funcionan los comandos)
-/*
-    let handler = Update::filter_message().branch(
-        Message::filter_new_chat_members().endpoint(
-            |bot:Bot, msg:Message| async move {
-                let user = msg.new_chat_members().expect("REASON").get(0).unwrap();
-
-                bot.send_message(msg.chat.id, format!("Bienvenido al grupo @{}\\!", user.username.clone().unwrap()))
-                    .reply_to_message_id(msg.id)
-                    .await?;
-                respond(())
-            },
-        )
-    );
-
-    Dispatcher::builder(bot, handler)
-        .enable_ctrlc_handler()
-        .build()
-        .dispatch()
-        .await;
-*/
-/*
-    // Funcional
-    // Create a new `Bot` instance from environment variables and set the message parsing mode to MarkdownV2
-    let bot = teloxide::Bot::from_env().parse_mode(MarkdownV2);
-
-    // Call the `repl` function of the `Command` struct with the bot instance and the `action` function
-    let handler = dptree::entry().map_async(|u:Update| async move {
-
-        println!("{u:#?}");
-        respond(())
-    })
-        .branch(Update::filter_message().endpoint(message_handler))
-        .branch(Update::filter_callback_query().endpoint(callback_handler))
-        .branch(Update::filter_inline_query().endpoint(inline_query_handler));
-*/
     Dispatcher::builder(bot.clone(), handler)
         .enable_ctrlc_handler()
         .build()
         .dispatch()
         .await;
+
+    Ok(())
+}
+
+async fn chat_member_handler(bot:Bot, chat_member:ChatMemberUpdated) -> Result<(), Box<dyn Error + Send + Sync>> {
+    let telegram_group_name = chat_member.chat.title().unwrap_or("");
+
+    let first_name = chat_member.clone().from.first_name;
+    let username = if let Some(name) = chat_member.from.username {
+        name
+    } else if first_name == chat_member.from.first_name {
+        first_name.clone()
+    } else {
+        return Err("Error: Username or first name not found".into());
+    };
+
+    //let username = chat_member.from.username.unwrap();
+    let member = bot.get_chat_member(chat_member.chat.id, chat_member.new_chat_member.user.id).await?;
+    let member_status = member.status();
+
+    if let ChatMemberStatus::Left = member_status {
+
+        if username == first_name {
+            bot.send_message(chat_member.chat.id, format!("Hasta pronto {username}!"))
+                .parse_mode(ParseMode::Html)
+                .await?;
+        } else {
+            bot.send_message(chat_member.chat.id, format!("Hasta pronto @{username}!"))
+                .parse_mode(ParseMode::Html)
+                .await?;
+        }
+
+    } else if username == first_name {
+        bot.send_message(chat_member.chat.id, format!("Bienvenido a {telegram_group_name} {username}!"))
+            .parse_mode(ParseMode::Html)
+            .await?;
+    } else {
+        bot.send_message(chat_member.chat.id, format!("Bienvenido a {telegram_group_name} @{username}!"))
+            .parse_mode(ParseMode::Html)
+            .await?;
+    }
 
     Ok(())
 }
