@@ -41,14 +41,6 @@ impl<T: Default> UnwrapOrErr<T> for Option<T> {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
 
-    let some_value : Option<i32> = Some(42);
-    let unwrapped = some_value.unwrap_or_exit("Error");
-    println!("unwrapped: {:?}", unwrapped);
-
-    let none_value : Option<i32> = None;
-    let unwrapped_default = none_value.unwrap_or_exit("Error");
-    println!("unwrapped_default: {:?}", unwrapped_default);
-
     // Initialize the logging environment for Teloxide
     pretty_env_logger::init();
     log::info!("Iniciando Bot...");
