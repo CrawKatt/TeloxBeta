@@ -75,11 +75,7 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
     };
 
     let true = username.contains('@') else {
-        let err = bot.send_message(msg.chat.id, "Debes proporcionar un username").await?;
-        sleep(Duration::from_secs(5)).await;
-        bot.delete_message(msg.chat.id, err.id).await?;
-        println!("Debes proporcionar un username {username}");
-
+        no_username_found_err(bot, msg.clone(), username).await?;
         return Ok(());
     };
 
@@ -101,6 +97,20 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
             }
         });
     // Enviar el user_id como respuesta al usuario
+    action_handler(bot, msg.clone(), username, user_id).await?;
+
+    Ok(())
+
+    /*
+        let user_id = user_data_vec.iter()
+            .filter_map(|data| {
+                data.username.as_ref().filter(|name| name == &username)
+                    .map(|_| data.id.to_string())
+            }).next();
+*/
+}
+
+pub async fn action_handler(bot: Bot, msg: Message, username: &str, user_id :Option<String>) -> ResponseResult<()> {
     match user_id {
         Some(user_id) => {
             let Ok(user_id) = user_id.parse::<u64>() else {
@@ -123,25 +133,11 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
         }
 
         None => {
-            let err = bot.send_message(msg.chat.id, format!("No se encontró ningún usuario con el username {username}"))
-                .parse_mode(ParseMode::Html)
-                .await?;
-
-            sleep(Duration::from_secs(5)).await;
-            bot.delete_message(msg.chat.id, err.id).await?;
-            println!("No se encontró ningún usuario con el username {username}");
+            no_username_found_err(bot, msg.clone(), username).await?;
         }
     };
 
     Ok(())
-
-    /*
-        let user_id = user_data_vec.iter()
-            .filter_map(|data| {
-                data.username.as_ref().filter(|name| name == &username)
-                    .map(|_| data.id.to_string())
-            }).next();
-*/
 }
 
 pub async fn unban_for_testing(bot: Bot, msg: Message, username: &str, user_id: u64) -> ResponseResult<()> {
@@ -300,16 +296,9 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
     Ok(())
 }
 
-pub async fn no_admin_err(bot: Bot, msg: Message) -> ResponseResult<()> {
-    let err = bot.send_message(msg.chat.id, "❌ No tienes permisos para usar este comando").await?;
-
-    sleep(Duration::from_secs(5)).await;
-    bot.delete_message(msg.chat.id, err.id).await?;
-    bot.delete_message(msg.chat.id, msg.id).await?;
-    println!("❌ No tienes permisos para usar este comando {msg:#?}");
-
-    Ok(())
-}
+/* ////////////||\\\\\\\\\\\\  */
+/* //     Error Functions   \\ */
+/* \\\\\\\\\\\\||///////////// */
 
 pub async fn already_banned(bot: Bot,msg: Message, user_id: u64, username: String) -> ResponseResult<()> {
     let err = bot.send_message(msg.chat.id, format!("❌ @{username} [<code>{user_id}</code>] ya está baneado"))
@@ -322,6 +311,42 @@ pub async fn already_banned(bot: Bot,msg: Message, user_id: u64, username: Strin
 
     Ok(())
 }
+
+pub async fn no_admin_err(bot: Bot, msg: Message) -> ResponseResult<()> {
+    let err = bot.send_message(msg.chat.id, "❌ No tienes permisos para usar este comando").await?;
+
+    sleep(Duration::from_secs(5)).await;
+    bot.delete_message(msg.chat.id, err.id).await?;
+    bot.delete_message(msg.chat.id, msg.id).await?;
+    println!("❌ No tienes permisos para usar este comando {msg:#?}");
+
+    Ok(())
+}
+
+pub async fn no_username_found_err(bot: Bot, msg: Message, username: &str) ->ResponseResult<()> {
+    let err = bot.send_message(msg.chat.id, format!("No se encontró ningún usuario con el username {username}"))
+        .parse_mode(ParseMode::Html)
+        .await?;
+
+    sleep(Duration::from_secs(5)).await;
+    bot.delete_message(msg.chat.id, err.id).await?;
+
+    Ok(())
+}
+
+pub async fn error_message_for_user_id(bot : Bot, msg : Message) -> ResponseResult<()> {
+    let err = bot.send_message(msg.chat.id, "❌ El ID o @Username proporcionado no es válido, considera reenviar un mensaje al bot para hacer un ban por ID").await?;
+
+    sleep(Duration::from_secs(5)).await;
+    bot.delete_message(msg.chat.id, err.id).await?;
+    bot.delete_message(msg.chat.id, msg.id).await?;
+
+    Ok(())
+}
+
+/* ////////////||\\\\\\\\\\\\  */
+/* //   Ban For Arguments   \\ */
+/* \\\\\\\\\\\\||///////////// */
 
 pub async fn ban_for_arguments(bot:Bot, msg:Message, user_id: u64, username: String) -> ResponseResult<()> {
     bot.ban_chat_member(msg.chat.id, UserId(user_id)).await?;
@@ -370,16 +395,6 @@ pub async fn ban_for_arguments(bot:Bot, msg:Message, user_id: u64, username: Str
         }
 
     };
-
-    Ok(())
-}
-
-pub async fn error_message_for_user_id(bot : Bot, msg : Message) -> ResponseResult<()> {
-    let err = bot.send_message(msg.chat.id, "❌ El ID o @Username proporcionado no es válido, considera reenviar un mensaje al bot para hacer un ban por ID ERR").await?;
-
-    sleep(Duration::from_secs(5)).await;
-    bot.delete_message(msg.chat.id, err.id).await?;
-    bot.delete_message(msg.chat.id, msg.id).await?;
 
     Ok(())
 }
@@ -523,9 +538,7 @@ async fn send_last_name_changed_message(bot: Bot, chat_id: ChatId, username: &st
         None => String::from("ninguno"),
     };
 
-    bot.send_message(chat_id, format!("El usuario {username} cambió su apellido de {old_last_name_text} a {new_last_name_text}."))
-        .parse_mode(ParseMode::Html)
-        .await?;
+    bot.send_message(chat_id, format!("El usuario {username} cambió su apellido de {old_last_name_text} a {new_last_name_text}.")).parse_mode(ParseMode::Html).await?;
 
     Ok(())
 }
