@@ -20,7 +20,9 @@ pub enum Command {
     Return,     Metodos,      Closures,   Struct,         Traits,     Option,     Result,      Generics,      Lifetimes,   Async,
     Ownership,  Referencias,  Borrowing,  Modulos,        Shadowing,  Slices,     String,      Iterators,     Scopes,      SpamOn,
     Pat,        Meme,         Help,       Novedades,      Info,       About,      Test,        List,          Testing,     SpamOff,
-    IfLet,      Bite,         Sad,        Pout,           Happy,      Slap,       Hug,         Kiss,          Punch,
+    IfLet,      Bite,         Sad,        Pout,           Happy,      Slap,       Hug,         Kiss,          Punch,       Cuddle,
+    Laugh,      Blush,        Poke,       Tickle,         Feed,       Highfive,   Handhold,    Nom,           Yeet,        Kill,
+    Smug,       Kick,         ThumbsUp,   Stare,
 }
 
 // Función de acción para cada comando.
@@ -63,9 +65,9 @@ pub async fn message_handler(bot: Bot, msg: Message, me: Me) -> Result<(), Box<d
 
     if let Some(text) = msg.text() {
         match BotCommands::parse(text, me.username()) {
-            Ok(Command::Start) => create_buttons(bot, msg).await?,          Ok(Command::Help)   => help_action(bot, msg).await?,
+            Ok(Command::Start) => create_buttons(bot, msg).await?,           Ok(Command::Help)   => help_action(bot, msg).await?,
 
-            // Comandos de Administración                           >>>>    Admin Commands
+            // Comandos de Administración                           >>>>     Admin Commands
             Ok(Command::Ban)   => ban_user(bot, msg).await?,                 Ok(Command::Unban)  => unban_user(bot, msg).await?,
             Ok(Command::Mute)  => mute_user_admin(bot, msg).await?,          Ok(Command::Unmute) => unmute_user(bot, msg).await?,
             Ok(Command::List)  => list_json(bot, msg).await?,                Ok(Command::Info)   => get_chat_member(bot, msg).await?,
@@ -74,7 +76,13 @@ pub async fn message_handler(bot: Bot, msg: Message, me: Me) -> Result<(), Box<d
             Ok(Command::Meme)  => send_random_meme(bot, msg).await?,         Ok(Command::Pat)    => send_pat(bot, msg).await?,
             Ok(Command::Bite)  => send_bite(bot, msg).await?,                Ok(Command::Sad)    => send_sad(bot, msg).await?,
             Ok(Command::Pout)  => send_pout(bot, msg).await?,                Ok(Command::Happy)  => send_happy(bot, msg).await?,
-            Ok(Command::Punch) => send_punch(bot, msg).await?,
+            Ok(Command::Punch) => send_punch(bot, msg).await?,               Ok(Command::Slap)   => send_slap(bot, msg).await?,
+            Ok(Command::Hug)   => send_hug(bot, msg).await?,                 Ok(Command::Kiss)   => send_kiss(bot, msg).await?,
+            Ok(Command::Cuddle)=> send_cuddle(bot, msg).await?,              Ok(Command::Laugh)  => send_laugh(bot, msg).await?,
+            Ok(Command::Blush) => send_blush(bot, msg).await?,               Ok(Command::Poke)   => send_poke(bot, msg).await?,
+            Ok(Command::Kill)  => send_kill(bot, msg).await?,                Ok(Command::Yeet)   => send_yeet(bot, msg).await?,
+            Ok(Command::Smug)  => send_smug(bot, msg).await?,                Ok(Command::Kick)   => send_kick(bot, msg).await?,
+            Ok(Command::ThumbsUp) => send_thumbs_up(bot, msg).await?,        Ok(Command::Stare)  => send_stare(bot, msg).await?,
 
             // Comandos de Anti_Spam (unsafe maldito LOL) >> Anti_Spam Commands (This is cursed LOL)
             //Ok(Command::SpamOn) => handle_command(bot.clone(), msg.clone()).await?,

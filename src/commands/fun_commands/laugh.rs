@@ -1,6 +1,6 @@
 use crate::commands::admin_commands::*;
 
-pub async fn send_happy(bot: Bot, msg: Message) -> ResponseResult<()> {
+pub async fn send_laugh(bot: Bot, msg: Message) -> ResponseResult<()> {
     let username_author = match msg.from().as_ref() {
         Some(user) => user.username.as_ref(),
         None => None,
@@ -11,9 +11,9 @@ pub async fn send_happy(bot: Bot, msg: Message) -> ResponseResult<()> {
         None => "",
     };
 
-    let url = nekosbest::get(nekosbest::Category::Happy).await.unwrap().url;
+    let url = nekosbest::get(nekosbest::Category::Laugh).await.unwrap().url;
     bot.send_animation(msg.chat.id, InputFile::url(url.parse().unwrap()))
-        .caption(format!("@{} Está Feliz", username_author))
+        .caption(format!("@{} Se ríe a carcajadas", username_author))
         .parse_mode(ParseMode::Html)
         .await?;
 

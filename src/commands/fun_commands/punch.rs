@@ -20,8 +20,8 @@ pub async fn send_punch(bot: Bot, msg: Message) -> ResponseResult<()> {
         None => "",
     };
 
-    let random_pat = nekosbest::get(nekosbest::Category::Punch).await.unwrap().url;
-    bot.send_animation(msg.chat.id, InputFile::url(random_pat.parse().unwrap()))
+    let url = nekosbest::get(nekosbest::Category::Punch).await.unwrap().url;
+    bot.send_animation(msg.chat.id, InputFile::url(url.parse().unwrap()))
         .caption(format!("@{} Ha golpeado a{}", username_author, username_target))
         .parse_mode(ParseMode::Html)
         .await?;

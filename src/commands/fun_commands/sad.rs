@@ -11,8 +11,8 @@ pub async fn send_sad(bot: Bot, msg: Message) -> ResponseResult<()> {
         None => "",
     };
 
-    let random_pat = nekosbest::get(nekosbest::Category::Cry).await.unwrap().url;
-    bot.send_animation(msg.chat.id, InputFile::url(random_pat.parse().unwrap()))
+    let url = nekosbest::get(nekosbest::Category::Cry).await.unwrap().url;
+    bot.send_animation(msg.chat.id, InputFile::url(url.parse().unwrap()))
         .caption(format!("@{} Está triste", username_author))
         .parse_mode(ParseMode::Html)
         .await?;

@@ -1,6 +1,6 @@
 use crate::commands::admin_commands::*;
 
-pub async fn send_bite(bot: Bot, msg: Message) -> ResponseResult<()> {
+pub async fn send_stare(bot: Bot, msg: Message) -> ResponseResult<()> {
     let Some(text) = msg.text() else {
         return Ok(());
     };
@@ -20,9 +20,9 @@ pub async fn send_bite(bot: Bot, msg: Message) -> ResponseResult<()> {
         None => "",
     };
 
-    let url = nekosbest::get(nekosbest::Category::Bite).await.unwrap().url;
+    let url = nekosbest::get(nekosbest::Category::Yeet).await.unwrap().url;
     bot.send_animation(msg.chat.id, InputFile::url(url.parse().unwrap()))
-        .caption(format!("@{} Ha mordido a{}", username_author, username_target))
+        .caption(format!("@{} Está mirando fijamente a{}", username_author, username_target))
         .parse_mode(ParseMode::Html)
         .await?;
 
