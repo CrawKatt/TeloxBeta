@@ -1,6 +1,6 @@
 # Beta de TeloxBot
 
-En este Repositorio se encuentra el código fuente de TeloxBot, un bot de Telegram que permite la administración de Bots de Telegram a su vez que te enseña a programar en Rust mediante
+En este Repositorio se encuentra el código fuente de TeloxBot, un bot de Telegram que permite la administración de grupos de Telegram a su vez que te enseña a programar en Rust mediante
 Ejemplos sencillos de código.
 
 ## ¿En que se diferencia este repositorio con TeloxBot?

@@ -1,6 +1,7 @@
-use crate::admin_commands::*;
+use crate::dependencies::*;
 
 pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<()> {
+    println!("Test Generator");
 
     let text = if let Some(text) = msg.text() {
         text
@@ -67,7 +68,6 @@ pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<(
 
                 return Ok(());
             }
-
             let mut rng: StdRng = SeedableRng::from_entropy();
 
             // generate a random number from 0 to 14
@@ -178,10 +178,7 @@ pub async fn mute_animation_generator(bot: Bot, msg: Message) -> ResponseResult<
             let random_number = rng.gen_range(0..=file_names.len() - 1);
 
             let file_path = format!("./assets/mute/{}", file_names[random_number]);
-            let file_extension = match file_path.split('.').last() {
-                Some(extension) => extension,
-                None => "",
-            };
+            let file_extension = file_path.split('.').last().unwrap_or("");
 
             match file_extension {
 
@@ -309,46 +306,6 @@ pub async fn send_random_meme_generator(bot: Bot, msg: Message) -> ResponseResul
                 .reply_to_message_id(msg.id)
                 .await?; // The argument provided to `send_photo` is an `InputFile` object that is created from the file path.
         }
-    }
-
-    Ok(())
-}
-
-pub async fn random_pat(bot: Bot, msg: Message) ->ResponseResult<()> {
-
-    let file_names = [
-        "1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif", "9.gif", "10.gif",
-        "11.gif", "12.gif", "13.gif", "14.gif", "15.gif", "16.gif", "17.gif", "18.gif", "19.gif",
-        "20.gif", "21.gif", "22.gif", "23.gif", "24.gif", "25.gif", "26.gif", "27.gif", "28.gif",
-        "29.gif",
-    ];
-
-    let get_file_name = |index: usize| -> &'static str {
-        if let Some(file_name) = file_names.get(index) {
-            file_name
-        } else {
-            match file_names.last() {
-                Some(last_file) => last_file,
-                None => {
-                    // Manejo de error en caso de que `last()` devuelva `None`
-                    // Aquí puedes devolver un valor por defecto, lanzar una excepción, o tomar alguna otra acción
-                    // En este ejemplo, se devuelve una cadena vacía
-                    ""
-                }
-            }
-        }
-    };
-
-    let mut rng: StdRng = SeedableRng::from_entropy();
-    let random_number = rng.gen_range(0..=file_names.len() - 1);
-    println!("Resultado : {}", random_number);
-
-    let file_path = format!("./assets/pat/{}", get_file_name(random_number));
-
-    if Path::new(&file_path).is_file() {
-        let ok = bot.send_animation(msg.chat.id, InputFile::file(&file_path)).await?;
-        sleep(Duration::from_secs(5)).await;
-        bot.delete_message(msg.chat.id, ok.id).await?;
     }
 
     Ok(())

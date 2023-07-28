@@ -2,7 +2,7 @@ El Ownership es un concepto de Rust que nos permite controlar el uso de memoria 
 
 Ejemplo en Rust:
 
-```
+```rust
 fn main() {
    let s1 = String::from("Hola");
    let s2 = s1;

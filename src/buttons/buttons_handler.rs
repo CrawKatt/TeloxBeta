@@ -38,6 +38,25 @@ pub fn make_main_keyboard() -> InlineKeyboardMarkup {
     InlineKeyboardMarkup::new(keyboard)
 }
 
+/*
+fn make_row(options: &[&str]) -> Vec<InlineKeyboardButton> {
+    options
+        .iter()
+        .map(|&option| InlineKeyboardButton::callback(option.to_owned(), option.to_owned()))
+        .collect()
+}
+
+pub fn make_main_keyboard() -> InlineKeyboardMarkup {
+    let keyboard = [
+        make_row(&["Rust", "Ajustes", "Donar"]),
+        make_row(&["Acerca de", "Comandos", "Languages"]),
+        make_row(&["Ayuda", "Novedades"]),
+    ];
+
+    InlineKeyboardMarkup::new(keyboard)
+}
+*/
+
 pub fn make_rust_keyboard() -> InlineKeyboardMarkup {
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
 
@@ -63,7 +82,7 @@ pub fn make_rust_keyboard() -> InlineKeyboardMarkup {
 
     InlineKeyboardMarkup::new(keyboard)
 }
-
+/*
 pub fn make_settings_keyboard() -> InlineKeyboardMarkup {
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
     let settings = ["AntiSpam", "Advertencias", "Reglamento", "Volver"];
@@ -94,6 +113,28 @@ pub fn make_about_keyboard() -> InlineKeyboardMarkup {
         }).collect();
         keyboard.push(row);
     }
+
+    InlineKeyboardMarkup::new(keyboard)
+}
+
+ */
+
+pub fn make_settings_keyboard() -> InlineKeyboardMarkup {
+    let keyboard = vec![
+        vec![InlineKeyboardButton::callback("AntiSpam", "AntiSpam")],
+        vec![InlineKeyboardButton::callback("Advertencias", "Advertencias")],
+        vec![InlineKeyboardButton::callback("Reglamento", "Reglamento")],
+        vec![InlineKeyboardButton::callback("Volver", "back_to_main_keyboard")]
+    ];
+
+    InlineKeyboardMarkup::new(keyboard)
+}
+
+pub fn make_about_keyboard() -> InlineKeyboardMarkup {
+    let keyboard = vec![
+        vec![InlineKeyboardButton::callback("GitHub", "GitHub")],
+        vec![InlineKeyboardButton::callback("Volver", "back_to_main_keyboard")]
+    ];
 
     InlineKeyboardMarkup::new(keyboard)
 }
@@ -148,6 +189,18 @@ pub fn make_help_keyboard() -> InlineKeyboardMarkup {
 
     InlineKeyboardMarkup::new(keyboard)
 }
+/*
+pub fn make_help_keyboard() -> InlineKeyboardMarkup {
+    let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
+
+    keyboard.push(vec![InlineKeyboardButton::callback("Comandos".to_owned(), "Comandos".to_owned())]);
+    keyboard.push(vec![InlineKeyboardButton::callback("Guía".to_owned(), "Guía".to_owned())]);
+    keyboard.push(vec![InlineKeyboardButton::callback("Soporte".to_owned(), "Soporte".to_owned())]);
+    keyboard.push(vec![InlineKeyboardButton::callback("Volver".to_owned(), "back_to_main_keyboard".to_owned())]);
+
+    InlineKeyboardMarkup::new(keyboard)
+}
+*/
 
 pub fn make_back_button_keyboard() -> InlineKeyboardMarkup {
     let keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
@@ -172,6 +225,7 @@ pub async fn callback_handler(bot: Bot, q: CallbackQuery) -> Result<(), Box<dyn 
 
         Some("Rust") => {
             if let Some(Message { id, chat, .. }) = q.message {
+                println!("id {:#?}", id);
                 let text = "Selecciona tu nivel de Rust:".to_owned();
                 let keyboard = make_rust_keyboard();
                 bot.edit_message_text(chat.id, id, text).reply_markup(keyboard).await?;

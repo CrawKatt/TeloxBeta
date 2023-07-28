@@ -2,7 +2,7 @@ Los Scopes nos permiten controlar la visibilidad de los elementos\.
 
 Ejemplo en Rust:
 
-```
+```rust
 fn main() { 
    let x = 5; 
 

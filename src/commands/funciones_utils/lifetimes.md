@@ -1,7 +1,7 @@
 Los Tiempos de Vida son un concepto de Rust que nos permite controlar el tiempo de vida de las referencias\.
 
 Ejemplo en Rust:
-```
+```rust
 fn main() {
     let r; {
         let x = 5;

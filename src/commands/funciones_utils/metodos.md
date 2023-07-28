@@ -1,7 +1,7 @@
 Los métodos son similares a las funciones, pero se diferencian en que los métodos se definen dentro de un contexto, como una estructura o un Enum\.
 
 Ejemplo en Rust:
-```
+```rust
 struct Rectangulo {
     ancho: u32,
     alto: u32,

@@ -1,4 +1,4 @@
-use crate::commands::*;
+use crate::dependencies::*;
 
 pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
     // The function takes a bot and a message object, and returns a Result.
@@ -11,11 +11,10 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                 from
             } else {
                 // Send an error message and delete it after 5 seconds.
-                let error_msg = bot.send_message(msg.chat.id, "❌ No se pudo obtener el usuario").reply_to_message_id(msg.id).await?;
-                let error_msg_id = error_msg.id;
+                let err = bot.send_message(msg.chat.id, "❌ No se pudo obtener el usuario").reply_to_message_id(msg.id).await?;
 
                 sleep(Duration::from_secs(5)).await;
-                bot.delete_message(msg.chat.id, error_msg_id).await?;
+                bot.delete_message(msg.chat.id, err.id).await?;
                 bot.delete_message(msg.chat.id, msg.id).await?;
 
                 return Ok(());
@@ -29,10 +28,9 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                     None => String::new(),
                 };
 
-                let chat_member = bot.get_chat_member(msg.chat.id, from.id).await?;
                 // If the user is an admin or owner, ban the user and send a message to the chat.
                 // Also send a random GIF or MP4 file from the "./assets/ban/" folder.
-                let is_admin_or_owner = chat_member.status().is_administrator() || chat_member.status().is_owner();
+                let is_admin_or_owner = bot.get_chat_member(msg.chat.id, from.id).await?.is_admin_or_owner();
 
                 if is_admin_or_owner {
 

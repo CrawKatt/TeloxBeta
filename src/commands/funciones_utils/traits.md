@@ -2,7 +2,7 @@ Los traits son como interfaces en otros lenguajes de programación, nos permiten
 
 Ejemplo en Rust:
 
-```
+```rust
 trait Suma {
     fn suma(&self) -> i32;
 }

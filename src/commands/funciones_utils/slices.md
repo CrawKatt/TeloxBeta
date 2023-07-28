@@ -2,7 +2,7 @@ Los Slices en Rust son una forma de referenciar una secuencia de elementos dentr
 
 Ejemplo en Rust:
 
-```
+```rust
 fn main() {
     let slice = String::from("Hola, mundo");
 
