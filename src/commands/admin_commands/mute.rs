@@ -1,4 +1,4 @@
-use crate::admin_commands::*;
+use crate::dependencies::*;
 
 pub async fn mute_user_admin(bot: Bot, msg: Message) -> ResponseResult<()> {
     match msg.reply_to_message() {

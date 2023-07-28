@@ -9,3 +9,4 @@ pub mod fun_commands;
 // Uso de admin_commands en el bot
 // Use of admin_commands in the bot
 pub use admin_commands::*; // Llama a la carpeta admin_commands >> calls the admin_commands folder and mod.rs into the admin_commands folder
+pub use crate::dependencies::*; // Llama a la carpeta dependencies >> calls the dependencies folder and mod.rs into the dependencies folder

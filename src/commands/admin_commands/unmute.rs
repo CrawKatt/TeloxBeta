@@ -1,4 +1,4 @@
-use crate::admin_commands::*;
+use crate::dependencies::*;
 
 pub trait AdminOrOwner {
     fn is_admin(&self) -> bool;

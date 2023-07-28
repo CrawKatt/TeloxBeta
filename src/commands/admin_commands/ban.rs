@@ -1,4 +1,4 @@
-use crate::commands::*;
+use crate::dependencies::*;
 
 pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
     // The function takes a bot and a message object, and returns a Result.

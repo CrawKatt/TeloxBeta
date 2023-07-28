@@ -1,4 +1,4 @@
-use crate::admin_commands::*;
+use crate::dependencies::*;
 
 pub async fn get_chat_member(bot: Bot, msg: Message) -> ResponseResult<()> {
     match msg.reply_to_message() {
@@ -17,15 +17,32 @@ pub async fn get_chat_member(bot: Bot, msg: Message) -> ResponseResult<()> {
 
                 return Ok(());
             };
-
+/*
             let username_user = match user.clone().username {
                 Some(username) => username,
                 None => String::new(),
             };
+            */
 
             let id_usuario = user.id;
-            let first_name = &user.first_name;
-            bot.send_message(msg.chat.id, format!("<b>Nombre:</b> {} \n<b>Username:</b> @{:} \n<b>ID: </b><code>{}</code>", first_name, username_user, id_usuario)).parse_mode(ParseMode::Html).await?;
+            let first_name = user.first_name.clone();
+            let username_user = user.clone().username.unwrap_or(first_name.clone());
+
+            if username_user == first_name {
+                bot.send_message(msg.chat.id, format!(
+                    r#"
+                <b>Nombre:</b> {}
+                <b>Username:</b>@{} <b>
+                ID: </b><code>{}</code>
+            "#, first_name.clone(), username_user, id_usuario)).parse_mode(ParseMode::Html).await?;
+            }
+
+            bot.send_message(msg.chat.id, format!(
+                r#"
+                <b>Nombre:</b> {}
+                <b>Username:</b>{} <b>
+                ID: </b><code>{}</code>
+            "#, first_name.clone(), username_user, id_usuario)).parse_mode(ParseMode::Html).await?;
         }
 
         None => {

@@ -1,4 +1,4 @@
-use crate::commands::admin_commands::*;
+use crate::commands::dependencies::*;
 
 pub async fn send_slap(bot: Bot, msg: Message) -> ResponseResult<()> {
     let Some(text) = msg.text() else {

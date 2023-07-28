@@ -1,4 +1,4 @@
-use crate::admin_commands::*;
+use crate::dependencies::*;
 
 pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<()> {
     println!("Test Generator");

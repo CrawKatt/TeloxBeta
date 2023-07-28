@@ -1,4 +1,4 @@
-use crate::commands::admin_commands::*;
+use crate::commands::dependencies::*;
 
 pub async fn send_thumbs_up(bot: Bot, msg: Message) -> ResponseResult<()> {
     let Some(text) = msg.text() else {
@@ -20,7 +20,7 @@ pub async fn send_thumbs_up(bot: Bot, msg: Message) -> ResponseResult<()> {
         None => "",
     };
 
-    let url = nekosbest::get(nekosbest::Category::Yeet).await.unwrap().url;
+    let url = nekosbest::get(nekosbest::Category::ThumbsUp).await.unwrap().url;
     bot.send_animation(msg.chat.id, InputFile::url(url.parse().unwrap()))
         .caption(format!("@{} Apoya a{}", username_author, username_target))
         .parse_mode(ParseMode::Html)

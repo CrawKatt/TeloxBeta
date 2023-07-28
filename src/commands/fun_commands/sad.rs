@@ -1,4 +1,4 @@
-use crate::commands::admin_commands::*;
+use crate::commands::dependencies::*;
 
 pub async fn send_sad(bot: Bot, msg: Message) -> ResponseResult<()> {
     let username_author = match msg.from().as_ref() {

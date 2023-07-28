@@ -1,4 +1,4 @@
-use crate::admin_commands::*;
+use crate::dependencies::*;
 
 //const VARIABLES: &str = include_str!("funciones_utils/variables.md");
 

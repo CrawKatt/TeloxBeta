@@ -1,5 +1,6 @@
+//use teloxide::utils::html;
 // Import the commands and database modules
-use crate::commands::*;
+use crate::utils::dependencies::*;
 pub mod database;
 pub mod commands;
 pub mod utils;
@@ -66,9 +67,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
     })
         .branch(Update::filter_message().endpoint(message_handler))
         .branch(Update::filter_callback_query().endpoint(callback_handler))
-        //.branch(Update::filter_message().branch(Message::filter_new_chat_members().endpoint(chat_member_handler)))
-        .branch(Update::filter_chat_member().endpoint(chat_member_handler))
-        .branch(Update::filter_inline_query().endpoint(inline_query_handler));
+        .branch(Update::filter_inline_query().endpoint(inline_query_handler))
+        .branch(Update::filter_chat_member()
+            .filter(|m: ChatMemberUpdated|
+                m.old_chat_member.kind.is_left() &&
+                    m.new_chat_member.kind.is_present())
+            .endpoint(chat_member_welcome))
+        .branch(Update::filter_chat_member()
+            .filter(|m: ChatMemberUpdated|
+                m.new_chat_member.kind.is_left() &&
+                    m.old_chat_member.kind.is_present())
+            .endpoint(chat_member_goodbye));
 
     Dispatcher::builder(bot.clone(), handler)
         .enable_ctrlc_handler()
@@ -79,43 +88,28 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn chat_member_handler(bot:Bot, chat_member:ChatMemberUpdated) -> MemberResult {
+// TODO: Mencionar por First_Name a los usuarios que se unan al grupo
+async fn chat_member_welcome(bot:Bot, chat_member:ChatMemberUpdated) -> MemberResult {
     let telegram_group_name = chat_member.chat.title().unwrap_or("");
+    let first_name = chat_member.old_chat_member.user.first_name;
+    let username = chat_member.old_chat_member.user.username.unwrap_or(first_name.clone());
+    //let url = chat_member.old_chat_member.user.url();
+    //let test_name= chat_member.old_chat_member.user.mention();
 
-    let first_name = chat_member.clone().from.first_name;
-    let username = if let Some(name) = chat_member.from.username {
-        name
-    } else if first_name == chat_member.from.first_name {
-        first_name.clone()
-    } else {
-        return Err("Error: Username or first name not found".into());
-    };
+    bot.send_message(chat_member.chat.id, format!("bienvenido a {telegram_group_name} {username}!"))
+        .parse_mode(ParseMode::Html)
+        .await?;
 
-    //let username = chat_member.from.username.unwrap();
-    let member = bot.get_chat_member(chat_member.chat.id, chat_member.new_chat_member.user.id).await?;
-    let member_status = member.status();
+    Ok(())
+}
 
-    if let ChatMemberStatus::Left = member_status {
+async fn chat_member_goodbye(bot:Bot, chat_member:ChatMemberUpdated) -> MemberResult {
+    let first_name = chat_member.old_chat_member.user.first_name;
+    let username = chat_member.old_chat_member.user.username.unwrap_or(first_name.clone());
 
-        if username == first_name {
-            bot.send_message(chat_member.chat.id, format!("Hasta pronto {username}!"))
-                .parse_mode(ParseMode::Html)
-                .await?;
-        } else {
-            bot.send_message(chat_member.chat.id, format!("Hasta pronto @{username}!"))
-                .parse_mode(ParseMode::Html)
-                .await?;
-        }
-
-    } else if username == first_name {
-        bot.send_message(chat_member.chat.id, format!("Bienvenido a {telegram_group_name} {username}!"))
-            .parse_mode(ParseMode::Html)
-            .await?;
-    } else {
-        bot.send_message(chat_member.chat.id, format!("Bienvenido a {telegram_group_name} @{username}!"))
-            .parse_mode(ParseMode::Html)
-            .await?;
-    }
+    bot.send_message(chat_member.chat.id, format!("Hasta pronto {username}!"))
+        .parse_mode(ParseMode::Html)
+        .await?;
 
     Ok(())
 }

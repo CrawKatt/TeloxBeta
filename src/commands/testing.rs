@@ -1,4 +1,4 @@
-use crate::admin_commands::*;
+use crate::dependencies::*;
 
 /* ////////////||\\\\\\\\\\\\  */
 /* // Experimental commands \\ */
@@ -74,8 +74,10 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
         None => ("", text),
     };
 
+    let msg_copy = msg.clone();
+
     let true = username.contains('@') else {
-        no_username_found_err(bot, msg.clone(), username).await?;
+        no_username_found_err(bot, msg_copy, username).await?;
         return Ok(());
     };
 
@@ -97,7 +99,7 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
             }
         });
     // Enviar el user_id como respuesta al usuario
-    action_handler(bot, msg.clone(), username, user_id).await?;
+    action_handler(bot, msg_copy, username, user_id).await?;
 
     Ok(())
 
@@ -124,16 +126,16 @@ pub async fn action_handler(bot: Bot, msg: Message, username: &str, user_id :Opt
             };
 
             match true {
-                _ if message.contains("/unban") => unban_for_testing(bot, msg.clone(), username, user_id).await?,
-                _ if message.contains("/ban") => ban_for_testing(bot, msg.clone(), username, user_id).await?,
-                _ if message.contains("/mute") => mute_for_testing(bot, msg.clone(), username, user_id).await?,
-                _ if message.contains("/unmute") => unmute_for_testing(bot, msg.clone(), username, user_id).await?,
+                _ if message.contains("/unban") => unban_for_testing(bot, msg, username, user_id).await?,
+                _ if message.contains("/ban") => ban_for_testing(bot, msg, username, user_id).await?,
+                _ if message.contains("/mute") => mute_for_testing(bot, msg, username, user_id).await?,
+                _ if message.contains("/unmute") => unmute_for_testing(bot, msg, username, user_id).await?,
                 _ => (),
             }
         }
 
         None => {
-            no_username_found_err(bot, msg.clone(), username).await?;
+            no_username_found_err(bot, msg, username).await?;
         }
     };
 
@@ -169,7 +171,7 @@ pub async fn ban_for_testing(bot: Bot, msg: Message, username: &str, user_id: u6
 
     let ChatMemberStatus::Banned = chat_member.status() else {
         bot.ban_chat_member(msg.chat.id, UserId(user_id)).await?;
-        ban_animation_generator(bot.clone(), msg.clone()).await?;
+        ban_animation_generator(bot, msg).await?;
 
         return Ok(())
     };
@@ -186,7 +188,7 @@ pub async fn mute_for_testing(bot: Bot, msg: Message, username: &str, user_id: u
 
     let ChatMemberStatus::Restricted { .. } = chat_member.status() else {
         bot.restrict_chat_member(msg.chat.id, UserId(user_id), ChatPermissions::empty()).await?;
-        mute_animation_generator(bot.clone(), msg.clone()).await?;
+        mute_animation_generator(bot, msg).await?;
         return Ok(())
     };
 
@@ -265,13 +267,14 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
         };
 
         let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
-        let username = chat_member.user.username.clone().unwrap_or("no username".to_string());
+        let chat_member_copy = chat_member.clone();
+        let username = chat_member.user.username.unwrap_or("no username".to_string());
 
-        let ChatMemberStatus::Banned { .. } = chat_member.status() else {
-            ban_for_arguments(bot.clone(), msg.clone(), user_id, username ).await?;
+        let ChatMemberStatus::Banned { .. } = chat_member_copy.status() else {
+            ban_for_arguments(bot, msg, user_id, username ).await?;
             return Ok(());
         };
-        already_banned(bot.clone(), msg.clone(), user_id, username).await?;
+        already_banned(bot, msg, user_id, username).await?;
 
         return Ok(())
     };
@@ -283,12 +286,6 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
     let is_admin_or_owner = bot.get_chat_member(msg.chat.id, from.id).await?.is_admin_or_owner();
     let true = is_admin_or_owner else {
         no_admin_err(bot, msg).await?;
-        /*
-        bot.send_message(msg.chat.id, "❌ No tienes permisos para usar este comando").await?;
-        sleep(Duration::from_secs(5)).await;
-        bot.delete_message(msg.chat.id, msg.id).await?;
-        println!("❌ No tienes permisos para usar este comando {msg:#?}");
-        */
         return Ok(());
     };
     get_user_id_by_username(bot, msg).await?;
@@ -459,15 +456,15 @@ pub async fn test_json_two(bot: Bot, msg: Message) -> ResponseResult<()> {
 
     match (db_username, db_first_name, db_last_name) {
         (Some(db_username), _, _) if username != db_username => {
-            send_username_changed_message(bot.clone(), msg.chat.id, &user.first_name, &db_username, &username).await?;
+            send_username_changed_message(bot, msg.chat.id, &user.first_name, &db_username, &username).await?;
         }
 
         (_, Some(db_first_name), _) if first_name != db_first_name => {
-            send_first_name_changed_message(bot.clone(), msg.chat.id, &user.first_name, &db_first_name, &first_name).await?;
+            send_first_name_changed_message(bot, msg.chat.id, &user.first_name, &db_first_name, &first_name).await?;
         }
 
         (_, _, Some(db_last_name)) if last_name != db_last_name => {
-            send_last_name_changed_message(bot.clone(), msg.chat.id, &user.first_name, db_last_name, last_name).await?;
+            send_last_name_changed_message(bot, msg.chat.id, &user.first_name, db_last_name, last_name).await?;
         }
 
         _ => (),

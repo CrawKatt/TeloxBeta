@@ -1,4 +1,4 @@
-use crate::admin_commands::*;
+use crate::dependencies::*;
 
 pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
     match msg.reply_to_message() {
