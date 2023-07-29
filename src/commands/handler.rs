@@ -1,6 +1,6 @@
 use crate::dependencies::*;
 
-// Derive BotCommands para analizar texto con un comando en esta enumeración.
+// Derive BotCommands para analizar texto con un comando en este enum.
 //
 // 1. `rename_rule = "lowercase"` convierte todos los comandos en letras minúsculas.
 // 2. `description = "..."` especifica un texto antes de todos los comandos.
@@ -15,45 +15,128 @@ use crate::dependencies::*;
 // Los comandos disponibles.
 // Available commands.
 pub enum Command {
-    Ban,        Unban,        Mute,       Unmute,         Start,      Variables,  Constantes,  TiposDeDatos,  Operadores,  Funciones,
-    Arrays,     Tuplas,       Vectores,   Condicionales,  Loop,       For,        While,       Match,         Enum,        Macros,
-    Return,     Metodos,      Closures,   Struct,         Traits,     Option,     Result,      Generics,      Lifetimes,   Async,
-    Ownership,  Referencias,  Borrowing,  Modulos,        Shadowing,  Slices,     String,      Iterators,     Scopes,      SpamOn,
-    Pat,        Meme,         Help,       Novedades,      Info,       About,      Test,        List,          Testing,     SpamOff,
-    IfLet,      Bite,         Sad,        Pout,           Happy,      Slap,       Hug,         Kiss,          Punch,       Cuddle,
-    Laugh,      Blush,        Poke,       Tickle,         Feed,       Highfive,   Handhold,    Nom,           Yeet,        Kill,
-    Smug,       Kick,         ThumbsUp,   Stare,
+    Ban,
+    Unban,
+    Mute,
+    Unmute,
+    Start,
+    Variables,
+    Constantes,
+    TiposDeDatos,
+    Operadores,
+    Funciones,
+    Arrays,
+    Tuplas,
+    Vectores,
+    Condicionales,
+    Loop,
+    For,
+    While,
+    Match,
+    Enum,
+    Macros,
+    Return,
+    Metodos,
+    Closures,
+    Struct,
+    Traits,
+    Option,
+    Result,
+    Generics,
+    Lifetimes,
+    Async,
+    Ownership,
+    Referencias,
+    Borrowing,
+    Modulos,
+    Shadowing,
+    Slices,
+    String,
+    Iterators,
+    Scopes,
+    SpamOn,
+    Pat,
+    Meme,
+    Help,
+    Novedades,
+    Info,
+    About,
+    Test,
+    List,
+    Testing,
+    SpamOff,
+    IfLet,
+    Bite,
+    Sad,
+    Pout,
+    Happy,
+    Slap,
+    Hug,
+    Kiss,
+    Punch,
+    Cuddle,
+    Laugh,
+    Blush,
+    Poke,
+    Tickle,
+    Feed,
+    Highfive,
+    Handhold,
+    Nom,
+    Yeet,
+    Kill,
+    Smug,
+    Kick,
+    ThumbsUp,
+    Stare,
 }
 
 // Función de acción para cada comando.
 // Action function for each command.
 pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
-
     match cmd {
         // Comandos de Información
         // Info to Rust code examples Commands
-        Command::Variables    => ejemplos(bot, msg).await?, Command::Constantes    => ejemplos(bot, msg).await?,
-        Command::TiposDeDatos => ejemplos(bot, msg).await?, Command::Operadores    => ejemplos(bot, msg).await?,
-        Command::Arrays       => ejemplos(bot, msg).await?, Command::Tuplas        => ejemplos(bot, msg).await?,
-        Command::Vectores     => ejemplos(bot, msg).await?, Command::Condicionales => ejemplos(bot, msg).await?,
-        Command::Loop         => ejemplos(bot, msg).await?, Command::For           => ejemplos(bot, msg).await?,
-        Command::While        => ejemplos(bot, msg).await?, Command::Match         => ejemplos(bot, msg).await?,
-        Command::Enum         => ejemplos(bot, msg).await?, Command::Funciones     => ejemplos(bot, msg).await?,
-        Command::Return       => ejemplos(bot, msg).await?, Command::Metodos       => ejemplos(bot, msg).await?,
-        Command::Closures     => ejemplos(bot, msg).await?, Command::Struct        => ejemplos(bot, msg).await?,
-        Command::Traits       => ejemplos(bot, msg).await?, Command::Option        => ejemplos(bot, msg).await?,
-        Command::Result       => ejemplos(bot, msg).await?, Command::Generics      => ejemplos(bot, msg).await?,
-        Command::Lifetimes    => ejemplos(bot, msg).await?, Command::Macros        => ejemplos(bot, msg).await?,
-        Command::Ownership    => ejemplos(bot, msg).await?, Command::Referencias   => ejemplos(bot, msg).await?,
-        Command::Borrowing    => ejemplos(bot, msg).await?, Command::Modulos       => ejemplos(bot, msg).await?,
-        Command::Shadowing    => ejemplos(bot, msg).await?, Command::Slices        => ejemplos(bot, msg).await?,
-        Command::String       => ejemplos(bot, msg).await?, Command::Iterators     => ejemplos(bot, msg).await?,
-        Command::Scopes       => ejemplos(bot, msg).await?, Command::Async         => ejemplos(bot, msg).await?,
-        Command::IfLet        => ejemplos(bot, msg).await?,
+        Command::Variables => ejemplos(bot, msg).await?,
+        Command::Constantes => ejemplos(bot, msg).await?,
+        Command::TiposDeDatos => ejemplos(bot, msg).await?,
+        Command::Operadores => ejemplos(bot, msg).await?,
+        Command::Arrays => ejemplos(bot, msg).await?,
+        Command::Tuplas => ejemplos(bot, msg).await?,
+        Command::Vectores => ejemplos(bot, msg).await?,
+        Command::Condicionales => ejemplos(bot, msg).await?,
+        Command::Loop => ejemplos(bot, msg).await?,
+        Command::For => ejemplos(bot, msg).await?,
+        Command::While => ejemplos(bot, msg).await?,
+        Command::Match => ejemplos(bot, msg).await?,
+        Command::Enum => ejemplos(bot, msg).await?,
+        Command::Funciones => ejemplos(bot, msg).await?,
+        Command::Return => ejemplos(bot, msg).await?,
+        Command::Metodos => ejemplos(bot, msg).await?,
+        Command::Closures => ejemplos(bot, msg).await?,
+        Command::Struct => ejemplos(bot, msg).await?,
+        Command::Traits => ejemplos(bot, msg).await?,
+        Command::Option => ejemplos(bot, msg).await?,
+        Command::Result => ejemplos(bot, msg).await?,
+        Command::Generics => ejemplos(bot, msg).await?,
+        Command::Lifetimes => ejemplos(bot, msg).await?,
+        Command::Macros => ejemplos(bot, msg).await?,
+        Command::Ownership => ejemplos(bot, msg).await?,
+        Command::Referencias => ejemplos(bot, msg).await?,
+        Command::Borrowing => ejemplos(bot, msg).await?,
+        Command::Modulos => ejemplos(bot, msg).await?,
+        Command::Shadowing => ejemplos(bot, msg).await?,
+        Command::Slices => ejemplos(bot, msg).await?,
+        Command::String => ejemplos(bot, msg).await?,
+        Command::Iterators => ejemplos(bot, msg).await?,
+        Command::Scopes => ejemplos(bot, msg).await?,
+        Command::Async => ejemplos(bot, msg).await?,
+        Command::IfLet => ejemplos(bot, msg).await?,
 
         // Comandos de Acerca del Bot y Novedades
         // About and Updates Commands
-        Command::About        => ejemplos(bot, msg).await?, Command::Novedades     => ejemplos(bot, msg).await?,
+        Command::About => ejemplos(bot, msg).await?,
+        Command::Novedades => ejemplos(bot, msg).await?,
 
         _ => (),
     };
@@ -61,47 +144,61 @@ pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> 
     Ok(())
 }
 
-pub async fn message_handler(bot: Bot, msg: Message, me: Me) -> Result<(), Box<dyn Error + Send + Sync>> {
-
+pub async fn message_handler(
+    bot: Bot,
+    msg: Message,
+    me: Me,
+) -> Result<(), Box<dyn Error + Send + Sync>> {
     if let Some(text) = msg.text() {
         match BotCommands::parse(text, me.username()) {
-            Ok(Command::Start) => create_buttons(bot, msg).await?,           Ok(Command::Help)   => help_action(bot, msg).await?,
+            Ok(Command::Start) => create_buttons(bot, msg).await?,
+            Ok(Command::Help) => help_action(bot, msg).await?,
 
             // Comandos de Administración                           >>>>     Admin Commands
-            Ok(Command::Ban)   => ban_user(bot, msg).await?,                 Ok(Command::Unban)  => unban_user(bot, msg).await?,
-            Ok(Command::Mute)  => mute_user_admin(bot, msg).await?,          Ok(Command::Unmute) => unmute_user(bot, msg).await?,
-            Ok(Command::List)  => list_json(bot, msg).await?,                Ok(Command::Info)   => get_chat_member(bot, msg).await?,
+            Ok(Command::Ban) => ban_user(bot, msg).await?,
+            Ok(Command::Unban) => unban_user(bot, msg).await?,
+            Ok(Command::Mute) => mute_user_admin(bot, msg).await?,
+            Ok(Command::Unmute) => unmute_user(bot, msg).await?,
+            Ok(Command::List) => list_json(bot, msg).await?,
+            Ok(Command::Info) => get_chat_member(bot, msg).await?,
 
             // Comandos de Diversión >> Fun Commands
-            Ok(Command::Meme)  => send_random_meme(bot, msg).await?,         Ok(Command::Pat)    => send_pat(bot, msg).await?,
-            Ok(Command::Bite)  => send_bite(bot, msg).await?,                Ok(Command::Sad)    => send_sad(bot, msg).await?,
-            Ok(Command::Pout)  => send_pout(bot, msg).await?,                Ok(Command::Happy)  => send_happy(bot, msg).await?,
-            Ok(Command::Punch) => send_punch(bot, msg).await?,               Ok(Command::Slap)   => send_slap(bot, msg).await?,
-            Ok(Command::Hug)   => send_hug(bot, msg).await?,                 Ok(Command::Kiss)   => send_kiss(bot, msg).await?,
-            Ok(Command::Cuddle)=> send_cuddle(bot, msg).await?,              Ok(Command::Laugh)  => send_laugh(bot, msg).await?,
-            Ok(Command::Blush) => send_blush(bot, msg).await?,               Ok(Command::Poke)   => send_poke(bot, msg).await?,
-            Ok(Command::Kill)  => send_kill(bot, msg).await?,                Ok(Command::Yeet)   => send_yeet(bot, msg).await?,
-            Ok(Command::Smug)  => send_smug(bot, msg).await?,                Ok(Command::Kick)   => send_kick(bot, msg).await?,
-            Ok(Command::ThumbsUp) => send_thumbs_up(bot, msg).await?,        Ok(Command::Stare)  => send_stare(bot, msg).await?,
+            Ok(Command::Meme) => send_random_meme(bot, msg).await?,
+            Ok(Command::Pat) => send_pat(bot, msg).await?,
+            Ok(Command::Bite) => send_bite(bot, msg).await?,
+            Ok(Command::Sad) => send_sad(bot, msg).await?,
+            Ok(Command::Pout) => send_pout(bot, msg).await?,
+            Ok(Command::Happy) => send_happy(bot, msg).await?,
+            Ok(Command::Punch) => send_punch(bot, msg).await?,
+            Ok(Command::Slap) => send_slap(bot, msg).await?,
+            Ok(Command::Hug) => send_hug(bot, msg).await?,
+            Ok(Command::Kiss) => send_kiss(bot, msg).await?,
+            Ok(Command::Cuddle) => send_cuddle(bot, msg).await?,
+            Ok(Command::Laugh) => send_laugh(bot, msg).await?,
+            Ok(Command::Blush) => send_blush(bot, msg).await?,
+            Ok(Command::Poke) => send_poke(bot, msg).await?,
+            Ok(Command::Kill) => send_kill(bot, msg).await?,
+            Ok(Command::Yeet) => send_yeet(bot, msg).await?,
+            Ok(Command::Smug) => send_smug(bot, msg).await?,
+            Ok(Command::Kick) => send_kick(bot, msg).await?,
+            Ok(Command::ThumbsUp) => send_thumbs_up(bot, msg).await?,
+            Ok(Command::Stare) => send_stare(bot, msg).await?,
 
             // Comandos de Anti_Spam (unsafe maldito LOL) >> Anti_Spam Commands (This is cursed LOL)
             //Ok(Command::SpamOn) => handle_command(bot.clone(), msg.clone()).await?,
             //Ok(Command::SpamOff) => handle_command(bot.clone(), msg.clone()).await?,
-
             Err(_) => {
                 //if text.contains("https://t.me") {
-                    //anti_spam(bot.clone(), msg.clone()).await?;
+                //anti_spam(bot.clone(), msg.clone()).await?;
                 //}
 
-                test_json_two(bot.clone(), msg.clone(), ).await?;
+                test_json_two(bot.clone(), msg.clone()).await?;
 
                 //handle_command(bot, msg.clone()).await?;
             }
 
             _ => action(bot, msg, Command::Variables).await?,
-
         }
-
     }
 
     Ok(())
