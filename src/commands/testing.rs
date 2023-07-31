@@ -165,12 +165,7 @@ pub async fn unban_for_testing(
             .parse_mode(ParseMode::Html)
             .await?;
     }
-    /*
-        // Verificar si el usuario está baneado
-        let ChatMemberStatus::Banned = chat_member.status() else {
-            return Ok(());
-        };
-    */
+
     bot.unban_chat_member(msg.chat.id, UserId(user_id)).await?;
     let video = bot
         .send_video(msg.chat.id, InputFile::file("./assets/unban/1.mp4"))
@@ -199,14 +194,8 @@ pub async fn ban_for_testing(
         .parse_mode(ParseMode::Html)
         .await?;
     }
-    /*
-        let ChatMemberStatus::Banned = chat_member.status() else {
-            bot.ban_chat_member(msg.chat.id, UserId(user_id)).await?;
-            ban_animation_generator(bot, msg).await?;
-
-            return Ok(())
-        };
-    */
+    bot.ban_chat_member(msg.chat.id, UserId(user_id)).await?;
+    ban_animation_generator(bot, msg).await?;
 
     Ok(())
 }
@@ -230,12 +219,6 @@ pub async fn mute_for_testing(
 
     bot.restrict_chat_member(msg.chat.id, UserId(user_id), ChatPermissions::empty()).await?;
     mute_animation_generator(bot, msg).await?;
-
-    /*
-        let ChatMemberStatus::Restricted { .. } = chat_member.status() else {
-            return Ok(())
-        };
-    */
 
     Ok(())
 }
@@ -264,12 +247,6 @@ pub async fn unmute_for_testing(
     bot.send_message(msg.chat.id, format!("{username} [<code>{user_id}</code>] {NOT_MUTED}"))
         .parse_mode(ParseMode::Html)
         .await?;
-
-    /*
-        let ChatMemberStatus::Restricted { .. } = chat_member.status() else {
-            return Ok(());
-        };
-    */
 
     Ok(())
 }
@@ -326,12 +303,6 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
         }
 
         already_banned(bot, msg, user_id, username).await?;
-
-        /*
-        let ChatMemberStatus::Banned { .. } = chat_member_copy.status() else {
-            return Ok(());
-        };
-        */
 
         return Ok(())
     };
