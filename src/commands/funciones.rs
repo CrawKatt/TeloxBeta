@@ -85,6 +85,7 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
             if let Some(text) = msg.text() {
                 let ok = bot
                     .send_message(msg.chat.id, format!("Comando desconocido `{:#?}`", text))
+                    .parse_mode(MarkdownV2)
                     .await?;
                 sleep(Duration::from_secs(5)).await;
                 bot.delete_message(msg.chat.id, ok.id).await?;
@@ -136,7 +137,10 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
         Ejemplo::IfLet => include_str!("funciones_utils/if_let.md"),
     };
 
-    bot.send_message(msg.chat.id, text).await?;
+    bot.send_message(msg.chat.id, text)
+        .parse_mode(MarkdownV2)
+        .await?;
+
     sleep(Duration::from_secs(5)).await;
     bot.delete_message(msg.chat.id, msg.id).await?;
 
