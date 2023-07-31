@@ -20,12 +20,24 @@ pub use unmute::*;
 pub use rand::{rngs::StdRng, Rng, SeedableRng};
 
 // Import Teloxide modules for interacting with the Telegram API
-pub use teloxide::{adaptors::DefaultParseMode, prelude::*, types::*, utils::command::BotCommands};
+pub use teloxide::{
+    adaptors::DefaultParseMode,
+    prelude::*,
+    types::*,
+    utils::{
+        html,
+        command::BotCommands
+    }
+};
 
 // Import Teloxide_core modules for interacting with the Telegram API
 pub use teloxide_core::{
     prelude::UserId,
-    types::{ChatMemberStatus, Message, ParseMode::MarkdownV2},
+    types::{
+        ChatMemberStatus,
+        Message,
+        ParseMode::MarkdownV2
+    },
 };
 
 pub use serde::{Deserialize, Serialize};
