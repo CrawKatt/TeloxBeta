@@ -1,7 +1,11 @@
 use crate::commands::dependencies::*;
 
+/// # Errors
+/// # Panics
 pub async fn send_kiss(bot: Bot, msg: Message) -> ResponseResult<()> {
+
     let Some(text) = msg.text() else {
+
         return Ok(());
     };
 
@@ -21,8 +25,12 @@ pub async fn send_kiss(bot: Bot, msg: Message) -> ResponseResult<()> {
     };
 
     let url = nekosbest::get(nekosbest::Category::Kiss).await.unwrap().url;
+
     bot.send_animation(msg.chat.id, InputFile::url(url.parse().unwrap()))
-        .caption(format!("@{} le dió un beso a{}", username_author, username_target))
+        .caption(format!(
+            "@{} le dió un beso a{}",
+            username_author, username_target
+        ))
         .parse_mode(ParseMode::Html)
         .await?;
 

@@ -1,7 +1,11 @@
 use crate::commands::dependencies::*;
 
+/// # Errors
+/// # Panics
 pub async fn send_kill(bot: Bot, msg: Message) -> ResponseResult<()> {
+
     let Some(text) = msg.text() else {
+
         return Ok(());
     };
 
@@ -20,9 +24,16 @@ pub async fn send_kill(bot: Bot, msg: Message) -> ResponseResult<()> {
         None => "",
     };
 
-    let url = nekosbest::get(nekosbest::Category::Shoot).await.unwrap().url;
+    let url = nekosbest::get(nekosbest::Category::Shoot)
+        .await
+        .unwrap()
+        .url;
+
     bot.send_animation(msg.chat.id, InputFile::url(url.parse().unwrap()))
-        .caption(format!("@{} Está abrazando a{}", username_author, username_target))
+        .caption(format!(
+            "@{} Está abrazando a{}",
+            username_author, username_target
+        ))
         .parse_mode(ParseMode::Html)
         .await?;
 
