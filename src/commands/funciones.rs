@@ -91,11 +91,12 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
                     .parse_mode(MarkdownV2)
                     .await?;
 
-                sleep(Duration::from_secs(5)).await;
+                tokio::spawn(async move {
+                    sleep(Duration::from_secs(5)).await;
+                    bot.delete_message(msg.chat.id, ok.id).await.unwrap_or_default();
+                    bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                });
 
-                bot.delete_message(msg.chat.id, ok.id).await?;
-            } else {
-                // Manejo del caso en el que msg.text() es None
             }
 
             return Ok(());
@@ -146,9 +147,10 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
         .parse_mode(MarkdownV2)
         .await?;
 
-    sleep(Duration::from_secs(5)).await;
-
-    bot.delete_message(msg.chat.id, msg.id).await?;
+    tokio::spawn(async move {
+        sleep(Duration::from_secs(5)).await;
+        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+    });
 
     Ok(())
 }

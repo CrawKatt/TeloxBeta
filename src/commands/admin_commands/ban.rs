@@ -16,11 +16,11 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                     .reply_to_message_id(msg.id)
                     .await?;
 
-                sleep(Duration::from_secs(5)).await;
-
-                bot.delete_message(msg.chat.id, err.id).await?;
-
-                bot.delete_message(msg.chat.id, msg.id).await?;
+                tokio::spawn(async move {
+                    sleep(Duration::from_secs(5)).await;
+                    bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+                    bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                });
 
                 return Ok(());
             };
@@ -116,11 +116,12 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                         .reply_to_message_id(msg.id)
                         .await?;
 
-                    sleep(Duration::from_secs(5)).await;
+                    tokio::spawn(async move {
+                        sleep(Duration::from_secs(5)).await;
+                        bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+                        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                    });
 
-                    bot.delete_message(msg.chat.id, err.id).await?;
-
-                    bot.delete_message(msg.chat.id, msg.id).await?;
                 };
             }
         },

@@ -1,3 +1,4 @@
+use tokio::time::interval;
 use crate::dependencies::*;
 
 // ////////////||\\\\\\\\\\\\
@@ -177,11 +178,6 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
 
     Ok(())
 
-    // let user_id = user_data_vec.iter()
-    // .filter_map(|data| {
-    // data.username.as_ref().filter(|name| name == &username)
-    // .map(|_| data.id.to_string())
-    // }).next();
 }
 
 /// # Errors
@@ -252,25 +248,36 @@ pub async fn unban_for_testing(
     // Obtener información sobre el miembro del chat
     let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
 
+    let bot_copy = bot.clone();
+
     if !chat_member.is_banned() {
 
-        bot.send_message(
+        let err =
+            bot.send_message(
             msg.chat.id,
             format!("{username} [<code>{user_id}</code>] {NOT_BANNED}"),
         )
         .await?;
+
+        tokio::spawn(async move {
+
+            sleep(Duration::from_secs(60)).await;
+            bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+        });
+
     }
 
-    bot.unban_chat_member(msg.chat.id, UserId(user_id)).await?;
+    bot_copy.unban_chat_member(msg.chat.id, UserId(user_id)).await?;
 
-    let video = bot
+    let video = bot_copy
         .send_video(msg.chat.id, InputFile::file("./assets/unban/1.mp4"))
         .caption(format!("{username} [<code>{user_id}</code>] desbaneado."))
         .await?;
 
     sleep(Duration::from_secs(60)).await;
 
-    bot.delete_message(msg.chat.id, video.id).await?;
+    bot_copy.delete_message(msg.chat.id, video.id).await?;
 
     Ok(())
 }
@@ -285,18 +292,29 @@ pub async fn ban_for_testing(
 
     let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
 
+    let bot_copy = bot.clone();
+
     if chat_member.is_banned() {
 
-        bot.send_message(
+        let err =
+            bot.send_message(
             msg.chat.id,
             format!("{username} [<code>{user_id}</code>] {ALREADY_BANNED}"),
         )
-        .await?;
+            .await?;
+
+        tokio::spawn(async move {
+
+            sleep(Duration::from_secs(60)).await;
+            bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+        });
+
     }
 
-    bot.ban_chat_member(msg.chat.id, UserId(user_id)).await?;
+    bot_copy.ban_chat_member(msg.chat.id, UserId(user_id)).await?;
 
-    ban_animation_generator(bot, msg).await?;
+    ban_animation_generator(bot_copy, msg).await?;
 
     Ok(())
 }
@@ -311,19 +329,29 @@ pub async fn mute_for_testing(
 
     let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
 
+    let bot_copy = bot.clone();
+
     if chat_member.is_restricted() {
 
-        bot.send_message(
+        let err = bot.send_message(
             msg.chat.id,
             format!("{username} [<code>{user_id}</code>] {ALREADY_MUTED}"),
         )
         .await?;
+
+        tokio::spawn(async move {
+            sleep(Duration::from_secs(60)).await;
+            bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+        });
+
+
     }
 
-    bot.restrict_chat_member(msg.chat.id, UserId(user_id), ChatPermissions::empty())
+    bot_copy.restrict_chat_member(msg.chat.id, UserId(user_id), ChatPermissions::empty())
         .await?;
 
-    mute_animation_generator(bot, msg).await?;
+    mute_animation_generator(bot_copy, msg).await?;
 
     Ok(())
 }
@@ -338,6 +366,8 @@ pub async fn unmute_for_testing(
 
     let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
 
+    let bot_copy = bot.clone();
+
     if !chat_member.is_restricted() {
 
         bot.restrict_chat_member(msg.chat.id, UserId(user_id), ChatPermissions::all())
@@ -348,14 +378,16 @@ pub async fn unmute_for_testing(
             .caption(format!("{username} [<code>{user_id}</code>] {UNMUTED}"))
             .await?;
 
-        sleep(Duration::from_secs(60)).await;
+        tokio::spawn(async move {
 
-        bot.delete_message(msg.chat.id, ok.id).await?;
+            sleep(Duration::from_secs(60)).await;
+            bot.delete_message(msg.chat.id, ok.id).await.unwrap_or_default();
+            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+        });
 
-        bot.delete_message(msg.chat.id, msg.id).await?;
     }
 
-    bot.send_message(
+    bot_copy.send_message(
         msg.chat.id,
         format!("{username} [<code>{user_id}</code>] {NOT_MUTED}"),
     )
@@ -383,9 +415,11 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
 
         let err = bot.send_message(msg.chat.id, NOT_ID_PROVIDED_404).await?;
 
-        sleep(Duration::from_secs(5)).await;
-
-        bot.delete_message(msg.chat.id, err.id).await?;
+        tokio::spawn(async move {
+            sleep(Duration::from_secs(60)).await;
+            bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+        });
 
         return Ok(());
     }
@@ -483,11 +517,11 @@ pub async fn already_banned(
         )
         .await?;
 
-    sleep(Duration::from_secs(5)).await;
-
-    bot.delete_message(msg.chat.id, err.id).await?;
-
-    bot.delete_message(msg.chat.id, msg.id).await?;
+    tokio::spawn(async move {
+        sleep(Duration::from_secs(60)).await;
+        bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+    });
 
     Ok(())
 }
@@ -497,13 +531,11 @@ pub async fn no_admin_err(bot: Bot, msg: Message) -> ResponseResult<()> {
 
     let err = bot.send_message(msg.chat.id, PERMISSIONS_DENIED).await?;
 
-    sleep(Duration::from_secs(5)).await;
-
-    bot.delete_message(msg.chat.id, err.id).await?;
-
-    bot.delete_message(msg.chat.id, msg.id).await?;
-
-    println!("❌ No tienes permisos para usar este comando {msg:#?}");
+    tokio::spawn(async move {
+        sleep(Duration::from_secs(60)).await;
+        bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+    });
 
     Ok(())
 }
@@ -515,14 +547,17 @@ pub async fn no_username_found_err(bot: Bot, msg: Message, username: &str) -> Re
         .send_message(msg.chat.id, format!("{NOT_USERNAME_FOUND_404} {username}"))
         .await?;
 
-    sleep(Duration::from_secs(5)).await;
-
-    bot.delete_message(msg.chat.id, err.id).await?;
+    tokio::spawn(async move {
+        sleep(Duration::from_secs(60)).await;
+        bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+    });
 
     Ok(())
 }
 
 /// # Errors
+/// # Panics
 pub async fn error_message_for_user_id(bot: Bot, msg: Message) -> ResponseResult<()> {
 
     let err = bot
@@ -533,19 +568,17 @@ pub async fn error_message_for_user_id(bot: Bot, msg: Message) -> ResponseResult
         )
         .await?;
 
-    sleep(Duration::from_secs(5)).await;
-
-    bot.delete_message(msg.chat.id, err.id).await?;
-
-    bot.delete_message(msg.chat.id, msg.id).await?;
+    tokio::spawn(async move {
+        sleep(Duration::from_secs(5)).await;
+        bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+    });
 
     Ok(())
 }
 
 // ////////////||\\\\\\\\\\\\
-
 // //   Ban For Arguments   \\
-
 // \\\\\\\\\\\\||/////////////
 
 /// # Errors
@@ -591,19 +624,19 @@ pub async fn ban_for_arguments(
 
     if Path::new(&file_path)
         .extension()
-        .map_or(false, |ext| ext.eq_ignore_ascii_case("gif"))
-    {
+        .map_or(false, |ext| ext.eq_ignore_ascii_case("gif")) {
 
         let gif = bot
             .send_animation(msg.chat.id, InputFile::file(file_path))
             .caption(format!("@{username} [<code>{user_id}</code>] baneado"))
             .await?;
 
-        sleep(Duration::from_secs(60)).await;
+        tokio::spawn(async move {
+            sleep(Duration::from_secs(60)).await;
+            bot.delete_message(msg.chat.id, gif.id).await.unwrap_or_default();
+            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+        });
 
-        bot.delete_message(msg.chat.id, gif.id).await?;
-
-        bot.delete_message(msg.chat.id, msg.id).await?;
     } else {
 
         let video = bot
@@ -611,11 +644,12 @@ pub async fn ban_for_arguments(
             .caption(format!("@{username} [<code>{user_id}</code>] baneado"))
             .await?;
 
-        sleep(Duration::from_secs(60)).await;
+        tokio::spawn(async move {
+            sleep(Duration::from_secs(60)).await;
+            bot.delete_message(msg.chat.id, video.id).await.unwrap_or_default();
+            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+        });
 
-        bot.delete_message(msg.chat.id, video.id).await?;
-
-        bot.delete_message(msg.chat.id, msg.id).await?;
     };
 
     Ok(())
