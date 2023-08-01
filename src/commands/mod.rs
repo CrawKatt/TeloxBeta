@@ -1,11 +1,11 @@
 // Imports de archivos del bot
 // Imports of bot files
-pub mod admin_commands;
-pub mod fun_commands;
+pub(crate) mod admin_commands;
+pub(crate) mod fun_commands;
 pub mod funciones;
 pub mod handler;
-pub mod testing;
 pub mod save_database;
+pub mod testing;
 
 // Uso de admin_commands en el bot
 // Use of admin_commands in the bot

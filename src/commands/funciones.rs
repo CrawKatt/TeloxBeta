@@ -1,6 +1,6 @@
 use crate::dependencies::*;
 
-//const VARIABLES: &str = include_str!("funciones_utils/variables.md");
+// const VARIABLES: &str = include_str!("funciones_utils/variables.md");
 
 // enum for the examples of the bot
 enum Ejemplo {
@@ -44,6 +44,7 @@ enum Ejemplo {
 
 /// # Errors
 pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
+
     let ejemplo = match msg.text() {
         Some("/variables") => Ejemplo::Variables,
         Some("/constantes") => Ejemplo::Constantes,
@@ -82,19 +83,23 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
         Some("/while") => Ejemplo::While,
         Some("/iflet") => Ejemplo::IfLet,
         _ => {
+
             if let Some(text) = msg.text() {
+
                 let ok = bot
                     .send_message(msg.chat.id, format!("Comando desconocido `{text:#?}`"))
                     .parse_mode(MarkdownV2)
                     .await?;
+
                 sleep(Duration::from_secs(5)).await;
+
                 bot.delete_message(msg.chat.id, ok.id).await?;
             } else {
                 // Manejo del caso en el que msg.text() es None
             }
 
             return Ok(());
-        }
+        },
     };
 
     // Call MarkDown file example
@@ -142,6 +147,7 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
         .await?;
 
     sleep(Duration::from_secs(5)).await;
+
     bot.delete_message(msg.chat.id, msg.id).await?;
 
     Ok(())

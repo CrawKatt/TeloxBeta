@@ -1,7 +1,11 @@
 use crate::commands::dependencies::*;
 
+/// # Errors
+/// # Panics
 pub async fn send_kick(bot: Bot, msg: Message) -> ResponseResult<()> {
+
     let Some(text) = msg.text() else {
+
         return Ok(());
     };
 
@@ -21,6 +25,7 @@ pub async fn send_kick(bot: Bot, msg: Message) -> ResponseResult<()> {
     };
 
     let url = nekosbest::get(nekosbest::Category::Kick).await.unwrap().url;
+
     bot.send_animation(msg.chat.id, InputFile::url(url.parse().unwrap()))
         .caption(format!("@{} Pateó a{}", username_author, username_target))
         .parse_mode(ParseMode::Html)

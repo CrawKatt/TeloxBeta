@@ -2,11 +2,12 @@ use crate::dependencies::*;
 
 // Derive BotCommands para analizar texto con un comando en este enum.
 //
-// 1. `rename_rule = "lowercase"` convierte todos los comandos en letras minúsculas.
+// 1. `rename_rule = "lowercase"` convierte todos los comandos en letras
+//    minúsculas.
 // 2. `description = "..."` especifica un texto antes de todos los comandos.
 //
-// Es decir, puede simplemente llamar a Command::descriptions() para obtener una descripción de
-// sus comandos en este formato:
+// Es decir, puede simplemente llamar a Command::descriptions() para obtener una
+// descripción de sus comandos en este formato:
 // %GENERAL-DESCRIPTION% /// %DESCRIPCIÓN GENERAL%
 // %PREFIX%%COMMAND% - %DESCRIPTION% /// %PREFIJO%%COMANDO% - %DESCRIPCIÓN%
 #[derive(BotCommands, Clone)]
@@ -90,6 +91,7 @@ pub enum Command {
 
 /// # Errors
 pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
+
     match cmd {
         // Comandos de Información
         // Info to Rust code examples Commands
@@ -146,7 +148,9 @@ pub async fn message_handler(
     msg: Message,
     me: Me,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
+
     if let Some(text) = msg.text() {
+
         match BotCommands::parse(text, me.username()) {
             Ok(Command::Start) => create_buttons(bot, msg).await?,
             Ok(Command::Help) => help_action(bot, msg).await?,
@@ -182,18 +186,20 @@ pub async fn message_handler(
             Ok(Command::Stare) => send_stare(bot, msg).await?,
 
             // Comandos de Anti_Spam (unsafe maldito LOL) >> Anti_Spam Commands (This is cursed LOL)
-            //Ok(Command::SpamOn) => handle_command(bot.clone(), msg.clone()).await?,
-            //Ok(Command::SpamOff) => handle_command(bot.clone(), msg.clone()).await?,
+            // Ok(Command::SpamOn) => handle_command(bot.clone(), msg.clone()).await?,
+            // Ok(Command::SpamOff) => handle_command(bot.clone(), msg.clone()).await?,
             Err(_) => {
-                //if text.contains("https://t.me") {
-                //anti_spam(bot.clone(), msg.clone()).await?;
+
+                // if text.contains("https://t.me") {
+                // anti_spam(bot.clone(), msg.clone()).await?;
                 //}
 
                 test_json_two(bot.clone(), msg.clone()).await?;
+
                 insert_user_to_sql(&msg)?;
 
-                //handle_command(bot, msg.clone()).await?;
-            }
+                // handle_command(bot, msg.clone()).await?;
+            },
 
             _ => action(bot, msg, Command::Variables).await?,
         }
@@ -201,21 +207,20 @@ pub async fn message_handler(
 
     Ok(())
 }
-/*
-async fn handle_command(bot: Bot, message: Message) -> ResponseResult<()> {
-    if let Some(text) = message.text() {
-        match text {
-            "/spam_on" => {
-                unsafe { ANTI_SPAM_ENABLED = true };
-                bot.send_message(message.chat.id, "Anti-spam activado").parse_mode(ParseMode::Html).await?;
-            }
-            "/spam_off" => {
-                unsafe { ANTI_SPAM_ENABLED = false };
-                bot.send_message(message.chat.id, "Anti-spam desactivado").parse_mode(ParseMode::Html).await?;
-            }
-            _ => (),
-        }
-    }
-    Ok(())
-}
-*/
+
+// async fn handle_command(bot: Bot, message: Message) -> ResponseResult<()> {
+// if let Some(text) = message.text() {
+// match text {
+// "/spam_on" => {
+// unsafe { ANTI_SPAM_ENABLED = true };
+// bot.send_message(message.chat.id, "Anti-spam
+// activado").parse_mode(ParseMode::Html).await?; }
+// "/spam_off" => {
+// unsafe { ANTI_SPAM_ENABLED = false };
+// bot.send_message(message.chat.id, "Anti-spam
+// desactivado").parse_mode(ParseMode::Html).await?; }
+// _ => (),
+// }
+// }
+// Ok(())
+// }

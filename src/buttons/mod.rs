@@ -1,2 +1,3 @@
-pub mod buttons_handler;
+pub(crate) mod buttons_handler;
+
 pub use buttons_handler::*;
