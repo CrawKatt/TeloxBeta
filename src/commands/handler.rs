@@ -93,8 +93,6 @@ pub enum Command {
 pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
 
     match cmd {
-        // Comandos de Información
-        // Info to Rust code examples Commands
         Command::Variables => ejemplos(bot, msg).await?,
         Command::Constantes => ejemplos(bot, msg).await?,
         Command::TiposDeDatos => ejemplos(bot, msg).await?,
@@ -130,9 +128,6 @@ pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> 
         Command::Scopes => ejemplos(bot, msg).await?,
         Command::Async => ejemplos(bot, msg).await?,
         Command::IfLet => ejemplos(bot, msg).await?,
-
-        // Comandos de Acerca del Bot y Novedades
-        // About and Updates Commands
         Command::About => ejemplos(bot, msg).await?,
         Command::Novedades => ejemplos(bot, msg).await?,
 

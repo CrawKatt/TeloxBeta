@@ -15,13 +15,13 @@ pub async fn mute_user_admin(bot: Bot, msg: Message) -> ResponseResult<()> {
                     .reply_to_message_id(msg.id)
                     .await?;
 
-                let error_msg_id = error_msg.id;
+                let err = error_msg.id;
 
-                sleep(Duration::from_secs(5)).await;
-
-                bot.delete_message(msg.chat.id, error_msg_id).await?;
-
-                bot.delete_message(msg.chat.id, msg.id).await?;
+                tokio::spawn(async move {
+                    sleep(Duration::from_secs(5)).await;
+                    bot.delete_message(msg.chat.id, err).await.unwrap_or_default();
+                    bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                });
 
                 return Ok(());
             };
@@ -50,14 +50,13 @@ pub async fn mute_user_admin(bot: Bot, msg: Message) -> ResponseResult<()> {
                                 format!("❌ @{username_user} {ALREADY_MUTED}"),
                             )
                             .reply_to_message_id(msg.id)
-                            .parse_mode(ParseMode::Html)
                             .await?;
 
-                        sleep(Duration::from_secs(10)).await;
-
-                        bot.delete_message(msg.chat.id, err.id).await?;
-
-                        bot.delete_message(msg.chat.id, msg.id).await?;
+                        tokio::spawn(async move {
+                            sleep(Duration::from_secs(10)).await;
+                            bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+                            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                        });
 
                         return Ok(());
                     }
@@ -85,22 +84,22 @@ pub async fn mute_user_admin(bot: Bot, msg: Message) -> ResponseResult<()> {
                         .map_or(false, |ext| ext.eq_ignore_ascii_case("gif"))
                     {
 
+                        let user_id = user.id;
+
                         bot.send_animation(msg.chat.id, InputFile::file(file_path))
                             .caption(format!(
-                                "✅ @{username_user} [<code>{}</code>] silenciado",
-                                user.id
+                                "✅ @{username_user} [<code>{user_id}</code>] silenciado",
                             ))
-                            .parse_mode(ParseMode::Html)
                             .reply_to_message_id(msg.id)
                             .await?;
                     } else {
 
+                        let user_id = user.id;
+
                         bot.send_photo(msg.chat.id, InputFile::file(file_path))
                             .caption(format!(
-                                "✅ @{username_user} [<code>{}</code>] silenciado",
-                                user.id
+                                "✅ @{username_user} [<code>{user_id}</code>] silenciado",
                             ))
-                            .parse_mode(ParseMode::Html)
                             .reply_to_message_id(msg.id)
                             .await?;
                     }
@@ -113,11 +112,12 @@ pub async fn mute_user_admin(bot: Bot, msg: Message) -> ResponseResult<()> {
                         )
                         .await?;
 
-                    sleep(Duration::from_secs(5)).await;
+                    tokio::spawn(async move {
+                        sleep(Duration::from_secs(10)).await;
+                        bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+                        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                    });
 
-                    bot.delete_message(msg.chat.id, err.id).await?;
-
-                    bot.delete_message(msg.chat.id, msg.id).await?;
                 };
             }
         },
@@ -149,15 +149,17 @@ pub async fn get_user_id_by_arguments_for_mute(bot: Bot, msg: Message) -> Respon
     // check if the arguments are empty
     if arguments.is_empty() {
 
-        bot.send_message(
+        let err = bot.send_message(
             msg.chat.id,
             "❌ No has especificado un ID para obtener el usuario",
         )
         .await?;
 
-        bot.delete_message(msg.chat.id, msg.id).await?;
-
-        println!("❌ No has especificado un ID para obtener el usuario {msg:#?}");
+        tokio::spawn(async move {
+            sleep(Duration::from_secs(5)).await;
+            bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+        });
 
         return Ok(());
     }
@@ -177,12 +179,14 @@ pub async fn get_user_id_by_arguments_for_mute(bot: Bot, msg: Message) -> Respon
 
         let true = is_admin_or_owner else {
 
-            bot.send_message(msg.chat.id, "❌ No tienes permisos para usar este comando")
+            let err = bot.send_message(msg.chat.id, "❌ No tienes permisos para usar este comando")
                 .await?;
 
-            bot.delete_message(msg.chat.id, msg.id).await?;
-
-            println!("❌ No tienes permisos para usar este comando {msg:#?}");
+            tokio::spawn(async move {
+                sleep(Duration::from_secs(5)).await;
+                bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+                bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+            });
 
             return Ok(());
         };
@@ -201,11 +205,11 @@ pub async fn get_user_id_by_arguments_for_mute(bot: Bot, msg: Message) -> Respon
                 )
                 .await?;
 
-            sleep(Duration::from_secs(5)).await;
-
-            bot.delete_message(msg.chat.id, err.id).await?;
-
-            bot.delete_message(msg.chat.id, msg.id).await?;
+            tokio::spawn(async move {
+                sleep(Duration::from_secs(5)).await;
+                bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+                bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+            });
 
             return Ok(());
         };
@@ -231,11 +235,11 @@ pub async fn get_user_id_by_arguments_for_mute(bot: Bot, msg: Message) -> Respon
                 .send_message(msg.chat.id, "❌ No tienes permisos para usar este comando")
                 .await?;
 
-            sleep(Duration::from_secs(5)).await;
-
-            bot.delete_message(msg.chat.id, err.id).await?;
-
-            bot.delete_message(msg.chat.id, msg.id).await?;
+            tokio::spawn(async move {
+                sleep(Duration::from_secs(5)).await;
+                bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+                bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+            });
 
             return Ok(());
         };
@@ -250,24 +254,25 @@ pub async fn get_user_id_by_arguments_for_mute(bot: Bot, msg: Message) -> Respon
 
         let ChatMemberStatus::Banned { .. } = chat_member.status() else {
 
+            let bot_copy = bot.clone();
+
             bot.restrict_chat_member(msg.chat.id, UserId(user_id), ChatPermissions::empty())
                 .await?;
 
-            let mute_ok = bot
+            let ok = bot
                 .send_message(
                     msg.chat.id,
                     format!("✅ @{username} [<code>{user_id}</code>] Silenciado"),
                 )
-                .parse_mode(ParseMode::Html)
                 .await?;
 
-            sleep(Duration::from_secs(5)).await;
+            tokio::spawn(async move {
+                sleep(Duration::from_secs(5)).await;
+                bot.delete_message(msg.chat.id, ok.id).await.unwrap_or_default();
+                bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+            });
 
-            bot.delete_message(msg.chat.id, mute_ok.id).await?;
-
-            bot.delete_message(msg.chat.id, msg.id).await?;
-
-            ban_animation_generator(bot, msg).await?;
+            ban_animation_generator(bot_copy, msg).await?;
 
             return Ok(());
         };
@@ -277,14 +282,13 @@ pub async fn get_user_id_by_arguments_for_mute(bot: Bot, msg: Message) -> Respon
                 msg.chat.id,
                 format!("❌ @{username} [<code>{user_id}</code>] Ya está silenciado"),
             )
-            .parse_mode(ParseMode::Html)
             .await?;
 
-        sleep(Duration::from_secs(5)).await;
-
-        bot.delete_message(msg.chat.id, err.id).await?;
-
-        bot.delete_message(msg.chat.id, msg.id).await?;
+        tokio::spawn(async move {
+            sleep(Duration::from_secs(5)).await;
+            bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+        });
 
         return Ok(());
     }

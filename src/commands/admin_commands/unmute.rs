@@ -247,7 +247,6 @@ pub async fn get_user_id_by_arguments_for_unmute(bot: Bot, msg: Message) -> Resp
                     msg.chat.id,
                     format!("✅ @{username} [<code>{user_id}</code>] Ya no está silenciado"),
                 )
-                .parse_mode(ParseMode::Html)
                 .await?;
 
             sleep(Duration::from_secs(5)).await;
@@ -266,7 +265,6 @@ pub async fn get_user_id_by_arguments_for_unmute(bot: Bot, msg: Message) -> Resp
                 msg.chat.id,
                 format!("❌ @{username} [<code>{user_id}</code>] No está silenciado"),
             )
-            .parse_mode(ParseMode::Html)
             .await?;
 
         sleep(Duration::from_secs(5)).await;

@@ -70,6 +70,8 @@ async fn chat_member_welcome(bot: Bot, chat_member: ChatMemberUpdated) -> Member
     // present or is gone
     let chat_member_status = chat_member.old_chat_member;
 
+    //let user_id_for_ban = user.id;
+
     // We converts the user_id to i64 type
     let ChatId(user_id) = ChatId::from(user_id);
 
@@ -94,6 +96,8 @@ async fn chat_member_welcome(bot: Bot, chat_member: ChatMemberUpdated) -> Member
         )
         .await?;
     }
+
+    //bot.ban_chat_member(chat_member.chat.id, user_id_for_ban).await?;
 
     Ok(())
 }
