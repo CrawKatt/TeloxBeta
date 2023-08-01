@@ -1,5 +1,6 @@
 use crate::admin_commands::*;
 
+/// # Errors
 pub async fn create_buttons(bot: Bot, msg: Message) -> ResponseResult<()> {
     // Create a list of buttons and send them.
     let keyboard = make_main_keyboard();
@@ -15,6 +16,7 @@ pub async fn create_buttons(bot: Bot, msg: Message) -> ResponseResult<()> {
     Ok(())
 }
 
+/// # Errors
 pub async fn help_action(bot: Bot, msg: Message) -> ResponseResult<()> {
     let keyboard = make_main_keyboard();
     bot.send_message(msg.chat.id, "¿Necesitas ayuda? Prueba alguna de las opciones disponibles:")
@@ -23,6 +25,7 @@ pub async fn help_action(bot: Bot, msg: Message) -> ResponseResult<()> {
     Ok(())
 }
 
+#[must_use]
 pub fn make_main_keyboard() -> InlineKeyboardMarkup {
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
 
@@ -60,6 +63,7 @@ pub fn make_main_keyboard() -> InlineKeyboardMarkup {
 }
 */
 
+#[must_use]
 pub fn make_rust_keyboard() -> InlineKeyboardMarkup {
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
 
@@ -121,6 +125,7 @@ pub fn make_about_keyboard() -> InlineKeyboardMarkup {
 
  */
 
+#[must_use]
 pub fn make_settings_keyboard() -> InlineKeyboardMarkup {
     let keyboard = vec![
         vec![InlineKeyboardButton::callback("AntiSpam", "AntiSpam")],
@@ -132,6 +137,7 @@ pub fn make_settings_keyboard() -> InlineKeyboardMarkup {
     InlineKeyboardMarkup::new(keyboard)
 }
 
+#[must_use]
 pub fn make_about_keyboard() -> InlineKeyboardMarkup {
     let keyboard = vec![
         vec![InlineKeyboardButton::callback("GitHub", "GitHub")],
@@ -141,6 +147,7 @@ pub fn make_about_keyboard() -> InlineKeyboardMarkup {
     InlineKeyboardMarkup::new(keyboard)
 }
 
+#[must_use]
 pub fn make_donate_keyboard() -> InlineKeyboardMarkup {
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
     let donate_options = ["PayPal", "Patreon", "Crypto", "Volver"];
@@ -162,6 +169,7 @@ pub fn make_donate_keyboard() -> InlineKeyboardMarkup {
     InlineKeyboardMarkup::new(keyboard)
 }
 
+#[must_use]
 pub fn make_language_keyboard() -> InlineKeyboardMarkup {
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
     let languages = ["Español", "English", "日本語", "Volver"];
@@ -183,6 +191,7 @@ pub fn make_language_keyboard() -> InlineKeyboardMarkup {
     InlineKeyboardMarkup::new(keyboard)
 }
 
+#[must_use]
 pub fn make_help_keyboard() -> InlineKeyboardMarkup {
     let mut keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
     let languages = ["Comandos", "Guía", "Soporte", "Volver"];
@@ -216,11 +225,13 @@ pub fn make_help_keyboard() -> InlineKeyboardMarkup {
 }
 */
 
+#[must_use]
 pub fn make_back_button_keyboard() -> InlineKeyboardMarkup {
     let keyboard: Vec<Vec<InlineKeyboardButton>> = vec![];
     InlineKeyboardMarkup::new(keyboard)
 }
 
+/// # Errors
 pub async fn inline_query_handler(
     bot: Bot,
     q: InlineQuery,
@@ -237,6 +248,11 @@ pub async fn inline_query_handler(
     Ok(())
 }
 
+const PRINCIPIANTE_BOTON: &str = "Recomendado para Principiantes: \
+                    \n\n/variables \n/constantes \n/tiposdeDatos \n/shadowing \
+                    \n/operadores \n/shadowing";
+
+/// # Errors
 pub async fn callback_handler(
     bot: Bot,
     q: CallbackQuery,
@@ -250,19 +266,14 @@ pub async fn callback_handler(
                 bot.edit_message_text(chat.id, id, text).reply_markup(keyboard).await?;
             }
         }
-
         Some("Principiante") => {
             if let Some(Message { id, chat, .. }) = q.message {
-                let text = "Recomendado para Principiantes: \
-                    \n\n/variables \n/constantes \n/tiposdeDatos \n/shadowing \
-                    \n/operadores \n/shadowing"
+                let text = PRINCIPIANTE_BOTON
                     .to_owned();
-
                 let keyboard = make_back_button_keyboard();
                 bot.edit_message_text(chat.id, id, text).reply_markup(keyboard).await?;
             }
         }
-
         Some("Intermedio") => {
             if let Some(Message { id, chat, .. }) = q.message {
                 let text = "Recomendado para conocimiento Intermedio: \

@@ -1,11 +1,11 @@
 use crate::dependencies::*;
 
+/// # Errors
+/// # Panics
 pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
     match msg.reply_to_message() {
         Some(replied) => {
-            let user = if let Some(from) = replied.from() {
-                from
-            } else {
+            let Some(user) = replied.from() else {
                 let error_msg = bot.send_message(msg.chat.id, "❌ No se pudo obtener el usuario").await?;
                 let error_msg_id = error_msg.id;
 
@@ -17,10 +17,7 @@ pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
             };
 
             if let Some(from) = msg.from() {
-                let username_user = match user.clone().username {
-                    Some(username) => username,
-                    None => String::new(),
-                };
+                let username_user = user.clone().username.map_or_else(String::new, |username| username);
 
                 let is_admin_or_owner = bot.get_chat_member(msg.chat.id, from.id).await?.is_admin_or_owner();
                 if is_admin_or_owner {
@@ -31,7 +28,6 @@ pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                         let ok = bot
                             .send_video(msg.chat.id, InputFile::file("./assets/unban/1.mp4"))
                             .caption(format!("✅ @{username_user} desbaneado",))
-                            .parse_mode(ParseMode::Html)
                             .reply_to_message_id(msg.id)
                             .await?;
 
@@ -40,7 +36,6 @@ pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                     } else {
                         let err = bot
                             .send_message(msg.chat.id, format!("❌ @{username_user} {NOT_BANNED}"))
-                            .parse_mode(ParseMode::Html)
                             .reply_to_message_id(msg.id)
                             .await?;
 
@@ -66,6 +61,8 @@ pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
     Ok(())
 }
 
+/// # Errors
+/// # Panics
 pub async fn get_user_id_by_arguments_for_unban(bot: Bot, msg: Message) -> ResponseResult<()> {
     // extract the text content of the message
 
@@ -74,17 +71,14 @@ pub async fn get_user_id_by_arguments_for_unban(bot: Bot, msg: Message) -> Respo
     };
 
     // get the arguments after the command trigger
-    let (_, arguments) = match text.find(' ') {
-        Some(index) => text.split_at(index),
-        None => ("", text),
-    };
+    let (_, arguments) = text.find(' ').map_or(("", text), |index| text.split_at(index));
 
     // check if the arguments are empty
     if arguments.is_empty() {
         bot.send_message(msg.chat.id, "❌ No has especificado un ID para obtener el usuario")
             .await?;
         bot.delete_message(msg.chat.id, msg.id).await?;
-        println!("❌ No has especificado un ID para obtener el usuario {:#?}", msg);
+        println!("❌ No has especificado un ID para obtener el usuario {msg:#?}");
 
         return Ok(());
     }
@@ -100,26 +94,23 @@ pub async fn get_user_id_by_arguments_for_unban(bot: Bot, msg: Message) -> Respo
         let true = is_admin_or_owner else {
             bot.send_message(msg.chat.id, "❌ No tienes permisos para usar este comando").await?;
             bot.delete_message(msg.chat.id, msg.id).await?;
-            println!("❌ No tienes permisos para usar este comando {:#?}", msg);
+            println!("❌ No tienes permisos para usar este comando {msg:#?}");
             return Ok(());
         };
-        get_user_id_by_username(bot, msg).await?;
+        Box::pin(get_user_id_by_username(bot, msg)).await?;
     } else {
         // extract the user ID from the arguments
-        let user_id = match arguments.trim().parse::<u64>() {
-            Ok(id) => id,
-            Err(_) => {
-                let err = bot.send_message(msg.chat.id, "❌ El ID o @Username proporcionado no es válido, considera reenviar un mensaje al bot para hacer un ban por ID").await?;
-                sleep(Duration::from_secs(5)).await;
-                bot.delete_message(msg.chat.id, err.id).await?;
-                bot.delete_message(msg.chat.id, msg.id).await?;
+        let Ok(user_id) = arguments.trim().parse::<u64>() else {
+            let err = bot.send_message(msg.chat.id, "❌ El ID o @Username proporcionado no es válido, considera reenviar un mensaje al bot para hacer un ban por ID").await?;
+            sleep(Duration::from_secs(5)).await;
+            bot.delete_message(msg.chat.id, err.id).await?;
+            bot.delete_message(msg.chat.id, msg.id).await?;
 
-                return Ok(());
-            }
+            return Ok(());
         };
 
         let Some(from) = msg.from() else {
-            println!("❌ No se pudo obtener el usuario que envió el mensaje {:#?}", msg);
+            println!("❌ No se pudo obtener el usuario que envió el mensaje {msg:#?}");
             return Ok(());
         };
 
@@ -139,11 +130,10 @@ pub async fn get_user_id_by_arguments_for_unban(bot: Bot, msg: Message) -> Respo
         };
 
         let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
-        let username = chat_member.user.username.clone().unwrap_or("no username".to_string());
+        let username = chat_member.user.username.clone().unwrap_or_else(|| "no username".to_string());
 
         let ChatMemberStatus::Banned { .. } = chat_member.status() else {
-            bot.send_message(msg.chat.id, format!("❌ @{} [<code>{}</code>] No está Baneado", username, user_id))
-                .parse_mode(ParseMode::Html)
+            bot.send_message(msg.chat.id, format!("❌ @{username} [<code>{user_id}</code>] No está Baneado"))
                 .await?;
 
             sleep(Duration::from_secs(5)).await;
@@ -157,9 +147,8 @@ pub async fn get_user_id_by_arguments_for_unban(bot: Bot, msg: Message) -> Respo
         let mute_ok = bot
             .send_message(
                 msg.chat.id,
-                format!("✅ @{} [<code>{}</code>] Ya no está Baneado", username, user_id),
+                format!("✅ @{username} [<code>{user_id}</code>] Ya no está Baneado"),
             )
-            .parse_mode(ParseMode::Html)
             .await?;
 
         sleep(Duration::from_secs(5)).await;

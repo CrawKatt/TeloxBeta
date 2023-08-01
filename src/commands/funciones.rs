@@ -42,7 +42,7 @@ enum Ejemplo {
     IfLet,
 }
 
-// examples of the use of the bot
+/// # Errors
 pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
     let ejemplo = match msg.text() {
         Some("/variables") => Ejemplo::Variables,
@@ -84,7 +84,7 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
         _ => {
             if let Some(text) = msg.text() {
                 let ok = bot
-                    .send_message(msg.chat.id, format!("Comando desconocido `{:#?}`", text))
+                    .send_message(msg.chat.id, format!("Comando desconocido `{text:#?}`"))
                     .parse_mode(MarkdownV2)
                     .await?;
                 sleep(Duration::from_secs(5)).await;

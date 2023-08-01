@@ -20,8 +20,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let bot = teloxide::Bot::from_env().parse_mode(ParseMode::Html);
     let handler = dptree::entry()
-        .inspect(|u: Update| {
-            println!("{u:#?}");
+        .inspect(|_u: Update| {
+            //println!("{u:#?}");
         })
         .branch(Update::filter_message().endpoint(message_handler))
         .branch(Update::filter_callback_query().endpoint(callback_handler))
@@ -42,7 +42,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 /// Welcome Function
-/// We use ChatMemberUpdated instead of Message for our function because
+/// We use `ChatMemberUpdated` instead of Message for our function because
 /// Chat member updates != messages
 async fn chat_member_welcome(bot: Bot, chat_member: ChatMemberUpdated) -> MemberResult {
     // We use this variable for get the user

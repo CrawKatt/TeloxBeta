@@ -13,15 +13,12 @@ pub struct UserData {
     pub last_name: Option<String>,
 }
 
-// generar una lista leyendo database.json
+/// # Errors
 pub async fn list_json(bot: Bot, msg: Message) -> ResponseResult<()> {
-    let user_data_vec = match get_all_users().await {
-        Ok(users) => users,
-        Err(_) => {
+    let Ok(user_data_vec) = get_all_users() else {
             bot.send_message(msg.chat.id, "Error al leer la base de datos.").await?;
             return Ok(());
-        }
-    };
+        };
 
     if user_data_vec.is_empty() {
         bot.send_message(msg.chat.id, "No hay usuarios registrados.").await?;
@@ -31,47 +28,87 @@ pub async fn list_json(bot: Bot, msg: Message) -> ResponseResult<()> {
     let mut user_list = String::from("Usuarios registrados: \n");
 
     for user_data in user_data_vec {
-        let username = match user_data.username {
-            Some(username) => username,
-            None => String::from("sin nombre de usuario"),
-        };
+        let username = user_data.username.map_or_else(|| String::from("sin nombre de usuario"), |username| username);
 
         let full_name = match (user_data.first_name, user_data.last_name) {
             (Some(first_name), Some(last_name)) => format!("{first_name} {last_name}"),
             (Some(first_name), None) => first_name,
             (None, Some(last_name)) => last_name,
-            (None, None) => String::from(""),
+            (None, None) => String::new(),
         };
         let user_data = user_data.id;
         user_list += &format!("{username} [<code>{user_data}</code>] {full_name}\n");
     }
 
-    bot.send_message(msg.chat.id, user_list).parse_mode(ParseMode::Html).await?;
+    bot.send_message(msg.chat.id, user_list).await?;
 
     Ok(())
 }
 
-pub async fn read_database_file() -> ResponseResult<String> {
+///////////////////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//                                       Database section                                         \\
+//////////////////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+/// # Errors
+pub fn read_database_file() -> ResponseResult<String> {
     let contents = fs::read_to_string("database.json")?;
     Ok(contents)
 }
 
-pub async fn get_all_users() -> Result<Vec<UserData>, io::Error> {
+async fn read_users_from_file() -> Vec<User> {
+    let json_str = (read_to_string("database.json").await)
+        .map_or_else(|_| String::from("[]"), |json_str| json_str);
+    serde_json::from_str(&json_str).map_or_else(|_| vec![], |users| users)
+}
+
+fn write_users_to_file(users: &[User]) -> Result<(), io::Error> {
+    let json_str = match serde_json::to_string_pretty(&users) {
+        Ok(json) => json,
+        Err(e) => {
+            eprintln!("Error al convertir a JSON: {e}");
+            String::new()
+        }
+    };
+
+    fs::write("database.json", json_str)
+}
+
+fn update_user_data(
+    users: &mut Vec<User>,
+    user_id: UserId,
+    username: String,
+    first_name: String,
+    last_name: Option<String>,
+) {
+    for user in users {
+        if user.id == user_id {
+            user.username = Some(username);
+            user.first_name = first_name;
+            user.last_name = last_name;
+            break;
+        }
+    }
+}
+
+/// # Errors
+pub fn get_all_users() -> Result<Vec<UserData>, io::Error> {
     let contents = fs::read_to_string("database.json")?;
     let user_data_vec: Vec<UserData> = serde_json::from_str(&contents)?;
     Ok(user_data_vec)
 }
 
+//////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//                                      bot commands                                              \\
+//////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+/// # Errors
 pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<()> {
     // Obtener el username del mensaje
     let Some(text) = msg.text() else {
         return Ok(());
     };
 
-    let (_, username) = match text.find('@') {
-        Some(index) => text.split_at(index),
-        None => ("", text),
-    };
+    let (_, username) = text.find('@').map_or(("", text), |index| text.split_at(index));
 
     let msg_copy = msg.clone();
 
@@ -81,7 +118,7 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
     };
 
     // Obtener todos los usuarios registrados en el archivo database.json
-    let contents = read_database_file().await?;
+    let contents = read_database_file()?;
     let user_data_vec: Vec<UserData> = match serde_json::from_str(&contents) {
         Ok(vec) => vec,
         Err(e) => {
@@ -95,7 +132,7 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
         _ => None,
     });
     // Enviar el user_id como respuesta al usuario
-    action_handler(bot, msg_copy, username, user_id).await?;
+    Box::pin(action_handler(bot, msg_copy, username, user_id)).await?;
 
     Ok(())
 
@@ -108,6 +145,7 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
     */
 }
 
+/// # Errors
 pub async fn action_handler(
     bot: Bot,
     msg: Message,
@@ -126,18 +164,20 @@ pub async fn action_handler(
                 return Ok(()); // Si no hay un mensaje, no se hace nada
             };
 
-            match true {
-                _ if message.contains("/unban") => {
-                    unban_for_testing(bot, msg, username, user_id).await?
+            let command = message.split(' ').next().unwrap_or_default();
+
+            match command {
+                "/unban" => {
+                    unban_for_testing(bot, msg, username, user_id).await?;
                 }
-                _ if message.contains("/ban") => {
-                    ban_for_testing(bot, msg, username, user_id).await?
+                "/ban" => {
+                    ban_for_testing(bot, msg, username, user_id).await?;
                 }
-                _ if message.contains("/mute") => {
-                    mute_for_testing(bot, msg, username, user_id).await?
+                "/mute" => {
+                    mute_for_testing(bot, msg, username, user_id).await?;
                 }
-                _ if message.contains("/unmute") => {
-                    unmute_for_testing(bot, msg, username, user_id).await?
+                "/unmute" => {
+                    unmute_for_testing(bot, msg, username, user_id).await?;
                 }
                 _ => (),
             }
@@ -151,6 +191,7 @@ pub async fn action_handler(
     Ok(())
 }
 
+/// # Errors
 pub async fn unban_for_testing(
     bot: Bot,
     msg: Message,
@@ -161,16 +202,13 @@ pub async fn unban_for_testing(
     let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
 
     if !chat_member.is_banned() {
-        bot.send_message(msg.chat.id, format!("{username} [<code>{user_id}</code>] {NOT_BANNED}"))
-            .parse_mode(ParseMode::Html)
-            .await?;
+        bot.send_message(msg.chat.id, format!("{username} [<code>{user_id}</code>] {NOT_BANNED}")).await?;
     }
 
     bot.unban_chat_member(msg.chat.id, UserId(user_id)).await?;
     let video = bot
         .send_video(msg.chat.id, InputFile::file("./assets/unban/1.mp4"))
         .caption(format!("{username} [<code>{user_id}</code>] desbaneado."))
-        .parse_mode(ParseMode::Html)
         .await?;
 
     sleep(Duration::from_secs(60)).await;
@@ -179,6 +217,7 @@ pub async fn unban_for_testing(
     Ok(())
 }
 
+/// # Errors
 pub async fn ban_for_testing(
     bot: Bot,
     msg: Message,
@@ -191,7 +230,6 @@ pub async fn ban_for_testing(
             msg.chat.id,
             format!("{username} [<code>{user_id}</code>] {ALREADY_BANNED}"),
         )
-        .parse_mode(ParseMode::Html)
         .await?;
     }
     bot.ban_chat_member(msg.chat.id, UserId(user_id)).await?;
@@ -200,6 +238,7 @@ pub async fn ban_for_testing(
     Ok(())
 }
 
+/// # Errors
 pub async fn mute_for_testing(
     bot: Bot,
     msg: Message,
@@ -213,7 +252,6 @@ pub async fn mute_for_testing(
             msg.chat.id,
             format!("{username} [<code>{user_id}</code>] {ALREADY_MUTED}"),
         )
-        .parse_mode(ParseMode::Html)
         .await?;
     }
 
@@ -223,6 +261,7 @@ pub async fn mute_for_testing(
     Ok(())
 }
 
+/// # Errors
 pub async fn unmute_for_testing(
     bot: Bot,
     msg: Message,
@@ -235,8 +274,7 @@ pub async fn unmute_for_testing(
         bot.restrict_chat_member(msg.chat.id, UserId(user_id), ChatPermissions::all()).await?;
         let ok = bot
             .send_video(msg.chat.id, InputFile::file("./assets/unmute/unmute.mp4"))
-            .caption(format!("{username} [<code>{user_id}</code>] {}", UNMUTED))
-            .parse_mode(ParseMode::Html)
+            .caption(format!("{username} [<code>{user_id}</code>] {UNMUTED}"))
             .await?;
 
         sleep(Duration::from_secs(60)).await;
@@ -244,14 +282,12 @@ pub async fn unmute_for_testing(
         bot.delete_message(msg.chat.id, msg.id).await?;
     }
 
-    bot.send_message(msg.chat.id, format!("{username} [<code>{user_id}</code>] {NOT_MUTED}"))
-        .parse_mode(ParseMode::Html)
-        .await?;
+    bot.send_message(msg.chat.id, format!("{username} [<code>{user_id}</code>] {NOT_MUTED}")).await?;
 
     Ok(())
 }
 
-// ban por UserID
+/// # Errors
 pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<()> {
     // extract the text content of the message
     let Some(text) = msg.text() else {
@@ -259,10 +295,7 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
     };
 
     // get the arguments after the command trigger
-    let (_, arguments) = match text.find(' ') {
-        Some(index) => text.split_at(index),
-        None => ("", text),
-    };
+    let (_, arguments) = text.find(' ').map_or(("", text), |index| text.split_at(index));
 
     // check if the arguments are empty
     if arguments.is_empty() {
@@ -281,7 +314,7 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
         };
 
         let Some(from) = msg.from() else {
-            println!("❌ No se pudo obtener el usuario que envió el mensaje {:#?}", msg);
+            println!("❌ No se pudo obtener el usuario que envió el mensaje {msg:#?}");
             return Ok(());
         };
 
@@ -317,7 +350,7 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
         no_admin_err(bot.clone(), msg.clone()).await?;
     }
 
-    get_user_id_by_username(bot, msg).await?;
+    Box::pin(get_user_id_by_username(bot, msg)).await?;
 
     /*
     let true = is_admin_or_owner else {
@@ -332,6 +365,7 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
 /* //     Error Functions   \\ */
 /* \\\\\\\\\\\\||///////////// */
 
+/// # Errors
 pub async fn already_banned(
     bot: Bot,
     msg: Message,
@@ -343,7 +377,6 @@ pub async fn already_banned(
             msg.chat.id,
             format!("❌ @{username} [<code>{user_id}</code>] {ALREADY_BANNED}"),
         )
-        .parse_mode(ParseMode::Html)
         .await?;
 
     sleep(Duration::from_secs(5)).await;
@@ -353,6 +386,7 @@ pub async fn already_banned(
     Ok(())
 }
 
+/// # Errors
 pub async fn no_admin_err(bot: Bot, msg: Message) -> ResponseResult<()> {
     let err = bot.send_message(msg.chat.id, PERMISSIONS_DENIED).await?;
 
@@ -364,11 +398,10 @@ pub async fn no_admin_err(bot: Bot, msg: Message) -> ResponseResult<()> {
     Ok(())
 }
 
+/// # Errors
 pub async fn no_username_found_err(bot: Bot, msg: Message, username: &str) -> ResponseResult<()> {
     let err = bot
-        .send_message(msg.chat.id, format!("{NOT_USERNAME_FOUND_404} {username}"))
-        .parse_mode(ParseMode::Html)
-        .await?;
+        .send_message(msg.chat.id, format!("{NOT_USERNAME_FOUND_404} {username}")).await?;
 
     sleep(Duration::from_secs(5)).await;
     bot.delete_message(msg.chat.id, err.id).await?;
@@ -376,6 +409,7 @@ pub async fn no_username_found_err(bot: Bot, msg: Message, username: &str) -> Re
     Ok(())
 }
 
+/// # Errors
 pub async fn error_message_for_user_id(bot: Bot, msg: Message) -> ResponseResult<()> {
     let err = bot.send_message(msg.chat.id, "❌ El ID o @Username proporcionado no es válido, considera reenviar un mensaje al bot para hacer un ban por ID").await?;
 
@@ -390,6 +424,7 @@ pub async fn error_message_for_user_id(bot: Bot, msg: Message) -> ResponseResult
 /* //   Ban For Arguments   \\ */
 /* \\\\\\\\\\\\||///////////// */
 
+/// # Errors
 pub async fn ban_for_arguments(
     bot: Bot,
     msg: Message,
@@ -409,7 +444,7 @@ pub async fn ban_for_arguments(
     let get_file_name = |index: usize| -> &'static str {
         let Some(file_name) = file_names.get(index) else {
             let Some(last_file) = file_names.last() else {
-                println!("❌ No se pudo obtener el último archivo de la lista de archivos {:#?}", file_names);
+                println!("❌ No se pudo obtener el último archivo de la lista de archivos {file_names:#?}");
                 return "";
             };
             return last_file;
@@ -418,45 +453,39 @@ pub async fn ban_for_arguments(
     };
 
     let file_path = format!("./assets/ban/{}", get_file_name(random_number));
-    match file_path.ends_with(".gif") {
-        true => {
-            let gif = bot
-                .send_animation(msg.chat.id, InputFile::file(file_path))
-                .caption(format!("@{username} [<code>{user_id}</code>] baneado"))
-                .parse_mode(ParseMode::Html)
-                .await?;
+    if Path::new(&file_path)
+        .extension()
+        .map_or(false, |ext| ext.eq_ignore_ascii_case("gif")) {
+        let gif = bot
+            .send_animation(msg.chat.id, InputFile::file(file_path))
+            .caption(format!("@{username} [<code>{user_id}</code>] baneado"))
+            .await?;
 
-            sleep(Duration::from_secs(60)).await;
-            bot.delete_message(msg.chat.id, gif.id).await?;
-            bot.delete_message(msg.chat.id, msg.id).await?;
-        }
+        sleep(Duration::from_secs(60)).await;
+        bot.delete_message(msg.chat.id, gif.id).await?;
+        bot.delete_message(msg.chat.id, msg.id).await?;
+    } else {
+        let video = bot
+            .send_video(msg.chat.id, InputFile::file(file_path))
+            .caption(format!("@{username} [<code>{user_id}</code>] baneado"))
+            .await?;
 
-        false => {
-            let video = bot
-                .send_video(msg.chat.id, InputFile::file(file_path))
-                .caption(format!("@{username} [<code>{user_id}</code>] baneado"))
-                .parse_mode(ParseMode::Html)
-                .await?;
-
-            sleep(Duration::from_secs(60)).await;
-            bot.delete_message(msg.chat.id, video.id).await?;
-            bot.delete_message(msg.chat.id, msg.id).await?;
-        }
+        sleep(Duration::from_secs(60)).await;
+        bot.delete_message(msg.chat.id, video.id).await?;
+        bot.delete_message(msg.chat.id, msg.id).await?;
     };
 
     Ok(())
 }
 
+/// # Errors
 pub async fn test_json_two(bot: Bot, msg: Message) -> ResponseResult<()> {
     let Some(user) = msg.from() else {
         println!("No user found.");
         return Ok(())
     };
 
-    let username = match user.username {
-        Some(ref username) => format!("@{username}"),
-        None => user.first_name.clone(),
-    };
+    let username = user.username.as_ref().map_or_else(|| user.first_name.clone(), |username| format!("@{username}"));
 
     let user_id = user.id;
     let first_name = user.first_name.clone();
@@ -480,7 +509,14 @@ pub async fn test_json_two(bot: Bot, msg: Message) -> ResponseResult<()> {
         }
     }
 
-    if !is_registered {
+    if is_registered {
+        update_user_data(&mut users,
+            user_id,
+            username.clone(),
+            first_name.clone(),
+            last_name.clone(),
+        );
+    } else {
         let new_first_name = first_name.clone();
         let new_last_name = last_name.clone();
 
@@ -495,109 +531,62 @@ pub async fn test_json_two(bot: Bot, msg: Message) -> ResponseResult<()> {
             added_to_attachment_menu: false,
         };
         users.push(new_user);
-    } else {
-        update_user_data(
-            &mut users,
-            user_id,
-            username.clone(),
-            first_name.clone(),
-            last_name.clone(),
-        );
     }
 
     let result = write_users_to_file(&users);
     match result {
-        Ok(()) => println!("User saved to database."),
+        Ok(()) => println!("User saved to database.json"),
         Err(e) => println!("Error writing to database: {e:?}"),
     }
 
-    match (db_username, db_first_name, db_last_name) {
-        (Some(db_username), _, _) if username != db_username => {
-            send_username_changed_message(
-                bot,
-                msg.chat.id,
-                &user.first_name,
-                &db_username,
-                &username,
-            )
-            .await?;
-        }
+    if username != db_username.clone().unwrap_or_default() {
+        send_username_changed_message(
+            bot.clone(),
+            msg.chat.id,
+            &user.first_name,
+            db_username,
+            &username,
+        )
+        .await?;
+    }
 
-        (_, Some(db_first_name), _) if first_name != db_first_name => {
-            send_first_name_changed_message(
-                bot,
-                msg.chat.id,
-                &user.first_name,
-                &db_first_name,
-                &first_name,
-            )
-            .await?;
-        }
+    if first_name != db_first_name.clone().unwrap_or_default() {
+        send_first_name_changed_message(
+            bot.clone(),
+            msg.chat.id,
+            &user.first_name,
+            db_first_name,
+            &first_name,
+        )
+        .await?;
+    }
 
-        (_, _, Some(db_last_name)) if last_name != db_last_name => {
-            send_last_name_changed_message(
-                bot,
-                msg.chat.id,
-                &user.first_name,
-                db_last_name,
-                last_name,
-            )
-            .await?;
-        }
-
-        _ => (),
+    if last_name != db_last_name.clone().unwrap_or_default() {
+        send_last_name_changed_message(
+            bot,
+            msg.chat.id,
+            &user.first_name,
+            db_last_name.unwrap_or_default(),
+            last_name,
+        )
+        .await?;
     }
 
     Ok(())
 }
 
-async fn read_users_from_file() -> Vec<User> {
-    let json_str = (read_to_string("database.json").await)
-        .map_or_else(|_| String::from("[]"), |json_str| json_str);
-    serde_json::from_str(&json_str).map_or_else(|_| vec![], |users| users)
-}
-
-fn update_user_data(
-    users: &mut Vec<User>,
-    user_id: UserId,
-    username: String,
-    first_name: String,
-    last_name: Option<String>,
-) {
-    for user in users {
-        if user.id == user_id {
-            user.username = Some(username);
-            user.first_name = first_name;
-            user.last_name = last_name;
-            break;
-        }
-    }
-}
-
-fn write_users_to_file(users: &[User]) -> Result<(), io::Error> {
-    let json_str = match serde_json::to_string_pretty(&users) {
-        Ok(json) => json,
-        Err(e) => {
-            eprintln!("Error al convertir a JSON: {e}");
-            String::new()
-        }
-    };
-
-    fs::write("database.json", json_str)
-}
-
 async fn send_username_changed_message(
     bot: Bot,
     chat_id: ChatId,
-    username: &str,
-    old_username: &str,
+    username: &String,
+    old_username: Option<String>,
     new_username: &str,
 ) -> ResponseResult<()> {
+    let old_username = old_username.unwrap_or_default();
     bot.send_message(
         chat_id,
         format!("{username} cambió su nombre de usuario de {old_username} a {new_username}."),
     )
-    .parse_mode(ParseMode::Html)
     .await?;
 
     Ok(())
@@ -607,14 +596,13 @@ async fn send_first_name_changed_message(
     bot: Bot,
     chat_id: ChatId,
     username: &str,
-    old_first_name: &str,
+    old_first_name: Option<String>,
     new_first_name: &str,
 ) -> ResponseResult<()> {
     bot.send_message(
         chat_id,
-        format!("{username} cambió su nombre de {old_first_name} a {new_first_name}."),
+        format!("{username} cambió su nombre de {old_first_name:?} a {new_first_name}."),
     )
-    .parse_mode(ParseMode::Html)
     .await?;
 
     Ok(())
@@ -636,7 +624,6 @@ async fn send_last_name_changed_message(
         chat_id,
         format!("{username} cambió su apellido de {old_last_name_text} a {new_last_name_text}."),
     )
-    .parse_mode(ParseMode::Html)
     .await?;
 
     Ok(())

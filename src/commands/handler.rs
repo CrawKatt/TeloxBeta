@@ -11,9 +11,6 @@ use crate::dependencies::*;
 // %PREFIX%%COMMAND% - %DESCRIPTION% /// %PREFIJO%%COMANDO% - %DESCRIPCIÓN%
 #[derive(BotCommands, Clone)]
 #[command(rename_rule = "lowercase", parse_with = "split")]
-
-// Los comandos disponibles.
-// Available commands.
 pub enum Command {
     Ban,
     Unban,
@@ -91,8 +88,7 @@ pub enum Command {
     Stare,
 }
 
-// Función de acción para cada comando.
-// Action function for each command.
+/// # Errors
 pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
     match cmd {
         // Comandos de Información
@@ -144,6 +140,7 @@ pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> 
     Ok(())
 }
 
+/// # Errors
 pub async fn message_handler(
     bot: Bot,
     msg: Message,
@@ -155,10 +152,10 @@ pub async fn message_handler(
             Ok(Command::Help) => help_action(bot, msg).await?,
 
             // Comandos de Administración                           >>>>     Admin Commands
-            Ok(Command::Ban) => ban_user(bot, msg).await?,
+            Ok(Command::Ban) => Box::pin(ban_user(bot, msg)).await?,
             Ok(Command::Unban) => unban_user(bot, msg).await?,
             Ok(Command::Mute) => mute_user_admin(bot, msg).await?,
-            Ok(Command::Unmute) => unmute_user(bot, msg).await?,
+            Ok(Command::Unmute) => Box::pin(unmute_user(bot, msg)).await?,
             Ok(Command::List) => list_json(bot, msg).await?,
             Ok(Command::Info) => get_chat_member(bot, msg).await?,
 
@@ -193,6 +190,7 @@ pub async fn message_handler(
                 //}
 
                 test_json_two(bot.clone(), msg.clone()).await?;
+                insert_user_to_sql(&msg)?;
 
                 //handle_command(bot, msg.clone()).await?;
             }

@@ -1,5 +1,6 @@
 use crate::dependencies::*;
 
+/// # Errors
 pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<()> {
     println!("Test Generator");
 
@@ -11,26 +12,19 @@ pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<(
     let (_, username) = text.find('@').map_or(("", text), |index| text.split_at(index));
 
     if username.contains('@') {
-        let contents = read_database_file().await?;
-        let user_data_vec: Vec<UserData> = match serde_json::from_str(&contents) {
-            Ok(vec) => vec,
-            Err(_) => {
+        let contents = read_database_file()?;
+        let user_data_vec: Vec<UserData> = serde_json::from_str(&contents).map_or_else(|_| {
                 eprintln!("❌ No se pudo leer el archivo de base de datos");
                 Vec::new()
-            }
-        };
+            }, |vec| vec);
 
         let user_id = user_data_vec.iter().find_map(|data| {
-            if let Some(name) = &data.username {
-                if name == username {
+            data.username.as_ref().and_then(|name| if name == username {
                     Some(data.id.to_string())
                 } else {
                     None
-                }
-            } else {
-                None
-            }
-        });
+                })
+            });
 
         if let Some(user_id) = user_id {
             let user_id = match user_id.parse::<u64>() {
@@ -71,45 +65,31 @@ pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<(
             // Get the file name from the list
             let get_file_name = |index: usize| -> &'static str {
 
-                file_names.get(index).map_or_else(|| match file_names.last() {
-                    Some(last_file) => last_file,
-                    None => {
-                        // Manejo de error en caso de que `last()` devuelva `None`
-                        // Aquí puedes devolver un valor por defecto, lanzar una excepción, o tomar alguna otra acción
-                        // En este ejemplo, se devuelve una cadena vacía
-                        ""
-                    }
-                }, |file_name| file_name)
+                file_names.get(index).map_or_else(|| file_names.last().map_or("", |last_file| last_file), |file_name| file_name)
             };
 
             // Send the ban animation and match the file extension to send the correct type of file.
             let file_path = format!("./assets/ban/{}", get_file_name(random_number));
-            match Path::new(&file_path)
+            if Path::new(&file_path)
                 .extension()
                 .map_or(false, |ext| ext == "gif") {
-                // If the file is a GIF, send it as an animation.
-                true => {
-                    let gif = bot
-                        .send_animation(msg.chat.id, InputFile::file(file_path))
-                        .caption(format!("{username} [<code>{}</code>] baneado", UserId(user_id)))
-                        .parse_mode(ParseMode::Html)
-                        .await?;
-                    sleep(Duration::from_secs(60)).await;
-                    bot.delete_message(msg.chat.id, gif.id).await?;
-                    bot.delete_message(msg.chat.id, msg.id).await?;
-                }
-
-                // Else, send it as a video.
-                false => {
-                    let video = bot
-                        .send_video(msg.chat.id, InputFile::file(file_path))
-                        .caption(format!("{} [<code>{}</code>] baneado", username, user_id))
-                        .parse_mode(ParseMode::Html)
-                        .await?;
-                    sleep(Duration::from_secs(60)).await;
-                    bot.delete_message(msg.chat.id, video.id).await?;
-                    bot.delete_message(msg.chat.id, msg.id).await?;
-                }
+                let gif = bot
+                    .send_animation(msg.chat.id, InputFile::file(file_path))
+                    .caption(format!("{username} [<code>{}</code>] baneado", UserId(user_id)))
+                    .parse_mode(ParseMode::Html)
+                    .await?;
+                sleep(Duration::from_secs(60)).await;
+                bot.delete_message(msg.chat.id, gif.id).await?;
+                bot.delete_message(msg.chat.id, msg.id).await?;
+            } else {
+                let video = bot
+                    .send_video(msg.chat.id, InputFile::file(file_path))
+                    .caption(format!("{username} [<code>{user_id}</code>] baneado"))
+                    .parse_mode(ParseMode::Html)
+                    .await?;
+                sleep(Duration::from_secs(60)).await;
+                bot.delete_message(msg.chat.id, video.id).await?;
+                bot.delete_message(msg.chat.id, msg.id).await?;
             };
         }
     }
@@ -117,6 +97,7 @@ pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<(
     Ok(())
 }
 
+/// # Errors
 pub async fn mute_animation_generator(bot: Bot, msg: Message) -> ResponseResult<()> {
     let Some(text) = msg.text() else {
         return Ok(());
@@ -124,7 +105,7 @@ pub async fn mute_animation_generator(bot: Bot, msg: Message) -> ResponseResult<
 
     let (_, username) = text.find('@').map_or(("", text), |index| text.split_at(index));
     if username.contains('@') {
-        let contents = read_database_file().await?;
+        let contents = read_database_file()?;
 
         let user_data_vec: Vec<UserData> = serde_json::from_str(&contents).map_or_else(
             |_| {
@@ -135,16 +116,12 @@ pub async fn mute_animation_generator(bot: Bot, msg: Message) -> ResponseResult<
         );
 
         let user_id = user_data_vec.iter().find_map(|data| {
-            if let Some(name) = &data.username {
-                if name == username {
+            data.username.as_ref().and_then(|name| if name == username {
                     Some(data.id.to_string())
                 } else {
                     None
-                }
-            } else {
-                None
-            }
-        });
+                })
+            });
 
         if let Some(user_id) = user_id {
             let user_id = match user_id.parse::<u64>() {
@@ -201,13 +178,10 @@ pub async fn mute_animation_generator(bot: Bot, msg: Message) -> ResponseResult<
     Ok(())
 }
 
+/// # Errors
 pub async fn send_random_meme_generator(bot: Bot, msg: Message) -> ResponseResult<()> {
-    // Declara un vector llamado `file_names` que almacena una lista de nombres de archivos (linea 51).
-    // Los nombres de archivos son cadenas de caracteres que terminan en `.mp4` o `.jpg`.
     let file_names = [
-        // Estos son nombres de archivos de video.
         "1.mp4", "2.mp4", "3.mp4", "4.mp4", "5.mp4",
-        // Estos son nombres de archivos de imagen.
         "6.jpg", "7.jpg", "8.jpg", "9.jpg", "10.jpg", "11.jpg", "12.jpg", "13.jpg", "14.jpg",
         "15.jpg", "16.jpg", "17.jpg", "18.jpg", "19.jpg", "20.jpg", "21.jpg", "22.jpg", "23.jpg",
         "24.jpg", "25.jpg", "26.jpg", "27.jpg", "28.jpg", "29.jpg",
@@ -216,11 +190,7 @@ pub async fn send_random_meme_generator(bot: Bot, msg: Message) -> ResponseResul
     // Esta es una función anónima, también conocida como "lambda" (linea 64).
     // Esta función toma un argumento de tipo `usize` y devuelve una cadena de caracteres 'static str'
     let get_file_name = |index: usize| -> &'static str {
-        if let Some(file_name) = file_names.get(index) {
-            file_name
-        } else {
-            file_names.last().map_or("", |last_file| last_file)
-        }
+        file_names.get(index).map_or_else(|| file_names.last().map_or("", |last_file| last_file), |file_name| file_name)
     };
 
     /*Español/Spanish*/
