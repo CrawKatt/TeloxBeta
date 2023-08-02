@@ -17,7 +17,11 @@ pub use unban::*;
 pub use unmute::*;
 
 // Import rand modules for generating random numbers
-pub use rand::{rngs::StdRng, Rng, SeedableRng};
+pub use rand::{
+    rngs::StdRng,
+    Rng,
+    SeedableRng
+};
 
 // Import Teloxide modules for interacting with the Telegram API
 pub use teloxide::{adaptors::DefaultParseMode,
@@ -31,6 +35,7 @@ pub use teloxide_core::{prelude::UserId,
 
 pub use rusqlite::{Connection, Result};
 pub use serde::{Deserialize, Serialize};
+pub use rusqlite::params;
 
 // type Bot for using the DefaultParseMode adapter
 pub type Bot = DefaultParseMode<teloxide::Bot>;

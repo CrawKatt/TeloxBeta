@@ -2,7 +2,7 @@ use crate::commands::dependencies::*;
 
 /// # Errors
 /// # Panics
-pub async fn send_hug(bot: Bot, msg: Message) -> ResponseResult<()> {
+pub(crate)  async fn send_hug(bot: Bot, msg: Message) -> ResponseResult<()> {
 
     let Some(text) = msg.text() else {
 

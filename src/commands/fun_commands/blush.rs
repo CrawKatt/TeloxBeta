@@ -2,7 +2,7 @@ use crate::commands::dependencies::*;
 
 /// # Errors
 /// # Panics
-pub async fn send_blush(bot: Bot, msg: Message) -> ResponseResult<()> {
+pub(crate)  async fn send_blush(bot: Bot, msg: Message) -> ResponseResult<()> {
 
     let username_author = msg.from().as_ref().and_then(|user| user.username.as_ref());
 

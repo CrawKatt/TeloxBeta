@@ -9,20 +9,11 @@ pub async fn send_kiss(bot: Bot, msg: Message) -> ResponseResult<()> {
         return Ok(());
     };
 
-    let (_, username_target) = match text.find(' ') {
-        Some(index) => text.split_at(index),
-        None => ("", text),
-    };
+    let (_, username_target) = text.find(' ').map_or(("", text), |index| text.split_at(index));
 
-    let username_author = match msg.from().as_ref() {
-        Some(user) => user.username.as_ref(),
-        None => None,
-    };
+    let username_author = msg.from().as_ref().and_then(|user| user.username.as_ref());
 
-    let username_author = match username_author {
-        Some(username) => username,
-        None => "",
-    };
+    let username_author = username_author.map_or("", |username| username);
 
     let url = nekosbest::get(nekosbest::Category::Kiss).await.unwrap().url;
 
