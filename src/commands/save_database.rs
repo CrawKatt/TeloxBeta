@@ -53,6 +53,7 @@ pub fn list_users_from_database_sql(conn: &Connection) -> Result<Vec<UserDataSql
 
 /// # Errors
 /// # Panics
+/// This code will panic if is not possible to connect to the database
 pub fn insert_user_to_sql(msg: &Message) -> ResponseResult<()> {
 
     let user = msg.from().unwrap();
@@ -68,7 +69,7 @@ pub fn insert_user_to_sql(msg: &Message) -> ResponseResult<()> {
     let last_name = user.last_name.clone();
 
     conn.execute(
-        "INSERT OR IGNORE INTO user_data (id, username, first_name, last_name) VALUES (?1, ?2, \
+        "INSERT OR REPLACE INTO user_data (id, username, first_name, last_name) VALUES (?1, ?2, \
          ?3, ?4)",
         (
             Some(format!("{}", &user_id.0)),
@@ -109,6 +110,7 @@ pub fn insert_user_data_sql(
     Ok(())
 }
 
+/*
 /// # Errors
 pub fn update_user_data_sql(
     conn: &Connection,
@@ -131,3 +133,4 @@ pub fn update_user_data_sql(
 
     Ok(())
 }
+*/
