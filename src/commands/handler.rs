@@ -138,7 +138,7 @@ pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> 
 }
 
 /// # Errors
-pub async fn message_handler(
+pub async fn message(
     bot: Bot,
     msg: Message,
     me: Me,

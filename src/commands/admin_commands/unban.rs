@@ -48,9 +48,12 @@ pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                             .reply_to_message_id(msg.id)
                             .await?;
 
-                        sleep(Duration::from_secs(60)).await;
+                        tokio::spawn(async move {
+                            sleep(Duration::from_secs(60)).await;
+                            bot.delete_message(msg.chat.id, ok.id).await.unwrap_or_default();
+                            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                        });
 
-                        bot.delete_message(msg.chat.id, ok.id).await?;
                     } else {
 
                         let err = bot

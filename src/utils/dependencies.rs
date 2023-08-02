@@ -7,7 +7,8 @@ pub use crate::{buttons::*,
                 info::*,
                 random_generator::*,
                 testing::*,
-                utils::*};
+                utils::*,
+                error::*};
 
 // pub use lib::*;
 pub use ban::*;

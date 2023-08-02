@@ -1,4 +1,3 @@
-use tokio::time::interval;
 use crate::dependencies::*;
 
 // ////////////||\\\\\\\\\\\\
@@ -150,7 +149,7 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
 
     let true = username.contains('@') else {
 
-        no_username_found_err(bot, msg_copy, username).await?;
+        no_username_found(bot, msg_copy, username).await?;
 
         return Ok(());
     };
@@ -230,7 +229,7 @@ pub async fn action_handler(
 
         None => {
 
-            no_username_found_err(bot, msg, username).await?;
+            no_username_found(bot, msg, username).await?;
         },
     };
 
@@ -238,7 +237,7 @@ pub async fn action_handler(
 }
 
 /// # Errors
-pub async fn unban_for_testing(
+async fn unban_for_testing(
     bot: Bot,
     msg: Message,
     username: &str,
@@ -283,7 +282,7 @@ pub async fn unban_for_testing(
 }
 
 /// # Errors
-pub async fn ban_for_testing(
+async fn ban_for_testing(
     bot: Bot,
     msg: Message,
     username: &str,
@@ -320,7 +319,7 @@ pub async fn ban_for_testing(
 }
 
 /// # Errors
-pub async fn mute_for_testing(
+async fn mute_for_testing(
     bot: Bot,
     msg: Message,
     username: &str,
@@ -357,7 +356,7 @@ pub async fn mute_for_testing(
 }
 
 /// # Errors
-pub async fn unmute_for_testing(
+async fn unmute_for_testing(
     bot: Bot,
     msg: Message,
     username: &str,
@@ -428,7 +427,7 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
 
         let Ok(user_id) = arguments.trim().parse::<u64>() else {
 
-            error_message_for_user_id(bot, msg).await?;
+            id_or_username_not_valid(bot, msg).await?;
 
             return Ok(());
         };
@@ -449,7 +448,7 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
         // If the user is an admin or owner, ban the target user and send a ban message.
         let false = !is_admin_or_owner else {
 
-            no_admin_err(bot, msg).await?;
+            permissions_denied(bot, msg).await?;
 
             return Ok(());
         };
@@ -484,7 +483,7 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
 
     if !is_admin_or_owner {
 
-        no_admin_err(bot.clone(), msg.clone()).await?;
+        permissions_denied(bot.clone(), msg.clone()).await?;
     }
 
     Box::pin(get_user_id_by_username(bot, msg)).await?;
@@ -492,87 +491,6 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
     // let true = is_admin_or_owner else {
     // return Ok(());
     // };
-
-    Ok(())
-}
-
-//////////////||\\\\\\\\\\\\
-
-//     Error Functions     \\
-
-//\\\\\\\\\\\\||/////////////
-
-/// # Errors
-pub async fn already_banned(
-    bot: Bot,
-    msg: Message,
-    user_id: u64,
-    username: String,
-) -> ResponseResult<()> {
-
-    let err = bot
-        .send_message(
-            msg.chat.id,
-            format!("❌ @{username} [<code>{user_id}</code>] {ALREADY_BANNED}"),
-        )
-        .await?;
-
-    tokio::spawn(async move {
-        sleep(Duration::from_secs(60)).await;
-        bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
-        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-    });
-
-    Ok(())
-}
-
-/// # Errors
-pub async fn no_admin_err(bot: Bot, msg: Message) -> ResponseResult<()> {
-
-    let err = bot.send_message(msg.chat.id, PERMISSIONS_DENIED).await?;
-
-    tokio::spawn(async move {
-        sleep(Duration::from_secs(60)).await;
-        bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
-        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-    });
-
-    Ok(())
-}
-
-/// # Errors
-pub async fn no_username_found_err(bot: Bot, msg: Message, username: &str) -> ResponseResult<()> {
-
-    let err = bot
-        .send_message(msg.chat.id, format!("{NOT_USERNAME_FOUND_404} {username}"))
-        .await?;
-
-    tokio::spawn(async move {
-        sleep(Duration::from_secs(60)).await;
-        bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
-        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-    });
-
-    Ok(())
-}
-
-/// # Errors
-/// # Panics
-pub async fn error_message_for_user_id(bot: Bot, msg: Message) -> ResponseResult<()> {
-
-    let err = bot
-        .send_message(
-            msg.chat.id,
-            "❌ El ID o @Username proporcionado no es válido, considera reenviar un mensaje al \
-             bot para hacer un ban por ID",
-        )
-        .await?;
-
-    tokio::spawn(async move {
-        sleep(Duration::from_secs(5)).await;
-        bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
-        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-    });
 
     Ok(())
 }

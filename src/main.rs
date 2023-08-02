@@ -29,7 +29,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .inspect(|_u: Update| {
             // println!("{u:#?}");
         })
-        .branch(Update::filter_message().endpoint(message_handler))
+        .branch(Update::filter_message().endpoint(message))
         .branch(Update::filter_callback_query().endpoint(callback_handler))
         .branch(Update::filter_inline_query().endpoint(inline_query_handler))
         .branch(
@@ -39,7 +39,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     m.old_chat_member.kind.is_left() && m.new_chat_member.kind.is_present()
                         || m.old_chat_member.kind.is_present() && m.new_chat_member.kind.is_left()
                 })
-                .endpoint(chat_member_welcome),
+                .endpoint(chat_member_handler),
         );
 
     // We create a dispatcher for our bot
@@ -55,10 +55,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
 /// Welcome Function
 /// We use `ChatMemberUpdated` instead of Message for our function because
 /// Chat member updates != messages
-async fn chat_member_welcome(bot: Bot, chat_member: ChatMemberUpdated) -> MemberResult {
+async fn chat_member_handler(bot: Bot, chat_member: ChatMemberUpdated) -> MemberResult {
 
     // We use this variable for get the user
-    let user = chat_member.new_chat_member.user;
+    let user = chat_member.new_chat_member.user.clone();
 
     // We use this variable for get the user_id
     let user_id = chat_member.old_chat_member.user.id;
@@ -68,7 +68,7 @@ async fn chat_member_welcome(bot: Bot, chat_member: ChatMemberUpdated) -> Member
 
     // We use this variable for get the status of the user and filter if the user is
     // present or is gone
-    let chat_member_status = chat_member.old_chat_member;
+    let chat_member_status = chat_member.old_chat_member.clone();
 
     //let user_id_for_ban = user.id;
 
@@ -96,6 +96,11 @@ async fn chat_member_welcome(bot: Bot, chat_member: ChatMemberUpdated) -> Member
         )
         .await?;
     }
+
+    //let poll : Vec<String> = vec!["Azul".to_string(), "Rojo".to_string(), "Verde".to_string(), "Amarillo".to_string()];
+    //let encuesta = bot.send_poll(chat_member.chat.id, "¿De que color es la Salamandra AZUL?", poll).correct_option_id(1).op.await?;
+
+    //println!("{:#?}", encuesta);
 
     //bot.ban_chat_member(chat_member.chat.id, user_id_for_ban).await?;
 

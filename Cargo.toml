@@ -19,6 +19,7 @@ serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.93"
 nekosbest = "0.17.0"
 rusqlite = "0.29.0"
+lazy_static = "1.4.0"
 
 #sqlite = "0.31.0"
 #surrealdb = "1.0.0-beta.9"

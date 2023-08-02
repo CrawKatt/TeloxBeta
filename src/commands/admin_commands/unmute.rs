@@ -31,89 +31,92 @@ pub async fn unmute_user(bot: Bot, msg: Message) -> ResponseResult<()> {
 
                 let error_msg_id = error_msg.id;
 
-                sleep(Duration::from_secs(5)).await;
-
-                bot.delete_message(msg.chat.id, error_msg_id).await?;
-
-                bot.delete_message(msg.chat.id, msg.id).await?;
+                tokio::spawn(async move {
+                    sleep(Duration::from_secs(5)).await;
+                    bot.delete_message(msg.chat.id, error_msg_id).await.unwrap_or_default();
+                    bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                });
 
                 return Ok(());
             };
 
-            if let Some(from) = msg.from() {
+            let Some(from) = msg.from() else {
+                return Ok(())
+            };
 
-                let username_user = user
-                    .clone()
-                    .username
-                    .map_or_else(String::new, |username| username);
+            let username_user = user
+                .clone()
+                .username
+                .map_or_else(String::new, |username| username);
 
-                let admin = bot
-                    .get_chat_member(msg.chat.id, from.id)
-                    .await?
-                    .is_admin_or_owner();
+            let admin = bot
+                .get_chat_member(msg.chat.id, from.id)
+                .await?
+                .is_admin_or_owner();
 
-                if admin {
+            let chat_member = bot
+                .get_chat_member(msg.chat.id, user.id)
+                .await?;
 
-                    let chat_member = bot
-                        .get_chat_member(msg.chat.id, user.id)
-                        .await?
-                        .can_send_messages();
+            if admin {
 
-                    if chat_member {
+                if chat_member.is_restricted() {
 
-                        bot.restrict_chat_member(msg.chat.id, user.id, ChatPermissions::all())
-                            .await?;
+                    bot.restrict_chat_member(msg.chat.id, user.id, ChatPermissions::all())
+                        .await?;
 
-                        let ok_unmute = bot
-                            .send_video(msg.chat.id, InputFile::file("./assets/unmute/unmute.mp4"))
-                            .caption(format!("✅ @{username_user} Ya no está silenciado"))
-                            .reply_to_message_id(msg.id)
-                            .await?;
+                    let ok_unmute = bot
+                        .send_video(msg.chat.id, InputFile::file("./assets/unmute/unmute.mp4"))
+                        .caption(format!("✅ @{username_user} Ya no está silenciado"))
+                        .reply_to_message_id(msg.id)
+                        .await?;
 
-                        sleep(Duration::from_secs(5)).await;
+                    tokio::spawn(async move {
+                        sleep(Duration::from_secs(60)).await;
+                        bot.delete_message(msg.chat.id, ok_unmute.id).await.unwrap_or_default();
+                        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                    });
 
-                        bot.delete_message(msg.chat.id, ok_unmute.id).await?;
-
-                        bot.delete_message(msg.chat.id, msg.id).await?;
-                    } else {
-
-                        let err = bot
-                            .send_message(
-                                msg.chat.id,
-                                format!(
-                                    "❌ @{username_user} No está silenciado. Usa este comando \
-                                     solo para remover el silencia de alguien que esté silenciado",
-                                ),
-                            )
-                            .reply_to_message_id(msg.id)
-                            .await?;
-
-                        sleep(Duration::from_secs(10)).await;
-
-                        bot.delete_message(msg.chat.id, err.id).await?;
-
-                        bot.delete_message(msg.chat.id, msg.id).await?;
-
-                        return Ok(());
-                    }
                 } else {
 
                     let err = bot
                         .send_message(
                             msg.chat.id,
-                            "❌ No tienes permisos para remover el silencio a un usuario",
+                            format!(
+                                "❌ @{username_user} No está silenciado. Usa este comando \
+                                solo para remover el silencia de alguien que esté silenciado",
+                            ),
                         )
+                        .reply_to_message_id(msg.id)
                         .await?;
 
-                    bot.delete_message(msg.chat.id, err.id).await?;
+                    tokio::spawn(async move {
+                        sleep(Duration::from_secs(60)).await;
+                        bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+                        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                    });
 
-                    bot.delete_message(msg.chat.id, msg.id).await?;
+                    return Ok(());
                 }
+            } else {
+
+                let err = bot
+                    .send_message(
+                        msg.chat.id,
+                        "❌ No tienes permisos para remover el silencio a un usuario",
+                    )
+                    .await?;
+
+                tokio::spawn(async move {
+                    sleep(Duration::from_secs(60)).await;
+                    bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
+                    bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                });
+
             }
         },
 
         None => {
-
             Box::pin(get_user_id_by_arguments_for_unmute(bot, msg)).await?;
         },
     }
@@ -122,37 +125,24 @@ pub async fn unmute_user(bot: Bot, msg: Message) -> ResponseResult<()> {
 }
 
 /// # Errors
-pub async fn get_user_id_by_arguments_for_unmute(bot: Bot, msg: Message) -> ResponseResult<()> {
-
-    // extract the text content of the message
+async fn get_user_id_by_arguments_for_unmute(bot: Bot, msg: Message) -> ResponseResult<()> {
 
     let Some(text) = msg.text() else {
 
         return Ok(());
     };
 
-    // get the arguments after the command trigger
     let (_, arguments) = text
         .find(' ')
         .map_or(("", text), |index| text.split_at(index));
 
-    // check if the arguments are empty
     if arguments.is_empty() {
 
-        bot.send_message(
-            msg.chat.id,
-            "❌ No has especificado un ID para obtener el usuario",
-        )
-        .await?;
-
-        bot.delete_message(msg.chat.id, msg.id).await?;
-
-        println!("❌ No has especificado un ID para obtener el usuario {msg:#?}");
+        no_arguments(bot, msg).await?;
 
         return Ok(());
     }
 
-    // if arguments is String, then use this
     if arguments.contains('@') {
 
         let Some(from) = msg.from() else {
@@ -167,12 +157,7 @@ pub async fn get_user_id_by_arguments_for_unmute(bot: Bot, msg: Message) -> Resp
 
         let true = is_admin_or_owner else {
 
-            bot.send_message(msg.chat.id, "❌ No tienes permisos para usar este comando")
-                .await?;
-
-            bot.delete_message(msg.chat.id, msg.id).await?;
-
-            println!("❌ No tienes permisos para usar este comando {msg:#?}");
+            permissions_denied(bot, msg).await?;
 
             return Ok(());
         };
@@ -183,19 +168,7 @@ pub async fn get_user_id_by_arguments_for_unmute(bot: Bot, msg: Message) -> Resp
         // extract the user ID from the arguments
         let Ok(user_id) = arguments.trim().parse::<u64>() else {
 
-            let err = bot
-                .send_message(
-                    msg.chat.id,
-                    "❌ El ID o @Username proporcionado no es válido, considera reenviar un \
-                     mensaje al bot para hacer un ban por ID",
-                )
-                .await?;
-
-            sleep(Duration::from_secs(5)).await;
-
-            bot.delete_message(msg.chat.id, err.id).await?;
-
-            bot.delete_message(msg.chat.id, msg.id).await?;
+            id_or_username_not_valid(bot, msg).await?;
 
             return Ok(());
         };
@@ -216,15 +189,7 @@ pub async fn get_user_id_by_arguments_for_unmute(bot: Bot, msg: Message) -> Resp
 
         let false = !is_admin_or_owner else {
 
-            let err = bot
-                .send_message(msg.chat.id, "❌ No tienes permisos para usar este comando")
-                .await?;
-
-            sleep(Duration::from_secs(5)).await;
-
-            bot.delete_message(msg.chat.id, err.id).await?;
-
-            bot.delete_message(msg.chat.id, msg.id).await?;
+            permissions_denied(bot, msg).await?;
 
             return Ok(());
         };
@@ -245,33 +210,21 @@ pub async fn get_user_id_by_arguments_for_unmute(bot: Bot, msg: Message) -> Resp
             let mute_ok = bot
                 .send_message(
                     msg.chat.id,
-                    format!("✅ @{username} [<code>{user_id}</code>] Ya no está silenciado"),
+                    format!("✅ @{username} [<code>{user_id}</code>] {UNMUTED}"),
                 )
                 .await?;
 
-            sleep(Duration::from_secs(5)).await;
-
-            bot.delete_message(msg.chat.id, mute_ok.id).await?;
-
-            bot.delete_message(msg.chat.id, msg.id).await?;
-
-            ban_animation_generator(bot, msg).await?;
+            tokio::spawn(async move {
+                sleep(Duration::from_secs(5)).await;
+                bot.delete_message(msg.chat.id, mute_ok.id).await.unwrap_or_default();
+                bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                ban_animation_generator(bot, msg).await.unwrap_or_default();
+            });
 
             return Ok(());
         };
 
-        let err = bot
-            .send_message(
-                msg.chat.id,
-                format!("❌ @{username} [<code>{user_id}</code>] No está silenciado"),
-            )
-            .await?;
-
-        sleep(Duration::from_secs(5)).await;
-
-        bot.delete_message(msg.chat.id, err.id).await?;
-
-        bot.delete_message(msg.chat.id, msg.id).await?;
+        user_is_not_muted(bot, msg, &username, user_id).await?;
 
         return Ok(());
     }
