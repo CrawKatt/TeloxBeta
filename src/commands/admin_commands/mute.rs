@@ -79,13 +79,11 @@ pub async fn mute_user_admin(bot: Bot, msg: Message) -> ResponseResult<()> {
 
                     let file_path = format!("./assets/mute/{}", get_file_name(random_number));
 
+                    let user_id = user.id;
                     if Path::new(&file_path)
                         .extension()
                         .map_or(false, |ext| ext.eq_ignore_ascii_case("gif"))
                     {
-
-                        let user_id = user.id;
-
                         bot.send_animation(msg.chat.id, InputFile::file(file_path))
                             .caption(format!(
                                 "✅ @{username_user} [<code>{user_id}</code>] silenciado",

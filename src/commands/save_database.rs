@@ -26,8 +26,9 @@ pub fn initialize_database() -> Result<Connection> {
     Ok(conn)
 }
 
+/*
 /// # Errors
-pub fn list_users_from_database_sql(conn: &Connection) -> Result<Vec<UserDataSql>> {
+fn list_users_from_database_sql(conn: &Connection) -> Result<Vec<UserDataSql>> {
 
     let mut stmt = conn.prepare("SELECT id, username, first_name, last_name FROM user_data")?;
 
@@ -50,10 +51,12 @@ pub fn list_users_from_database_sql(conn: &Connection) -> Result<Vec<UserDataSql
 
     Ok(user_data_vec)
 }
+*/
 
 /// # Errors
 /// # Panics
-/// This code will panic if is not possible to connect to the database
+/// This code will panic if is not possible to connect to the database or if is not possible to
+/// insert the user data
 pub fn insert_user_to_sql(msg: &Message) -> ResponseResult<()> {
 
     let user = msg.from().unwrap();
@@ -61,8 +64,10 @@ pub fn insert_user_to_sql(msg: &Message) -> ResponseResult<()> {
     let conn = initialize_database().expect("Error al conectar con la Base de Datos");
 
     let user_id = user.id;
+    println!("User ID: {user_id}");
 
-    let username = user.username.clone();
+    let username = user.username.clone().unwrap_or_default();
+    println!("Username: {username}");
 
     let first_name = user.first_name.clone();
 
@@ -73,7 +78,7 @@ pub fn insert_user_to_sql(msg: &Message) -> ResponseResult<()> {
          ?3, ?4)",
         (
             Some(format!("{}", &user_id.0)),
-            username,
+            &username,
             first_name,
             last_name,
         ),
@@ -82,11 +87,31 @@ pub fn insert_user_to_sql(msg: &Message) -> ResponseResult<()> {
 
     println!("Inserting user data: {conn:#?}");
 
+    let mut database_id = conn.prepare(
+        "SELECT id FROM user_data WHERE id = ?1 AND username = ?2",
+    )
+    .expect("Error al leer datos del usuario");
+
+    let mut rows = database_id
+        .query(params![Some(format!("{}", &user_id.0)), username.split('@').next()])
+        .expect("Error al leer datos del usuario");
+
+    let Some(row) = rows.next().expect("Error al leer datos del usuario") else {
+        return Ok(());
+    };
+
+    let database_id: Option<u64> = row.get(0).expect("Error al leer datos del usuario");
+
+    let database_id = database_id.unwrap_or_default();
+
+    println!("Selecting user data ID:{database_id}");
+
     Ok(())
 }
 
+/*
 /// # Errors
-pub fn insert_user_data_sql(
+fn insert_user_data_sql(
     conn: &Connection,
     user_id: UserId,
     username: Option<String>,
@@ -110,7 +135,7 @@ pub fn insert_user_data_sql(
     Ok(())
 }
 
-/*
+
 /// # Errors
 pub fn update_user_data_sql(
     conn: &Connection,

@@ -2,17 +2,11 @@ use crate::commands::dependencies::*;
 
 /// # Errors
 /// # Panics
-pub async fn send_laugh(bot: Bot, msg: Message) -> ResponseResult<()> {
+pub(crate) async fn send_laugh(bot: Bot, msg: Message) -> ResponseResult<()> {
 
-    let username_author = match msg.from().as_ref() {
-        Some(user) => user.username.as_ref(),
-        None => None,
-    };
+    let username_author = msg.from().as_ref().and_then(|user| user.username.as_ref());
 
-    let username_author = match username_author {
-        Some(username) => username,
-        None => "",
-    };
+    let username_author = username_author.map_or("", |username| username);
 
     let url = nekosbest::get(nekosbest::Category::Laugh)
         .await

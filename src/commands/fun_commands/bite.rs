@@ -1,8 +1,8 @@
-use crate::commands::dependencies::*;
+use crate::dependencies::*;
 
 /// # Errors
 /// # Panics
-pub async fn send_bite(bot: Bot, msg: Message) -> ResponseResult<()> {
+pub(crate) async fn send_bite(bot: Bot, msg: Message) -> ResponseResult<()> {
 
     let Some(text) = msg.text() else {
 
