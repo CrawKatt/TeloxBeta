@@ -44,7 +44,6 @@ enum Ejemplo {
 
 /// # Errors
 pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
-
     let ejemplo = match msg.text() {
         Some("/variables") => Ejemplo::Variables,
         Some("/constantes") => Ejemplo::Constantes,
@@ -83,9 +82,7 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
         Some("/while") => Ejemplo::While,
         Some("/iflet") => Ejemplo::IfLet,
         _ => {
-
             if let Some(text) = msg.text() {
-
                 let ok = bot
                     .send_message(msg.chat.id, format!("Comando desconocido `{text:#?}`"))
                     .parse_mode(MarkdownV2)
@@ -93,14 +90,17 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
 
                 tokio::spawn(async move {
                     sleep(Duration::from_secs(5)).await;
-                    bot.delete_message(msg.chat.id, ok.id).await.unwrap_or_default();
-                    bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+                    bot.delete_message(msg.chat.id, ok.id)
+                        .await
+                        .unwrap_or_default();
+                    bot.delete_message(msg.chat.id, msg.id)
+                        .await
+                        .unwrap_or_default();
                 });
-
             }
 
-            return Ok(());
-        },
+            return Ok(())
+        }
     };
 
     // Call MarkDown file example
@@ -149,7 +149,9 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
 
     tokio::spawn(async move {
         sleep(Duration::from_secs(5)).await;
-        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
+        bot.delete_message(msg.chat.id, msg.id)
+            .await
+            .unwrap_or_default();
     });
 
     Ok(())

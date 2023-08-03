@@ -3,10 +3,8 @@ use crate::dependencies::*;
 /// # Errors
 /// # Panics
 pub(crate) async fn send_bite(bot: Bot, msg: Message) -> ResponseResult<()> {
-
     let Some(text) = msg.text() else {
-
-        return Ok(());
+        return Ok(())
     };
 
     let (_, username_target) = text
@@ -28,7 +26,8 @@ pub(crate) async fn send_bite(bot: Bot, msg: Message) -> ResponseResult<()> {
 
     let target_user_id = target_data.user.id;
 
-    let mention = format!("<a href=\"tg://user?id={target_user_id}\">{username_target}</a>");
+    let mention =
+        format!("<a href=\"tg://user?id={target_user_id}\">{username_target}</a>");
 
     let url = nekosbest::get(nekosbest::Category::Bite).await.unwrap().url;
 

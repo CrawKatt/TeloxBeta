@@ -4,91 +4,69 @@ use crate::dependencies::*;
 /// # Panics
 pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
 
-    match msg.reply_to_message() {
+    let bot_copy = bot.clone();
+    let msg_copy = msg.clone();
+
+    match msg_copy.reply_to_message() {
         Some(replied) => {
-
             let Some(user) = replied.from() else {
-
-                let err = bot
-                    .send_message(msg.chat.id, "❌ No se pudo obtener el usuario")
-                    .await?;
-
-                tokio::spawn(async move {
-                    sleep(Duration::from_secs(5)).await;
-                    bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
-                    bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-                });
-
-                return Ok(());
+                user_not_found(bot, msg).await?;
+                return Ok(())
             };
 
-            if let Some(from) = msg.from() {
+            let Some(from) = msg.from() else {
+                return Ok(())
+            };
 
-                let username_user = user
-                    .username
-                    .clone()
-                    .map_or_else(String::new, |username| username);
+            let username_user = user
+                .username
+                .clone()
+                .map_or_else(String::new, |username| username);
 
-                let is_admin_or_owner = bot
-                    .get_chat_member(msg.chat.id, from.id)
-                    .await?
-                    .is_admin_or_owner();
+            let username_user_copy = username_user.clone();
 
-                if is_admin_or_owner {
+            let is_admin_or_owner = bot
+                .get_chat_member(msg.chat.id, from.id)
+                .await?
+                .is_admin_or_owner();
 
-                    let chat_member = bot.get_chat_member(msg.chat.id, user.id).await?;
-
-                    if chat_member.status().is_banned() {
-
-                        bot.unban_chat_member(msg.chat.id, user.id).await?;
-
-                        let ok = bot
-                            .send_video(msg.chat.id, InputFile::file("./assets/unban/1.mp4"))
-                            .caption(format!("✅ @{username_user} desbaneado",))
-                            .reply_to_message_id(msg.id)
-                            .await?;
-
-                        tokio::spawn(async move {
-                            sleep(Duration::from_secs(60)).await;
-                            bot.delete_message(msg.chat.id, ok.id).await.unwrap_or_default();
-                            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-                        });
-
-                    } else {
-
-                        let err = bot
-                            .send_message(msg.chat.id, format!("❌ @{username_user} {NOT_BANNED}"))
-                            .reply_to_message_id(msg.id)
-                            .await?;
-
-                        tokio::spawn(async move {
-                            sleep(Duration::from_secs(5)).await;
-                            bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
-                            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-                        });
-
-                        return Ok(());
-                    }
-                } else {
-
-                    let err = bot
-                        .send_message(msg.chat.id, format!("❌ {PERMISSIONS_DENIED}"))
-                        .await?;
-
-                    tokio::spawn(async move {
-                        sleep(Duration::from_secs(5)).await;
-                        bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
-                        bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-                    });
-
-                }
+            if !is_admin_or_owner {
+                permissions_denied(bot, msg).await?;
+                return Ok(())
             }
-        },
+
+            let chat_member = bot.get_chat_member(msg.chat.id, user.id).await?;
+
+            if !chat_member.status().is_banned() {
+                not_banned(bot, msg, username_user).await?;
+            }
+
+            bot_copy.unban_chat_member(msg_copy.chat.id, user.id).await?;
+
+            let ok = bot_copy
+                .send_video(
+                    msg_copy.chat.id,
+                    InputFile::file("./assets/unban/1.mp4"),
+                )
+                .caption(format!("✅ @{username_user_copy} desbaneado",))
+                .reply_to_message_id(msg_copy.id)
+                .await?;
+
+            tokio::spawn(async move {
+                sleep(Duration::from_secs(60)).await;
+                bot_copy.delete_message(msg_copy.chat.id, ok.id)
+                    .await
+                    .unwrap_or_default();
+                bot_copy.delete_message(msg_copy.chat.id, msg_copy.id)
+                    .await
+                    .unwrap_or_default();
+            });
+
+        }
 
         None => {
-
             Box::pin(get_user_id_by_arguments_for_unban(bot, msg)).await?;
-        },
+        }
     }
 
     Ok(())
@@ -96,12 +74,16 @@ pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
 
 /// # Errors
 /// # Panics
-pub async fn get_user_id_by_arguments_for_unban(bot: Bot, msg: Message) -> ResponseResult<()> {
+async fn get_user_id_by_arguments_for_unban(
+    bot: Bot,
+    msg: Message,
+) -> ResponseResult<()> {
 
-    // extract the text content of the message
+    let bot_copy = bot.clone();
+    let msg_copy = msg.clone();
 
     let Some(text) = msg.text() else {
-        return Ok(());
+        return Ok(())
     };
 
     // get the arguments after the command trigger
@@ -110,148 +92,86 @@ pub async fn get_user_id_by_arguments_for_unban(bot: Bot, msg: Message) -> Respo
         .map_or(("", text), |index| text.split_at(index));
 
     // check if the arguments are empty
-    if arguments.is_empty() {
+    if !arguments.is_empty() {
 
-        let err =
-            bot.send_message(
-            msg.chat.id,
-            "❌ No has especificado un ID para obtener el usuario",
-        )
-        .await?;
+        if !arguments.contains('@') {
 
-        tokio::spawn(async move {
-            sleep(Duration::from_secs(5)).await;
-            bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
-            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-        });
+            let Ok(user_id) = arguments.trim().parse::<u64>() else {
+                id_or_username_not_valid(bot, msg).await?;
+                return Ok(())
+            };
 
-        println!("❌ No has especificado un ID para obtener el usuario {msg:#?}");
+            let Some(from) = msg.from() else {
+                println!("❌ No se pudo obtener el usuario que envió el mensaje {msg:#?}");
+                return Ok(())
+            };
 
-        return Ok(());
-    }
+            let is_admin_or_owner = bot
+                .get_chat_member(msg.chat.id, from.id)
+                .await?
+                .is_admin_or_owner();
 
-    // if arguments is String, then use this
-    if arguments.contains('@') {
+            let false = !is_admin_or_owner else {
+                permissions_denied(bot, msg).await?;
+                return Ok(())
+            };
 
-        let Some(from) = msg.from() else {
-            return Ok(());
+            let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
+
+            let username = chat_member
+                .user
+                .username
+                .clone()
+                .unwrap_or_else(|| "no username".to_string());
+
+            let ChatMemberStatus::Banned { .. } = chat_member.status() else {
+                not_banned(bot, msg, username).await?;
+                return Ok(())
+            };
+
+            bot.unban_chat_member(msg.chat.id, UserId(user_id)).await?;
+
+            let unban_ok = bot
+                .send_message(
+                    msg.chat.id,
+                    format!("✅ @{username} [<code>{user_id}</code>] Ya no está Baneado"),
+                )
+                .await?;
+
+            ban_animation_generator(bot.clone(), msg.clone()).await?;
+
+            tokio::spawn(async move {
+                sleep(Duration::from_secs(5)).await;
+                bot_copy.delete_message(msg_copy.chat.id, unban_ok.id)
+                    .await
+                    .unwrap_or_default();
+                bot_copy.delete_message(msg_copy.chat.id, msg_copy.id)
+                    .await
+                    .unwrap_or_default();
+            });
+
+            Box::pin(get_user_id_by_username(bot.clone(), msg)).await?;
+
+        }
+
+        let Some(from) = msg_copy.from() else {
+            return Ok(())
         };
 
         let is_admin_or_owner = bot
-            .get_chat_member(msg.chat.id, from.id)
+            .get_chat_member(msg_copy.clone().chat.id, from.id)
             .await?
             .is_admin_or_owner();
 
         let true = is_admin_or_owner else {
-
-            let err = bot.send_message(msg.chat.id, "❌ No tienes permisos para usar este comando")
-                .await?;
-
-            tokio::spawn(async move {
-                sleep(Duration::from_secs(5)).await;
-                bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
-                bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-            });
-
-            return Ok(());
+            permissions_denied(bot, msg_copy.clone()).await?;
+            return Ok(())
         };
 
-        Box::pin(get_user_id_by_username(bot, msg)).await?;
-    } else {
 
-        // extract the user ID from the arguments
-        let Ok(user_id) = arguments.trim().parse::<u64>() else {
-
-            let err = bot
-                .send_message(
-                    msg.chat.id,
-                    "❌ El ID o @Username proporcionado no es válido, considera reenviar un \
-                     mensaje al bot para hacer un ban por ID",
-                )
-                .await?;
-
-            tokio::spawn(async move {
-                sleep(Duration::from_secs(5)).await;
-                bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
-                bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-            });
-
-            return Ok(());
-        };
-
-        let Some(from) = msg.from() else {
-
-            println!("❌ No se pudo obtener el usuario que envió el mensaje {msg:#?}");
-
-            return Ok(());
-        };
-
-        let is_admin_or_owner = bot
-            .get_chat_member(msg.chat.id, from.id)
-            .await?
-            .is_admin_or_owner();
-
-        let false = !is_admin_or_owner else {
-
-            let err = bot
-                .send_message(msg.chat.id, "❌ No tienes permisos para usar este comando")
-                .await?;
-
-            tokio::spawn(async move {
-                sleep(Duration::from_secs(5)).await;
-                bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
-                bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-            });
-
-            return Ok(());
-        };
-
-        let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
-
-        let username = chat_member
-            .user
-            .username
-            .clone()
-            .unwrap_or_else(|| "no username".to_string());
-
-        let ChatMemberStatus::Banned { .. } = chat_member.status() else {
-
-            let bot_copy = bot.clone();
-
-            let err = bot.send_message(
-                msg.chat.id,
-                format!("❌ @{username} [<code>{user_id}</code>] {NOT_BANNED}"),
-            )
-            .await?;
-
-            tokio::spawn(async move {
-                sleep(Duration::from_secs(5)).await;
-                bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-                bot.delete_message(msg.chat.id, err.id).await.unwrap_or_default();
-            });
-
-            ban_animation_generator(bot_copy, msg).await?;
-
-            return Ok(());
-        };
-
-        bot.unban_chat_member(msg.chat.id, UserId(user_id)).await?;
-
-        let mute_ok = bot
-            .send_message(
-                msg.chat.id,
-                format!("✅ @{username} [<code>{user_id}</code>] Ya no está Baneado"),
-            )
-            .await?;
-
-        tokio::spawn(async move {
-            sleep(Duration::from_secs(5)).await;
-            bot.delete_message(msg.chat.id, mute_ok.id).await.unwrap_or_default();
-            bot.delete_message(msg.chat.id, msg.id).await.unwrap_or_default();
-        });
-
-        return Ok(());
+        return Ok(())
     }
+    no_arguments(bot, msg).await?;
 
     Ok(())
 }

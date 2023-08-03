@@ -2,11 +2,9 @@ use crate::commands::dependencies::*;
 
 /// # Errors
 /// # Panics
-pub(crate)  async fn send_cuddle(bot: Bot, msg: Message) -> ResponseResult<()> {
-
+pub(crate) async fn send_cuddle(bot: Bot, msg: Message) -> ResponseResult<()> {
     let Some(text) = msg.text() else {
-
-        return Ok(());
+        return Ok(())
     };
 
     let (_, username_target) = text

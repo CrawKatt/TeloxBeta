@@ -1,7 +1,6 @@
 #[macro_export]
 macro_rules! username_changed {
     ($bot:ident, $chat_id:expr, $user:expr, $db_username:expr, $username:expr) => {
-
         $bot.send_message(
             $chat_id,
             format!(
@@ -17,7 +16,6 @@ macro_rules! username_changed {
 #[macro_export]
 macro_rules! first_name_changed {
     ($bot:expr, $chat_id:expr, $username:expr, $db_name:expr, $new_name:expr) => {
-
         $bot.send_message(
             $chat_id,
             format!(
@@ -33,7 +31,6 @@ macro_rules! first_name_changed {
 #[macro_export]
 macro_rules! last_name_changed {
     ($bot:expr, $chat_id:expr, $username:expr, $db_last_name:expr, $new_last_name:expr) => {
-
         $bot.send_message(
             $chat_id,
             format!(

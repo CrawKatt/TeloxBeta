@@ -1,14 +1,19 @@
-pub use crate::{buttons::*,
-                commands::{message_utils::*, *},
-                database::*,
-                fun_commands::*,
-                funciones::*,
-                handler::*,
-                info::*,
-                random_generator::*,
-                testing::*,
-                utils::*,
-                error::*};
+pub use crate::{
+    buttons::*,
+    commands::{
+        message_utils::*,
+        *,
+    },
+    database::*,
+    error::*,
+    fun_commands::*,
+    funciones::*,
+    handler::*,
+    info::*,
+    random_generator::*,
+    testing::*,
+    utils::*,
+};
 
 // pub use lib::*;
 pub use ban::*;
@@ -20,22 +25,39 @@ pub use unmute::*;
 pub use rand::{
     rngs::StdRng,
     Rng,
-    SeedableRng
+    SeedableRng,
 };
 
 // Import Teloxide modules for interacting with the Telegram API
-pub use teloxide::{adaptors::DefaultParseMode,
-                   prelude::*,
-                   types::*,
-                   utils::{command::BotCommands, html}};
+pub use teloxide::{
+    adaptors::DefaultParseMode,
+    prelude::*,
+    types::*,
+    utils::{
+        command::BotCommands,
+        html,
+    },
+};
 
 // Import Teloxide_core modules for interacting with the Telegram API
-pub use teloxide_core::{prelude::UserId,
-                        types::{ChatMemberStatus, Message, ParseMode::MarkdownV2}};
+pub use teloxide_core::{
+    prelude::UserId,
+    types::{
+        ChatMemberStatus,
+        Message,
+        ParseMode::MarkdownV2,
+    },
+};
 
-pub use rusqlite::{Connection, Result};
-pub use serde::{Deserialize, Serialize};
-pub use rusqlite::params;
+pub use rusqlite::{
+    params,
+    Connection,
+    Result,
+};
+pub use serde::{
+    Deserialize,
+    Serialize,
+};
 
 // type Bot for using the DefaultParseMode adapter
 pub type Bot = DefaultParseMode<teloxide::Bot>;
@@ -47,10 +69,16 @@ pub use dotenv::dotenv;
 pub use std::path::Path;
 
 // pub use std::fs::OpenOptions;
-pub use std::{error::Error,
-              fs,
-              io::{self, prelude::*, Write},
-              time::Duration};
+pub use std::{
+    error::Error,
+    fs,
+    io::{
+        self,
+        prelude::*,
+        Write,
+    },
+    time::Duration,
+};
 pub use tokio::fs::read_to_string;
 
 // Import Tokio modules for asynchronous programming
