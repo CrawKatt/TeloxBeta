@@ -9,7 +9,6 @@ type MemberResult = Result<(), Box<dyn Error + Send + Sync>>;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-
     pretty_env_logger::init();
 
     log::info!("Iniciando Bot...");
@@ -35,9 +34,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .branch(
             Update::filter_chat_member()
                 .filter(|m: ChatMemberUpdated| {
-
-                    m.old_chat_member.kind.is_left() && m.new_chat_member.kind.is_present()
-                        || m.old_chat_member.kind.is_present() && m.new_chat_member.kind.is_left()
+                    m.old_chat_member.kind.is_left()
+                        && m.new_chat_member.kind.is_present()
+                        || m.old_chat_member.kind.is_present()
+                            && m.new_chat_member.kind.is_left()
                 })
                 .endpoint(chat_member_handler),
         );
@@ -56,7 +56,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 /// We use `ChatMemberUpdated` instead of Message for our function because
 /// Chat member updates != messages
 async fn chat_member_handler(bot: Bot, chat_member: ChatMemberUpdated) -> MemberResult {
-
     // We use this variable for get the user
     let user = chat_member.new_chat_member.user.clone();
 
@@ -70,7 +69,7 @@ async fn chat_member_handler(bot: Bot, chat_member: ChatMemberUpdated) -> Member
     // present or is gone
     let chat_member_status = chat_member.old_chat_member.clone();
 
-    //let user_id_for_ban = user.id;
+    // let user_id_for_ban = user.id;
 
     // We converts the user_id to i64 type
     let ChatId(user_id) = ChatId::from(user_id);
@@ -83,13 +82,11 @@ async fn chat_member_handler(bot: Bot, chat_member: ChatMemberUpdated) -> Member
         .unwrap_or_else(|| html::user_mention(user_id, user.full_name().as_str()));
 
     if chat_member_status.is_present() {
-
         bot.send_message(chat_member.chat.id, format!("Hasta pronto {username}!"))
             .await?;
     }
 
     if !chat_member_status.is_present() {
-
         bot.send_message(
             chat_member.chat.id,
             format!("Bienvenido a {telegram_group_name} {username}!"),
@@ -97,12 +94,14 @@ async fn chat_member_handler(bot: Bot, chat_member: ChatMemberUpdated) -> Member
         .await?;
     }
 
-    //let poll : Vec<String> = vec!["Azul".to_string(), "Rojo".to_string(), "Verde".to_string(), "Amarillo".to_string()];
-    //let encuesta = bot.send_poll(chat_member.chat.id, "¿De que color es la Salamandra AZUL?", poll).correct_option_id(1).op.await?;
+    // let poll : Vec<String> = vec!["Azul".to_string(), "Rojo".to_string(),
+    // "Verde".to_string(), "Amarillo".to_string()]; let encuesta =
+    // bot.send_poll(chat_member.chat.id, "¿De que color es la Salamandra AZUL?",
+    // poll).correct_option_id(1).op.await?;
 
-    //println!("{:#?}", encuesta);
+    // println!("{:#?}", encuesta);
 
-    //bot.ban_chat_member(chat_member.chat.id, user_id_for_ban).await?;
+    // bot.ban_chat_member(chat_member.chat.id, user_id_for_ban).await?;
 
     Ok(())
 }

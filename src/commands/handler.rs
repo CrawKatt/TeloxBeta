@@ -2,8 +2,7 @@ use crate::dependencies::*;
 
 // Derive BotCommands para analizar texto con un comando en este enum.
 //
-// 1. `rename_rule = "lowercase"` convierte todos los comandos en letras
-//    minúsculas.
+// 1. `rename_rule = "lowercase"` convierte todos los comandos en letras minúsculas.
 // 2. `description = "..."` especifica un texto antes de todos los comandos.
 //
 // Es decir, puede simplemente llamar a Command::descriptions() para obtener una
@@ -91,11 +90,10 @@ pub enum Command {
 
 /// # Errors
 pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
-
     match cmd {
-        Command::Variables => ejemplos(bot, msg).await?,
-        Command::Constantes => ejemplos(bot, msg).await?,
-        Command::TiposDeDatos => ejemplos(bot, msg).await?,
+        Command::Variables => Box::pin(ejemplos(bot, msg)).await?,
+        Command::Constantes => Box::pin(ejemplos(bot, msg)).await?,
+        Command::TiposDeDatos => Box::pin(ejemplos(bot, msg)).await?,
         Command::Operadores => ejemplos(bot, msg).await?,
         Command::Arrays => ejemplos(bot, msg).await?,
         Command::Tuplas => ejemplos(bot, msg).await?,
@@ -144,60 +142,60 @@ pub async fn message(
     me: Me,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
 
-    if let Some(text) = msg.text() {
+    let Some(text) = msg.text() else {
+        return Ok(());
+    };
 
-        match BotCommands::parse(text, me.username()) {
-            Ok(Command::Start) => create_buttons(bot, msg).await?,
-            Ok(Command::Help) => help_action(bot, msg).await?,
+    match BotCommands::parse(text, me.username()) {
+        Ok(Command::Start) => create_buttons(bot, msg).await?,
+        Ok(Command::Help) => help_action(bot, msg).await?,
 
-            // Comandos de Administración                           >>>>     Admin Commands
-            Ok(Command::Ban) => Box::pin(ban_user(bot, msg)).await?,
-            Ok(Command::Unban) => unban_user(bot, msg).await?,
-            Ok(Command::Mute) => mute_user_admin(bot, msg).await?,
-            Ok(Command::Unmute) => Box::pin(unmute_user(bot, msg)).await?,
-            Ok(Command::List) => list_json(bot, msg).await?,
-            Ok(Command::Info) => get_chat_member(bot, msg).await?,
+        Ok(Command::Ban) => Box::pin(ban_user(bot, msg)).await?,
+        Ok(Command::Unban) => unban_user(bot, msg).await?,
+        Ok(Command::Mute) => mute_user_admin(bot, msg).await?,
+        Ok(Command::Unmute) => Box::pin(unmute_user(bot, msg)).await?,
+        Ok(Command::List) => list_json(bot, msg).await?,
+        Ok(Command::Info) => get_chat_member(bot, msg).await?,
 
-            // Comandos de Diversión >> Fun Commands
-            Ok(Command::Meme) => send_random_meme(bot, msg).await?,
-            Ok(Command::Pat) => send_pat(bot, msg).await?,
-            Ok(Command::Bite) => send_bite(bot, msg).await?,
-            Ok(Command::Sad) => send_sad(bot, msg).await?,
-            Ok(Command::Pout) => send_pout(bot, msg).await?,
-            Ok(Command::Happy) => send_happy(bot, msg).await?,
-            Ok(Command::Punch) => send_punch(bot, msg).await?,
-            Ok(Command::Slap) => send_slap(bot, msg).await?,
-            Ok(Command::Hug) => send_hug(bot, msg).await?,
-            Ok(Command::Kiss) => send_kiss(bot, msg).await?,
-            Ok(Command::Cuddle) => send_cuddle(bot, msg).await?,
-            Ok(Command::Laugh) => send_laugh(bot, msg).await?,
-            Ok(Command::Blush) => send_blush(bot, msg).await?,
-            Ok(Command::Poke) => send_poke(bot, msg).await?,
-            Ok(Command::Kill) => send_kill(bot, msg).await?,
-            Ok(Command::Yeet) => send_yeet(bot, msg).await?,
-            Ok(Command::Smug) => send_smug(bot, msg).await?,
-            Ok(Command::Kick) => send_kick(bot, msg).await?,
-            Ok(Command::ThumbsUp) => send_thumbs_up(bot, msg).await?,
-            Ok(Command::Stare) => send_stare(bot, msg).await?,
+        Ok(Command::Meme) => send_random_meme(bot, msg).await?,
+        Ok(Command::Pat) => send_pat(bot, msg).await?,
+        Ok(Command::Bite) => send_bite(bot, msg).await?,
+        Ok(Command::Sad) => send_sad(bot, msg).await?,
+        Ok(Command::Pout) => send_pout(bot, msg).await?,
+        Ok(Command::Happy) => send_happy(bot, msg).await?,
+        Ok(Command::Punch) => send_punch(bot, msg).await?,
+        Ok(Command::Slap) => send_slap(bot, msg).await?,
+        Ok(Command::Hug) => send_hug(bot, msg).await?,
+        Ok(Command::Kiss) => send_kiss(bot, msg).await?,
+        Ok(Command::Cuddle) => send_cuddle(bot, msg).await?,
+        Ok(Command::Laugh) => send_laugh(bot, msg).await?,
+        Ok(Command::Blush) => send_blush(bot, msg).await?,
+        Ok(Command::Poke) => send_poke(bot, msg).await?,
+        Ok(Command::Kill) => send_kill(bot, msg).await?,
+        Ok(Command::Yeet) => send_yeet(bot, msg).await?,
+        Ok(Command::Smug) => send_smug(bot, msg).await?,
+        Ok(Command::Kick) => send_kick(bot, msg).await?,
+        Ok(Command::ThumbsUp) => send_thumbs_up(bot, msg).await?,
+        Ok(Command::Stare) => send_stare(bot, msg).await?,
 
-            // Comandos de Anti_Spam (unsafe maldito LOL) >> Anti_Spam Commands (This is cursed LOL)
-            // Ok(Command::SpamOn) => handle_command(bot.clone(), msg.clone()).await?,
-            // Ok(Command::SpamOff) => handle_command(bot.clone(), msg.clone()).await?,
-            Err(_) => {
+        // Comandos de Anti_Spam (unsafe maldito LOL) >> Anti_Spam Commands (This is
+        // cursed LOL) Ok(Command::SpamOn) => handle_command(bot.clone(),
+        // msg.clone()).await?, Ok(Command::SpamOff) =>
+        // handle_command(bot.clone(), msg.clone()).await?,
+        Err(_) => {
 
-                // if text.contains("https://t.me") {
-                // anti_spam(bot.clone(), msg.clone()).await?;
-                //}
+            test_json_two(bot.clone(), msg.clone()).await?;
 
-                test_json_two(bot.clone(), msg.clone()).await?;
+            insert_user_to_sql(&msg)?;
 
-                insert_user_to_sql(&msg)?;
+            // if text.contains("https://t.me") {
+            // anti_spam(bot.clone(), msg.clone()).await?;
+            //}
 
-                // handle_command(bot, msg.clone()).await?;
-            },
-
-            _ => action(bot, msg, Command::Variables).await?,
+            // handle_command(bot, msg.clone()).await?;
         }
+
+        _ => action(bot, msg, Command::Variables).await?,
     }
 
     Ok(())

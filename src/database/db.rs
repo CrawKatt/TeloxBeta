@@ -3,7 +3,6 @@ use crate::database::*;
 /// # Errors
 /// # Panics
 pub async fn conectar() -> Result<(), Box<dyn Error>> {
-
     let client_uri = env::var("MONGODB_URI").expect(
         "\nERROR AL CONECTAR A LA BASE DE DATOS DE MONGODB\n¡Debes establecer la variable de \
          entorno MONGODB_URI!",
@@ -24,7 +23,6 @@ pub async fn conectar() -> Result<(), Box<dyn Error>> {
     );
 
     for name in client.list_database_names(None, None).await? {
-
         println!(
             "
 ╔═════════════════════════════════════════════════════╗

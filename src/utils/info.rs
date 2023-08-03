@@ -2,12 +2,9 @@ use crate::dependencies::*;
 
 /// # Errors
 pub async fn get_chat_member(bot: Bot, msg: Message) -> ResponseResult<()> {
-
     match msg.reply_to_message() {
         Some(replied) => {
-
             let Some(user) = replied.from() else {
-
                 // Send an error message and delete it after 5 seconds.
                 let error_msg = bot
                     .send_message(msg.chat.id, "❌ No se pudo obtener el usuario")
@@ -22,7 +19,7 @@ pub async fn get_chat_member(bot: Bot, msg: Message) -> ResponseResult<()> {
 
                 bot.delete_message(msg.chat.id, msg.id).await?;
 
-                return Ok(());
+                return Ok(())
             };
 
             let user_copy = user.clone();
@@ -36,7 +33,6 @@ pub async fn get_chat_member(bot: Bot, msg: Message) -> ResponseResult<()> {
             let username_user = user_copy.username.unwrap_or(first_name);
 
             if username_user == first_name_copy {
-
                 bot.send_message(
                     msg.chat.id,
                     format!(
@@ -62,13 +58,12 @@ pub async fn get_chat_member(bot: Bot, msg: Message) -> ResponseResult<()> {
             )
             .parse_mode(ParseMode::Html)
             .await?;
-        },
+        }
 
         None => {
-
             bot.send_message(msg.chat.id, "❌ No se ha respondido a ningún mensaje")
                 .await?;
-        },
+        }
     }
 
     Ok(())
