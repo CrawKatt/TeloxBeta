@@ -3,62 +3,37 @@ use crate::dependencies::*;
 /// # Errors
 /// # Panics
 pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
-    // The function takes a bot and a message object, and returns a Result.
     match msg.reply_to_message() {
-        // Check if the message is a reply to another message.
         Some(replied) => {
             let Some(user) = replied.from() else {
                 let err = bot
-                    .send_message(msg.chat.id, "❌ No se pudo obtener el usuario")
+                    .send_message(msg.chat.id, USER_NOT_FOUND)
                     .reply_to_message_id(msg.id)
                     .await?;
-
-                tokio::spawn(async move {
-                    sleep(Duration::from_secs(5)).await;
-                    bot.delete_message(msg.chat.id, err.id)
-                        .await
-                        .unwrap_or_default();
-                    bot.delete_message(msg.chat.id, msg.id)
-                        .await
-                        .unwrap_or_default();
-                });
+                delete_message_timer(bot, msg.clone(), err.id, msg.id, 5);
 
                 return Ok(())
             };
 
-            // Get the chat ID and user ID, and check if the person using the command is
-            // an admin or owner.
+            let user_id = user.id;
+
             if let Some(from) = msg.from() {
                 let username_user = user
                     .clone()
                     .username
                     .map_or_else(String::new, |username| username);
 
-                // If the user is an admin or owner, ban the user and send a message to
-                // the chat. Also send a random GIF or MP4 file from the
-                // "./assets/ban/" folder.
                 let is_admin_or_owner = bot
                     .get_chat_member(msg.chat.id, from.id)
                     .await?
                     .is_admin_or_owner();
 
+                let chat_member = bot.get_chat_member(msg.chat.id, user.id).await?;
+
                 if is_admin_or_owner {
-                    let chat_member = bot.get_chat_member(msg.chat.id, user.id).await?;
-
                     if chat_member.status().is_banned() {
-                        let err = bot
-                            .send_message(
-                                msg.chat.id,
-                                format!("❌ {username_user} {ALREADY_BANNED}"),
-                            )
-                            .reply_to_message_id(msg.id)
+                        already_banned(bot.clone(), msg.clone(), user_id, username_user)
                             .await?;
-
-                        sleep(Duration::from_secs(5)).await;
-
-                        bot.delete_message(msg.chat.id, err.id).await?;
-
-                        bot.delete_message(msg.chat.id, msg.id).await?;
 
                         return Ok(())
                     }
@@ -90,45 +65,23 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                     {
                         bot.send_animation(msg.chat.id, InputFile::file(file_path))
                             .caption(format!(
-                                "✅ @{username_user} [<code>{}</code>] baneado",
-                                user.id
+                                "✅ @{username_user} [<code>{user_id}</code>] baneado",
                             ))
                             .reply_to_message_id(msg.id)
                             .await?;
                     } else {
                         bot.send_video(msg.chat.id, InputFile::file(file_path))
                             .caption(format!(
-                                "✅ @{username_user} <code>[{}</code>] baneado",
-                                user.id
+                                "✅ @{username_user} <code>[{user_id}</code>] baneado",
                             ))
                             .reply_to_message_id(msg.id)
                             .await?;
                     }
                 } else {
-                    // If the user is not an admin or owner, send an error message and
-                    // delete this message in 5 seconds.
-                    let err = bot
-                        .send_message(
-                            msg.chat.id,
-                            "❌ No tienes permisos para usar este comando",
-                        )
-                        .reply_to_message_id(msg.id)
-                        .await?;
-
-                    tokio::spawn(async move {
-                        sleep(Duration::from_secs(5)).await;
-                        bot.delete_message(msg.chat.id, err.id)
-                            .await
-                            .unwrap_or_default();
-                        bot.delete_message(msg.chat.id, msg.id)
-                            .await
-                            .unwrap_or_default();
-                    });
+                    permissions_denied(bot, msg.clone()).await?;
                 };
             }
         }
-        // If the message is not a reply, extract the user ID from the command's
-        // arguments. Check if the person using the command is an admin or owner.
         None => {
             get_user_id_by_arguments(bot, msg).await?;
         }

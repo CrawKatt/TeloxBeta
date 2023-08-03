@@ -10,24 +10,16 @@ pub async fn no_username_found(
         .send_message(msg.chat.id, format!("{NOT_USERNAME_FOUND_404} {username}"))
         .await?;
 
-    tokio::spawn(async move {
-        sleep(Duration::from_secs(60)).await;
-        bot.delete_message(msg.chat.id, err.id)
-            .await
-            .unwrap_or_default();
-        bot.delete_message(msg.chat.id, msg.id)
-            .await
-            .unwrap_or_default();
-    });
+    delete_message_timer(bot, msg.clone(), err.id, msg.id, 5);
 
     Ok(())
 }
 
 /// # Errors
 pub async fn no_arguments(bot: Bot, msg: Message) -> ResponseResult<()> {
-    bot.send_message(msg.chat.id, NOT_ID_PROVIDED_404).await?;
+    let err = bot.send_message(msg.chat.id, NOT_ID_PROVIDED_404).await?;
 
-    bot.delete_message(msg.chat.id, msg.id).await?;
+    delete_message_timer(bot, msg.clone(), err.id, msg.id, 5);
 
     println!("{NOT_ID_PROVIDED_404} {msg:#?}");
 
@@ -36,14 +28,8 @@ pub async fn no_arguments(bot: Bot, msg: Message) -> ResponseResult<()> {
 
 /// # Errors
 pub async fn permissions_denied(bot: Bot, msg: Message) -> ResponseResult<()> {
-    bot.send_message(msg.chat.id, PERMISSIONS_DENIED).await?;
-
-    tokio::spawn(async move {
-        sleep(Duration::from_secs(5)).await;
-        bot.delete_message(msg.chat.id, msg.id)
-            .await
-            .unwrap_or_default();
-    });
+    let err = bot.send_message(msg.chat.id, PERMISSIONS_DENIED).await?;
+    delete_message_timer(bot, msg.clone(), err.id, msg.id, 5);
 
     Ok(())
 }
@@ -54,15 +40,7 @@ pub async fn id_or_username_not_valid(bot: Bot, msg: Message) -> ResponseResult<
         .send_message(msg.chat.id, ID_OR_USERNAME_NOT_VALID)
         .await?;
 
-    tokio::spawn(async move {
-        sleep(Duration::from_secs(60)).await;
-        bot.delete_message(msg.chat.id, err.id)
-            .await
-            .unwrap_or_default();
-        bot.delete_message(msg.chat.id, msg.id)
-            .await
-            .unwrap_or_default();
-    });
+    delete_message_timer(bot, msg.clone(), err.id, msg.id, 5);
 
     Ok(())
 }
@@ -81,15 +59,7 @@ pub async fn user_is_not_muted(
         )
         .await?;
 
-    tokio::spawn(async move {
-        sleep(Duration::from_secs(60)).await;
-        bot.delete_message(msg.chat.id, err.id)
-            .await
-            .unwrap_or_default();
-        bot.delete_message(msg.chat.id, msg.id)
-            .await
-            .unwrap_or_default();
-    });
+    delete_message_timer(bot, msg.clone(), err.id, msg.id, 5);
 
     Ok(())
 }
@@ -98,7 +68,7 @@ pub async fn user_is_not_muted(
 pub async fn already_banned(
     bot: Bot,
     msg: Message,
-    user_id: u64,
+    user_id: UserId,
     username: String,
 ) -> ResponseResult<()> {
     let err = bot
@@ -108,58 +78,50 @@ pub async fn already_banned(
         )
         .await?;
 
-    tokio::spawn(async move {
-        sleep(Duration::from_secs(60)).await;
-        bot.delete_message(msg.chat.id, err.id)
-            .await
-            .unwrap_or_default();
-        bot.delete_message(msg.chat.id, msg.id)
-            .await
-            .unwrap_or_default();
-    });
+    delete_message_timer(bot, msg.clone(), err.id, msg.id, 5);
 
     Ok(())
 }
 
 /// # Errors
-pub async fn not_banned(bot: Bot, msg: Message, username_user: String) -> ResponseResult<()> {
+pub async fn not_banned(
+    bot: Bot,
+    msg: Message,
+    username_user: String,
+) -> ResponseResult<()> {
     let err = bot
-        .send_message(
-            msg.chat.id,
-            format!("❌ @{username_user} {NOT_BANNED}"),
-        )
+        .send_message(msg.chat.id, format!("❌ @{username_user} {NOT_BANNED}"))
         .reply_to_message_id(msg.id)
         .await?;
 
-    tokio::spawn(async move {
-        sleep(Duration::from_secs(5)).await;
-        bot.delete_message(msg.chat.id, err.id)
-            .await
-            .unwrap_or_default();
-        bot.delete_message(msg.chat.id, msg.id)
-            .await
-            .unwrap_or_default();
-    });
+    delete_message_timer(bot, msg.clone(), err.id, msg.id, 5);
 
     Ok(())
 }
 
 /// # Errors
 pub async fn user_not_found(bot: Bot, msg: Message) -> ResponseResult<()> {
+    let err = bot.send_message(msg.chat.id, USER_NOT_FOUND).await?;
 
-    let err = bot
-        .send_message(msg.chat.id, USER_NOT_FOUND)
-        .await?;
+    delete_message_timer(bot, msg.clone(), err.id, msg.id, 5);
 
+    Ok(())
+}
+
+pub fn delete_message_timer(
+    bot: Bot,
+    msg: Message,
+    ok_or_err: MessageId,
+    msg_id: MessageId,
+    secs: u64,
+) {
     tokio::spawn(async move {
-        sleep(Duration::from_secs(5)).await;
-        bot.delete_message(msg.chat.id, err.id)
+        sleep(Duration::from_secs(secs)).await;
+        bot.delete_message(msg.chat.id, ok_or_err)
             .await
             .unwrap_or_default();
-        bot.delete_message(msg.chat.id, msg.id)
+        bot.delete_message(msg.chat.id, msg_id)
             .await
             .unwrap_or_default();
     });
-
-    Ok(())
 }

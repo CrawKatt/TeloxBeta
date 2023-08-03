@@ -136,14 +136,9 @@ pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> 
 }
 
 /// # Errors
-pub async fn message(
-    bot: Bot,
-    msg: Message,
-    me: Me,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
-
+pub async fn message(bot: Bot, msg: Message, me: Me) -> ResponseResult<()> {
     let Some(text) = msg.text() else {
-        return Ok(());
+        return Ok(())
     };
 
     match BotCommands::parse(text, me.username()) {
@@ -151,7 +146,7 @@ pub async fn message(
         Ok(Command::Help) => help_action(bot, msg).await?,
 
         Ok(Command::Ban) => Box::pin(ban_user(bot, msg)).await?,
-        Ok(Command::Unban) => unban_user(bot, msg).await?,
+        Ok(Command::Unban) => Box::pin(unban_user(bot, msg)).await?,
         Ok(Command::Mute) => mute_user_admin(bot, msg).await?,
         Ok(Command::Unmute) => Box::pin(unmute_user(bot, msg)).await?,
         Ok(Command::List) => list_json(bot, msg).await?,
@@ -183,7 +178,6 @@ pub async fn message(
         // msg.clone()).await?, Ok(Command::SpamOff) =>
         // handle_command(bot.clone(), msg.clone()).await?,
         Err(_) => {
-
             test_json_two(bot.clone(), msg.clone()).await?;
 
             insert_user_to_sql(&msg)?;

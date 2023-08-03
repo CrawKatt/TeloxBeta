@@ -5,10 +5,8 @@ pub mod commands;
 pub mod database;
 pub mod utils;
 
-type MemberResult = Result<(), Box<dyn Error + Send + Sync>>;
-
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> ResponseResult<()> {
     pretty_env_logger::init();
 
     log::info!("Iniciando Bot...");
@@ -55,7 +53,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
 /// Welcome Function
 /// We use `ChatMemberUpdated` instead of Message for our function because
 /// Chat member updates != messages
-async fn chat_member_handler(bot: Bot, chat_member: ChatMemberUpdated) -> MemberResult {
+async fn chat_member_handler(
+    bot: Bot,
+    chat_member: ChatMemberUpdated,
+) -> ResponseResult<()> {
     // We use this variable for get the user
     let user = chat_member.new_chat_member.user.clone();
 

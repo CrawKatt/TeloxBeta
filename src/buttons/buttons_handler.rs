@@ -290,10 +290,7 @@ pub fn make_back_button_keyboard() -> InlineKeyboardMarkup {
 }
 
 /// # Errors
-pub async fn inline_query_handler(
-    bot: Bot,
-    q: InlineQuery,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+pub async fn inline_query_handler(bot: Bot, q: InlineQuery) -> ResponseResult<()> {
     let buttons = InlineQueryResultArticle::new(
         "0",
         "Botones",
@@ -310,10 +307,7 @@ const PRINCIPIANTE_BOTON: &str = "Recomendado para Principiantes: \n\n/variables
                                   \n/tiposdeDatos \n/shadowing \n/operadores \n/shadowing";
 
 /// # Errors
-pub async fn callback_handler(
-    bot: Bot,
-    q: CallbackQuery,
-) -> Result<(), Box<dyn Error + Send + Sync>> {
+pub async fn callback_handler(bot: Bot, q: CallbackQuery) -> ResponseResult<()> {
     match q.data.as_deref() {
         Some("Rust") => {
             if let Some(Message { id, chat, .. }) = q.message {

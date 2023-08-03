@@ -1,4 +1,5 @@
 use crate::dependencies::*;
+use anyhow::Result;
 
 #[derive(Serialize, Deserialize)]
 pub struct UserDataSql {

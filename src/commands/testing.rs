@@ -1,9 +1,7 @@
 use crate::dependencies::*;
 
 // ////////////||\\\\\\\\\\\\
-
 // // Experimental commands \\
-
 // \\\\\\\\\\\\||/////////////
 
 // Guardar Username y UserID en un archivo JSON
@@ -57,7 +55,8 @@ pub async fn list_json(bot: Bot, msg: Message) -> ResponseResult<()> {
 }
 
 ///////////////////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-//                                       Database section                                         \\
+//                                       Database section
+// \\
 //////////////////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 /// # Errors
@@ -67,6 +66,9 @@ pub fn read_database_file() -> ResponseResult<String> {
     Ok(contents)
 }
 
+/// # Leer la base de datos `database.json`
+/// Función para leer la base de datos `database.json` y convertirla en un vector de
+/// `UserData`
 async fn read_users_from_file() -> Vec<User> {
     let json_str = (read_to_string("database.json").await)
         .map_or_else(|_| String::from("[]"), |json_str| json_str);
@@ -117,7 +119,8 @@ pub fn get_all_users() -> Result<Vec<UserData>, io::Error> {
 }
 
 //////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-//                                      bot commands                                              \\
+//                                      bot commands
+// \\
 //////////////////////////////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 /// # Errors
@@ -192,7 +195,7 @@ pub async fn action_handler(
                     unban_for_testing(bot, msg, username, user_id).await?;
                 }
                 "/ban" => {
-                    ban_for_testing(bot, msg, username, user_id).await?;
+                    ban_for_testing(bot, msg, username, UserId(user_id)).await?;
                 }
                 "/mute" => {
                     mute_for_testing(bot, msg, username, user_id).await?;
@@ -254,10 +257,12 @@ async fn unban_for_testing(
 
     tokio::spawn(async move {
         sleep(Duration::from_secs(60)).await;
-        bot_copy.delete_message(msg.chat.id, video.id)
+        bot_copy
+            .delete_message(msg.chat.id, video.id)
             .await
             .unwrap_or_default();
-        bot_copy.delete_message(msg.chat.id, msg.id)
+        bot_copy
+            .delete_message(msg.chat.id, msg.id)
             .await
             .unwrap_or_default();
     });
@@ -270,34 +275,18 @@ async fn ban_for_testing(
     bot: Bot,
     msg: Message,
     username: &str,
-    user_id: u64,
+    user_id: UserId,
 ) -> ResponseResult<()> {
-    let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
+    let chat_member = bot.get_chat_member(msg.chat.id, user_id).await?;
 
     let bot_copy = bot.clone();
 
     if chat_member.is_banned() {
-        let err = bot
-            .send_message(
-                msg.chat.id,
-                format!("{username} [<code>{user_id}</code>] {ALREADY_BANNED}"),
-            )
+        already_banned(bot_copy.clone(), msg.clone(), user_id, username.to_string())
             .await?;
-
-        tokio::spawn(async move {
-            sleep(Duration::from_secs(60)).await;
-            bot.delete_message(msg.chat.id, err.id)
-                .await
-                .unwrap_or_default();
-            bot.delete_message(msg.chat.id, msg.id)
-                .await
-                .unwrap_or_default();
-        });
     }
 
-    bot_copy
-        .ban_chat_member(msg.chat.id, UserId(user_id))
-        .await?;
+    bot_copy.ban_chat_member(msg.chat.id, user_id).await?;
 
     ban_animation_generator(bot_copy, msg).await?;
 
@@ -363,15 +352,7 @@ async fn unmute_for_testing(
             .caption(format!("{username} [<code>{user_id}</code>] {UNMUTED}"))
             .await?;
 
-        tokio::spawn(async move {
-            sleep(Duration::from_secs(60)).await;
-            bot.delete_message(msg.chat.id, ok.id)
-                .await
-                .unwrap_or_default();
-            bot.delete_message(msg.chat.id, msg.id)
-                .await
-                .unwrap_or_default();
-        });
+        delete_message_timer(bot_copy.clone(), msg.clone(), ok.id, msg.id, 60);
     }
 
     bot_copy
@@ -398,17 +379,7 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
 
     // check if the arguments are empty
     if arguments.is_empty() {
-        let err = bot.send_message(msg.chat.id, NOT_ID_PROVIDED_404).await?;
-
-        tokio::spawn(async move {
-            sleep(Duration::from_secs(60)).await;
-            bot.delete_message(msg.chat.id, err.id)
-                .await
-                .unwrap_or_default();
-            bot.delete_message(msg.chat.id, msg.id)
-                .await
-                .unwrap_or_default();
-        });
+        no_arguments(bot, msg).await?;
 
         return Ok(())
     }
@@ -437,13 +408,11 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
             return Ok(())
         };
 
-        /*
-        let false = !is_admin_or_owner else {
-            permissions_denied(bot, msg).await?;
-
-            return Ok(())
-        };
-        */
+        // let false = !is_admin_or_owner else {
+        // permissions_denied(bot, msg).await?;
+        //
+        // return Ok(())
+        // };
 
         let chat_member = bot.get_chat_member(msg.chat.id, UserId(user_id)).await?;
 
@@ -458,7 +427,7 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
                 .await?;
         }
 
-        already_banned(bot, msg, user_id, username).await?;
+        already_banned(bot, msg, UserId(user_id), username).await?;
 
         return Ok(())
     };
@@ -496,10 +465,11 @@ pub async fn ban_for_arguments(
     user_id: u64,
     username: String,
 ) -> ResponseResult<()> {
-
     let bot_copy = bot.clone();
 
-    bot_copy.ban_chat_member(msg.chat.id, UserId(user_id)).await?;
+    bot_copy
+        .ban_chat_member(msg.chat.id, UserId(user_id))
+        .await?;
 
     let mut rng: StdRng = SeedableRng::from_entropy();
 
@@ -533,22 +503,12 @@ pub async fn ban_for_arguments(
         .extension()
         .map_or(false, |ext| ext.eq_ignore_ascii_case("gif"))
     {
-
         let video = bot_copy
             .send_video(msg.chat.id, InputFile::file(file_path.clone()))
             .caption(format!("@{username} [<code>{user_id}</code>] baneado"))
             .await?;
 
-        tokio::spawn(async move {
-            sleep(Duration::from_secs(60)).await;
-            bot_copy.delete_message(msg.chat.id, video.id)
-                .await
-                .unwrap_or_default();
-            bot_copy.delete_message(msg.chat.id, msg.id)
-                .await
-                .unwrap_or_default();
-        });
-
+        delete_message_timer(bot_copy.clone(), msg.clone(), video.id, msg.id, 60);
     }
 
     let gif = bot
@@ -556,16 +516,7 @@ pub async fn ban_for_arguments(
         .caption(format!("@{username} [<code>{user_id}</code>] baneado"))
         .await?;
 
-    tokio::spawn(async move {
-        sleep(Duration::from_secs(60)).await;
-        bot.delete_message(msg.chat.id, gif.id)
-            .await
-            .unwrap_or_default();
-        bot.delete_message(msg.chat.id, msg.id)
-            .await
-            .unwrap_or_default();
-    });
-
+    delete_message_timer(bot, msg.clone(), gif.id, msg.id, 60);
 
     Ok(())
 }
