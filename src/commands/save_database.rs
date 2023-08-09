@@ -9,8 +9,90 @@ pub struct UserDataSql {
     pub last_name: Option<String>,
 }
 
+pub struct Database {
+    pub conn: Connection,
+}
+
+impl Database {
+    pub fn new() -> Result<Self> {
+        let conn = Connection::open("database.sqlite")?;
+
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS user_data (
+                id INTEGER PRIMARY KEY,
+                username VARCHAR(32),
+                first_name VARCHAR(32),
+                last_name VARCHAR(32)
+            )",
+            [],
+        )?;
+
+        Ok(Self { conn })
+    }
+
+    pub fn insert_or_replace(&self, user: &User) -> Result<()> {
+        let user_id = user.id;
+        println!("User ID: {user_id}");
+
+        let username = user.username.clone().unwrap_or_default();
+        println!("Username: {username}");
+
+        let first_name = user.first_name.clone();
+
+        let last_name = user.last_name.clone();
+
+        self.conn.execute(
+            "INSERT OR REPLACE INTO user_data (id, username, first_name, last_name) VALUES (?1, ?2, \
+             ?3, ?4)",
+            (
+                Some(format!("{}", &user_id.0)),
+                &username,
+                first_name,
+                last_name,
+            ),
+        )?;
+
+        println!("Inserting user data: {:#?}", self.conn);
+
+        Ok(())
+    }
+
+    pub fn list_users(&self) -> Result<Vec<UserDataSql>> {
+        let mut stmt = self.conn.prepare("SELECT id, username, first_name, last_name FROM user_data")?;
+
+        let user_data_iter = stmt.query_map([], |row| {
+            Ok(UserDataSql {
+                id: UserId(row.get(0)?),
+                username: row.get(1)?,
+                first_name: row.get(2)?,
+                last_name: row.get(3)?,
+            })
+        })?;
+
+        let mut user_data_vec = Vec::new();
+
+        for user_data_result in user_data_iter {
+            user_data_vec.push(user_data_result?);
+        }
+
+        Ok(user_data_vec)
+    }
+}
+
+pub async fn test_message(bot: Bot, msg: Message, data: Database) -> ResponseResult<()> {
+
+    data.list_users().expect("Error listing users");
+
+    bot.send_message(msg.chat.id, format!("test")).await?;
+
+    Ok(())
+}
+
+/*
 /// # Errors
-pub fn initialize_database() -> Result<Connection> {
+fn initialize_database() -> Result<Connection> {
+    let conn = Database::new()?.conn;
+
     let conn = Connection::open("database.sqlite")?;
 
     conn.execute(
@@ -25,6 +107,7 @@ pub fn initialize_database() -> Result<Connection> {
 
     Ok(conn)
 }
+*/
 
 // # Errors
 // fn list_users_from_database_sql(conn: &Connection) -> Result<Vec<UserDataSql>> {
@@ -56,10 +139,10 @@ pub fn initialize_database() -> Result<Connection> {
 /// # Panics
 /// This code will panic if is not possible to connect to the database or if is not
 /// possible to insert the user data
-pub fn insert_user_to_sql(msg: &Message) -> ResponseResult<()> {
+pub async fn insert_user_to_sql(msg: &Message) -> ResponseResult<()> {
     let user = msg.from().unwrap();
 
-    let conn = initialize_database().expect("Error al conectar con la Base de Datos");
+    let conn = Database::new().expect("error al conectar con la base de datos").conn;
 
     let user_id = user.id;
     println!("User ID: {user_id}");
@@ -101,10 +184,14 @@ pub fn insert_user_to_sql(msg: &Message) -> ResponseResult<()> {
     };
 
     let database_id: Option<u64> = row.get(0).expect("Error al leer datos del usuario");
+    //let database_username: Option<String> = row.get(1).expect("Error al leer datos del usuario");
 
     let database_id = database_id.unwrap_or_default();
+    //let database_username_unwraped = database_username.unwrap_or_default();
 
     println!("Selecting user data ID:{database_id}");
+
+    //println!("Selecting user data Username:{database_username_unwraped}");
 
     Ok(())
 }

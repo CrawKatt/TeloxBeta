@@ -88,15 +88,7 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
                     .parse_mode(MarkdownV2)
                     .await?;
 
-                tokio::spawn(async move {
-                    sleep(Duration::from_secs(5)).await;
-                    bot.delete_message(msg.chat.id, ok.id)
-                        .await
-                        .unwrap_or_default();
-                    bot.delete_message(msg.chat.id, msg.id)
-                        .await
-                        .unwrap_or_default();
-                });
+                delete_message_timer(bot, msg.clone(), ok.id, msg.id, 5);
             }
 
             return Ok(())
@@ -143,16 +135,11 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
         Ejemplo::IfLet => include_str!("funciones_utils/if_let.md"),
     };
 
-    bot.send_message(msg.chat.id, text)
+    let ok = bot.send_message(msg.chat.id, text)
         .parse_mode(MarkdownV2)
         .await?;
 
-    tokio::spawn(async move {
-        sleep(Duration::from_secs(5)).await;
-        bot.delete_message(msg.chat.id, msg.id)
-            .await
-            .unwrap_or_default();
-    });
+    delete_message_timer(bot, msg.clone(), ok.id, msg.id, 60);
 
     Ok(())
 }

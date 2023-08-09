@@ -27,6 +27,7 @@ async fn main() -> ResponseResult<()> {
             // println!("{u:#?}");
         })
         .branch(Update::filter_message().endpoint(message))
+        .branch(Update::filter_message().endpoint(handle_message))
         .branch(Update::filter_callback_query().endpoint(callback_handler))
         .branch(Update::filter_inline_query().endpoint(inline_query_handler))
         .branch(
@@ -95,12 +96,35 @@ async fn chat_member_handler(
         .await?;
     }
 
-    // let poll : Vec<String> = vec!["Azul".to_string(), "Rojo".to_string(),
-    // "Verde".to_string(), "Amarillo".to_string()]; let encuesta =
-    // bot.send_poll(chat_member.chat.id, "¿De que color es la Salamandra AZUL?",
-    // poll).correct_option_id(1).op.await?;
+    let poll: Vec<String> = vec!["Azul".to_string(), "Rojo".to_string(),"Verde".to_string(), "Amarillo".to_string()];
+    let encuesta = bot.send_poll(chat_member.chat.id, "", poll);
+    let poll_struct = encuesta
+        .clone()
+        .type_(PollType::Quiz)
+        .question("¿De que color es la Salamandra AZUL?")
+        .is_anonymous(false)
+        .allows_multiple_answers(false)
+        .correct_option_id(0)
+        .open_period(60 * 5)
+        .reply_markup(InlineKeyboardMarkup::default()).await?;
 
-    // println!("{:#?}", encuesta);
+    let update = bot.get_updates().await?.into_iter().next();
+
+    if let Some(update) = update {
+        if let UpdateKind::PollAnswer(poll_answer) = update.kind {
+            if poll_answer.poll_id == encuesta.poll.id {
+                let mut answer = String::new();
+                for (index, option) in poll.iter().enumerate() {
+                    let count = poll_answer.option_ids.iter().filter(|&&id| id == index as i32).count();
+                    answer.push_str(&format!("Opcion: {option} - Votos: {count}"));
+                }
+
+                bot.send_message(chat_member.chat.id, answer).await?;
+            }
+        }
+    }
+
+    println!("{:#?}", poll_struct);
 
     // bot.ban_chat_member(chat_member.chat.id, user_id_for_ban).await?;
 

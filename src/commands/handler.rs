@@ -1,4 +1,4 @@
-use crate::dependencies::*;
+use crate::dependencies::{Bot, BotCommands, Me, Message, ResponseResult, ban_user, create_buttons, ejemplos, get_chat_member, help_action, insert_user_to_sql, list_json, mute_user_admin, send_bite, send_blush, send_cuddle, send_happy, send_hug, send_kick, send_kill, send_kiss, send_laugh, send_pat, send_poke, send_pout, send_punch, send_random_meme, send_sad, send_slap, send_smug, send_stare, send_thumbs_up, send_yeet, test_json_two, unban_user, unmute_user};
 
 // Derive BotCommands para analizar texto con un comando en este enum.
 //
@@ -89,53 +89,6 @@ pub enum Command {
 }
 
 /// # Errors
-pub async fn action(bot: Bot, msg: Message, cmd: Command) -> ResponseResult<()> {
-    match cmd {
-        Command::Variables => Box::pin(ejemplos(bot, msg)).await?,
-        Command::Constantes => Box::pin(ejemplos(bot, msg)).await?,
-        Command::TiposDeDatos => Box::pin(ejemplos(bot, msg)).await?,
-        Command::Operadores => ejemplos(bot, msg).await?,
-        Command::Arrays => ejemplos(bot, msg).await?,
-        Command::Tuplas => ejemplos(bot, msg).await?,
-        Command::Vectores => ejemplos(bot, msg).await?,
-        Command::Condicionales => ejemplos(bot, msg).await?,
-        Command::Loop => ejemplos(bot, msg).await?,
-        Command::For => ejemplos(bot, msg).await?,
-        Command::While => ejemplos(bot, msg).await?,
-        Command::Match => ejemplos(bot, msg).await?,
-        Command::Enum => ejemplos(bot, msg).await?,
-        Command::Funciones => ejemplos(bot, msg).await?,
-        Command::Return => ejemplos(bot, msg).await?,
-        Command::Metodos => ejemplos(bot, msg).await?,
-        Command::Closures => ejemplos(bot, msg).await?,
-        Command::Struct => ejemplos(bot, msg).await?,
-        Command::Traits => ejemplos(bot, msg).await?,
-        Command::Option => ejemplos(bot, msg).await?,
-        Command::Result => ejemplos(bot, msg).await?,
-        Command::Generics => ejemplos(bot, msg).await?,
-        Command::Lifetimes => ejemplos(bot, msg).await?,
-        Command::Macros => ejemplos(bot, msg).await?,
-        Command::Ownership => ejemplos(bot, msg).await?,
-        Command::Referencias => ejemplos(bot, msg).await?,
-        Command::Borrowing => ejemplos(bot, msg).await?,
-        Command::Modulos => ejemplos(bot, msg).await?,
-        Command::Shadowing => ejemplos(bot, msg).await?,
-        Command::Slices => ejemplos(bot, msg).await?,
-        Command::String => ejemplos(bot, msg).await?,
-        Command::Iterators => ejemplos(bot, msg).await?,
-        Command::Scopes => ejemplos(bot, msg).await?,
-        Command::Async => ejemplos(bot, msg).await?,
-        Command::IfLet => ejemplos(bot, msg).await?,
-        Command::About => ejemplos(bot, msg).await?,
-        Command::Novedades => ejemplos(bot, msg).await?,
-
-        _ => (),
-    };
-
-    Ok(())
-}
-
-/// # Errors
 pub async fn message(bot: Bot, msg: Message, me: Me) -> ResponseResult<()> {
     let Some(text) = msg.text() else {
         return Ok(())
@@ -172,6 +125,43 @@ pub async fn message(bot: Bot, msg: Message, me: Me) -> ResponseResult<()> {
         Ok(Command::Kick) => send_kick(bot, msg).await?,
         Ok(Command::ThumbsUp) => send_thumbs_up(bot, msg).await?,
         Ok(Command::Stare) => send_stare(bot, msg).await?,
+        Ok(Command::Novedades) => ejemplos(bot, msg).await?,
+        Ok(Command::Borrowing) => ejemplos(bot, msg).await?,
+        Ok(Command::Modulos) => ejemplos(bot, msg).await?,
+        Ok(Command::Shadowing) => ejemplos(bot, msg).await?,
+        Ok(Command::Slices) => ejemplos(bot, msg).await?,
+        Ok(Command::String) => ejemplos(bot, msg).await?,
+        Ok(Command::Iterators) => ejemplos(bot, msg).await?,
+        Ok(Command::Scopes) => ejemplos(bot, msg).await?,
+        Ok(Command::Async) => ejemplos(bot, msg).await?,
+        Ok(Command::IfLet) => ejemplos(bot, msg).await?,
+        Ok(Command::About) => ejemplos(bot, msg).await?,
+        Ok(Command::Variables) => Box::pin(ejemplos(bot, msg)).await?,
+        Ok(Command::Constantes) => Box::pin(ejemplos(bot, msg)).await?,
+        Ok(Command::TiposDeDatos) => Box::pin(ejemplos(bot, msg)).await?,
+        Ok(Command::Operadores) => ejemplos(bot, msg).await?,
+        Ok(Command::Arrays) => ejemplos(bot, msg).await?,
+        Ok(Command::Tuplas) => ejemplos(bot, msg).await?,
+        Ok(Command::Vectores) => ejemplos(bot, msg).await?,
+        Ok(Command::Condicionales) => ejemplos(bot, msg).await?,
+        Ok(Command::Loop) => ejemplos(bot, msg).await?,
+        Ok(Command::For) => ejemplos(bot, msg).await?,
+        Ok(Command::While) => ejemplos(bot, msg).await?,
+        Ok(Command::Match) => ejemplos(bot, msg).await?,
+        Ok(Command::Enum) => ejemplos(bot, msg).await?,
+        Ok(Command::Funciones) => ejemplos(bot, msg).await?,
+        Ok(Command::Return) => ejemplos(bot, msg).await?,
+        Ok(Command::Metodos) => ejemplos(bot, msg).await?,
+        Ok(Command::Closures) => ejemplos(bot, msg).await?,
+        Ok(Command::Struct) => ejemplos(bot, msg).await?,
+        Ok(Command::Traits) => ejemplos(bot, msg).await?,
+        Ok(Command::Option) => ejemplos(bot, msg).await?,
+        Ok(Command::Result) => ejemplos(bot, msg).await?,
+        Ok(Command::Generics) => ejemplos(bot, msg).await?,
+        Ok(Command::Lifetimes) => ejemplos(bot, msg).await?,
+        Ok(Command::Macros) => ejemplos(bot, msg).await?,
+        Ok(Command::Ownership) => ejemplos(bot, msg).await?,
+        Ok(Command::Referencias) => ejemplos(bot, msg).await?,
 
         // Comandos de Anti_Spam (unsafe maldito LOL) >> Anti_Spam Commands (This is
         // cursed LOL) Ok(Command::SpamOn) => handle_command(bot.clone(),
@@ -180,7 +170,9 @@ pub async fn message(bot: Bot, msg: Message, me: Me) -> ResponseResult<()> {
         Err(_) => {
             test_json_two(bot.clone(), msg.clone()).await?;
 
-            insert_user_to_sql(&msg)?;
+            handle_message(msg.clone()).await?;
+
+            //insert_user_to_sql(&msg)?;
 
             // if text.contains("https://t.me") {
             // anti_spam(bot.clone(), msg.clone()).await?;
@@ -189,8 +181,20 @@ pub async fn message(bot: Bot, msg: Message, me: Me) -> ResponseResult<()> {
             // handle_command(bot, msg.clone()).await?;
         }
 
-        _ => action(bot, msg, Command::Variables).await?,
+        _ => (),
     }
+
+    Ok(())
+}
+
+/// # Errors
+pub async fn handle_message(msg: Message) -> ResponseResult<()> {
+
+    let Some(_) = msg.text() else {
+        return Ok(())
+    };
+
+    insert_user_to_sql(&msg).await?;
 
     Ok(())
 }
