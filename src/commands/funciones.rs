@@ -91,7 +91,7 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
                 delete_message_timer(bot, msg.clone(), ok.id, msg.id, 5);
             }
 
-            return Ok(())
+            return Ok(());
         }
     };
 
@@ -135,7 +135,8 @@ pub async fn ejemplos(bot: Bot, msg: Message) -> ResponseResult<()> {
         Ejemplo::IfLet => include_str!("funciones_utils/if_let.md"),
     };
 
-    let ok = bot.send_message(msg.chat.id, text)
+    let ok = bot
+        .send_message(msg.chat.id, text)
         .parse_mode(MarkdownV2)
         .await?;
 

@@ -112,7 +112,7 @@ pub async fn unmute_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                             .unwrap_or_default();
                     });
 
-                    return Ok(())
+                    return Ok(());
                 }
             } else {
                 let err = bot
@@ -158,7 +158,7 @@ async fn get_user_id_by_arguments_for_unmute(
     if arguments.is_empty() {
         no_arguments(bot, msg).await?;
 
-        return Ok(())
+        return Ok(());
     }
 
     if arguments.contains('@') {
@@ -244,7 +244,7 @@ async fn get_user_id_by_arguments_for_unmute(
 
         user_is_not_muted(bot, msg, &username, user_id).await?;
 
-        return Ok(())
+        return Ok(());
     }
 
     Ok(())

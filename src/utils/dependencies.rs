@@ -1,9 +1,6 @@
 pub use crate::{
     buttons::*,
-    commands::{
-        message_utils::*,
-        *,
-    },
+    commands::{message_utils::*, *},
     database::*,
     error::*,
     fun_commands::*,
@@ -22,42 +19,24 @@ pub use unban::*;
 pub use unmute::*;
 
 // Import rand modules for generating random numbers
-pub use rand::{
-    rngs::StdRng,
-    Rng,
-    SeedableRng,
-};
+pub use rand::{rngs::StdRng, Rng, SeedableRng};
 
 // Import Teloxide modules for interacting with the Telegram API
 pub use teloxide::{
     adaptors::DefaultParseMode,
     prelude::*,
     types::*,
-    utils::{
-        command::BotCommands,
-        html,
-    },
+    utils::{command::BotCommands, html},
 };
 
 // Import Teloxide_core modules for interacting with the Telegram API
 pub use teloxide_core::{
     prelude::UserId,
-    types::{
-        ChatMemberStatus,
-        Message,
-        ParseMode::MarkdownV2,
-    },
+    types::{ChatMemberStatus, Message, ParseMode::MarkdownV2},
 };
 
-pub use rusqlite::{
-    params,
-    Connection,
-    Result,
-};
-pub use serde::{
-    Deserialize,
-    Serialize,
-};
+pub use sqlx::SqlitePool;
+pub use serde::{Deserialize, Serialize};
 
 // type Bot for using the DefaultParseMode adapter
 pub type Bot = DefaultParseMode<teloxide::Bot>;
@@ -72,11 +51,7 @@ pub use std::path::Path;
 pub use std::{
     error::Error,
     fs,
-    io::{
-        self,
-        prelude::*,
-        Write,
-    },
+    io::{self, prelude::*, Write},
     time::Duration,
 };
 pub use tokio::fs::read_to_string;

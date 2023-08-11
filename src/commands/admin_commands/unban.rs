@@ -34,14 +34,14 @@ pub async fn unban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
 
     if !is_admin_or_owner {
         permissions_denied(bot, msg).await?;
-        return Ok(())
+        return Ok(());
     }
 
     let chat_member = bot.get_chat_member(msg.chat.id, user.id).await?;
 
     if !chat_member.status().is_banned() {
         not_banned(bot, msg, username_user).await?;
-        return Ok(())
+        return Ok(());
     }
 
     bot_copy
@@ -213,7 +213,7 @@ async fn get_user_id_by_arguments_for_unban(
             return Ok(())
         };
 
-        return Ok(())
+        return Ok(());
     }
     no_arguments(bot, msg).await?;
 

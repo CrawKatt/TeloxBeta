@@ -1,4 +1,11 @@
-use crate::dependencies::{Bot, BotCommands, Me, Message, ResponseResult, ban_user, create_buttons, ejemplos, get_chat_member, help_action, insert_user_to_sql, list_json, mute_user_admin, send_bite, send_blush, send_cuddle, send_happy, send_hug, send_kick, send_kill, send_kiss, send_laugh, send_pat, send_poke, send_pout, send_punch, send_random_meme, send_sad, send_slap, send_smug, send_stare, send_thumbs_up, send_yeet, test_json_two, unban_user, unmute_user};
+use crate::dependencies::{
+    ban_user, create_buttons, ejemplos, get_chat_member, help_action, insert_user_to_sql,
+    list_json, mute_user_admin, send_bite, send_blush, send_cuddle, send_happy, send_hug,
+    send_kick, send_kill, send_kiss, send_laugh, send_pat, send_poke, send_pout,
+    send_punch, send_random_meme, send_sad, send_slap, send_smug, send_stare,
+    send_thumbs_up, send_yeet, test_json_two, unban_user, unmute_user, Bot, BotCommands,
+    Me, Message, ResponseResult,
+};
 
 // Derive BotCommands para analizar texto con un comando en este enum.
 //
@@ -125,6 +132,7 @@ pub async fn message(bot: Bot, msg: Message, me: Me) -> ResponseResult<()> {
         Ok(Command::Kick) => send_kick(bot, msg).await?,
         Ok(Command::ThumbsUp) => send_thumbs_up(bot, msg).await?,
         Ok(Command::Stare) => send_stare(bot, msg).await?,
+
         Ok(Command::Novedades) => ejemplos(bot, msg).await?,
         Ok(Command::Borrowing) => ejemplos(bot, msg).await?,
         Ok(Command::Modulos) => ejemplos(bot, msg).await?,
@@ -189,7 +197,6 @@ pub async fn message(bot: Bot, msg: Message, me: Me) -> ResponseResult<()> {
 
 /// # Errors
 pub async fn handle_message(msg: Message) -> ResponseResult<()> {
-
     let Some(_) = msg.text() else {
         return Ok(())
     };

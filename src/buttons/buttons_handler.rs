@@ -179,21 +179,12 @@ pub fn make_donate_keyboard() -> InlineKeyboardMarkup {
     for option in donate_options.chunks(3) {
         let row = option
             .iter()
-            .map(|&option| {
-                match option {
-                    "Volver" => {
-                        InlineKeyboardButton::callback(
-                            option.to_owned(),
-                            "back_to_main_keyboard".to_owned(),
-                        )
-                    }
-                    _ => {
-                        InlineKeyboardButton::callback(
-                            option.to_owned(),
-                            option.to_owned(),
-                        )
-                    }
-                }
+            .map(|&option| match option {
+                "Volver" => InlineKeyboardButton::callback(
+                    option.to_owned(),
+                    "back_to_main_keyboard".to_owned(),
+                ),
+                _ => InlineKeyboardButton::callback(option.to_owned(), option.to_owned()),
             })
             .collect();
 
@@ -212,21 +203,12 @@ pub fn make_language_keyboard() -> InlineKeyboardMarkup {
     for language in languages.chunks(3) {
         let row = language
             .iter()
-            .map(|&option| {
-                match option {
-                    "Volver" => {
-                        InlineKeyboardButton::callback(
-                            option.to_owned(),
-                            "back_to_main_keyboard".to_owned(),
-                        )
-                    }
-                    _ => {
-                        InlineKeyboardButton::callback(
-                            option.to_owned(),
-                            option.to_owned(),
-                        )
-                    }
-                }
+            .map(|&option| match option {
+                "Volver" => InlineKeyboardButton::callback(
+                    option.to_owned(),
+                    "back_to_main_keyboard".to_owned(),
+                ),
+                _ => InlineKeyboardButton::callback(option.to_owned(), option.to_owned()),
             })
             .collect();
 
@@ -245,21 +227,12 @@ pub fn make_help_keyboard() -> InlineKeyboardMarkup {
     for language in languages.chunks(3) {
         let row = language
             .iter()
-            .map(|&option| {
-                match option {
-                    "Volver" => {
-                        InlineKeyboardButton::callback(
-                            option.to_owned(),
-                            "back_to_main_keyboard".to_owned(),
-                        )
-                    }
-                    _ => {
-                        InlineKeyboardButton::callback(
-                            option.to_owned(),
-                            option.to_owned(),
-                        )
-                    }
-                }
+            .map(|&option| match option {
+                "Volver" => InlineKeyboardButton::callback(
+                    option.to_owned(),
+                    "back_to_main_keyboard".to_owned(),
+                ),
+                _ => InlineKeyboardButton::callback(option.to_owned(), option.to_owned()),
             })
             .collect();
 

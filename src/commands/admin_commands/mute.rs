@@ -60,7 +60,7 @@ pub async fn mute_user_admin(bot: Bot, msg: Message) -> ResponseResult<()> {
                                 .unwrap_or_default();
                         });
 
-                        return Ok(())
+                        return Ok(());
                     }
 
                     bot.restrict_chat_member(
@@ -170,7 +170,7 @@ pub async fn get_user_id_by_arguments_for_mute(
                 .unwrap_or_default();
         });
 
-        return Ok(())
+        return Ok(());
     }
 
     // if arguments is String, then use this
@@ -316,7 +316,7 @@ pub async fn get_user_id_by_arguments_for_mute(
                 .unwrap_or_default();
         });
 
-        return Ok(())
+        return Ok(());
     }
 
     Ok(())

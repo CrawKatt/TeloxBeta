@@ -42,7 +42,7 @@ pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<(
                 Err(e) => {
                     eprintln!("❌ No se pudo obtener el ID del usuario: {e}");
 
-                    return Ok(())
+                    return Ok(());
                 }
             };
 
@@ -65,7 +65,7 @@ pub async fn ban_animation_generator(bot: Bot, msg: Message) -> ResponseResult<(
 
                 println!("❌ No has especificado un ID para obtener el usuario {msg:#?}");
 
-                return Ok(())
+                return Ok(());
             }
 
             let mut rng: StdRng = SeedableRng::from_entropy();
@@ -166,7 +166,7 @@ pub async fn mute_animation_generator(bot: Bot, msg: Message) -> ResponseResult<
                 Err(e) => {
                     eprintln!("❌ No se pudo obtener el ID del usuario: {e}");
 
-                    return Ok(())
+                    return Ok(());
                 }
             };
 

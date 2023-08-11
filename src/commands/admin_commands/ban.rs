@@ -35,7 +35,7 @@ pub async fn ban_user(bot: Bot, msg: Message) -> ResponseResult<()> {
                         already_banned(bot.clone(), msg.clone(), user_id, username_user)
                             .await?;
 
-                        return Ok(())
+                        return Ok(());
                     }
 
                     bot.ban_chat_member(msg.chat.id, user.id).await?;

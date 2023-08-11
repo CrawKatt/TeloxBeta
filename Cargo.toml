@@ -18,7 +18,7 @@ reqwest = "0.11.13"
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = "1.0.93"
 nekosbest = "0.17.0"
-rusqlite = "0.29.0"
+sqlx = { git = "https://github.com/launchbadge/sqlx.git", features = ["runtime-tokio-native-tls", "sqlite"] }
 lazy_static = "1.4.0"
 anyhow = "1.0.72"
 

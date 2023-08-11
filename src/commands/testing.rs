@@ -26,7 +26,7 @@ pub async fn list_json(bot: Bot, msg: Message) -> ResponseResult<()> {
         bot.send_message(msg.chat.id, "No hay usuarios registrados.")
             .await?;
 
-        return Ok(())
+        return Ok(());
     };
 
     let mut user_list = String::from("Usuarios registrados: \n");
@@ -104,7 +104,7 @@ fn update_user_data(
 
             user.last_name = last_name;
 
-            break
+            break;
         }
     }
 }
@@ -154,11 +154,9 @@ pub async fn get_user_id_by_username(bot: Bot, msg: Message) -> ResponseResult<(
         }
     };
 
-    let user_id = user_data_vec.iter().find_map(|data| {
-        match &data.username {
-            Some(name) if name == username => Some(data.id.to_string()),
-            _ => None,
-        }
+    let user_id = user_data_vec.iter().find_map(|data| match &data.username {
+        Some(name) if name == username => Some(data.id.to_string()),
+        _ => None,
     });
 
     // Enviar el user_id como respuesta al usuario
@@ -381,7 +379,7 @@ pub async fn get_user_id_by_arguments(bot: Bot, msg: Message) -> ResponseResult<
     if arguments.is_empty() {
         no_arguments(bot, msg).await?;
 
-        return Ok(())
+        return Ok(());
     }
 
     let true = arguments.contains('@') else {
@@ -560,7 +558,7 @@ pub async fn test_json_two(bot: Bot, msg: Message) -> ResponseResult<()> {
 
             is_registered = true;
 
-            break
+            break;
         }
     }
 

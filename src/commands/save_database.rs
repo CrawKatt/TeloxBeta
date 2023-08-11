@@ -1,5 +1,5 @@
 use crate::dependencies::*;
-use anyhow::Result;
+//use anyhow::Result;
 
 #[derive(Serialize, Deserialize)]
 pub struct UserDataSql {
@@ -8,29 +8,32 @@ pub struct UserDataSql {
     pub first_name: String,
     pub last_name: Option<String>,
 }
-
+/*
 pub struct Database {
-    pub conn: Connection,
+    pool: SqlitePool,
 }
 
 impl Database {
-    pub fn new() -> Result<Self> {
-        let conn = Connection::open("database.sqlite")?;
 
-        conn.execute(
+    pub async fn new() -> Self {
+        let pool = SqlitePool::connect("database.sqlite").await.unwrap();
+
+        sqlx::query(
             "CREATE TABLE IF NOT EXISTS user_data (
                 id INTEGER PRIMARY KEY,
                 username VARCHAR(32),
                 first_name VARCHAR(32),
                 last_name VARCHAR(32)
             )",
-            [],
-        )?;
+        )
+            .execute(&pool)
+            .await
+            .unwrap();
 
-        Ok(Self { conn })
+        Self { pool }
     }
 
-    pub fn insert_or_replace(&self, user: &User) -> Result<()> {
+    pub async fn insert_or_replace(&mut self, user: &User) -> Result<(), sqlx::Error> {
         let user_id = user.id;
         println!("User ID: {user_id}");
 
@@ -41,24 +44,20 @@ impl Database {
 
         let last_name = user.last_name.clone();
 
-        self.conn.execute(
-            "INSERT OR REPLACE INTO user_data (id, username, first_name, last_name) VALUES (?1, ?2, \
-             ?3, ?4)",
-            (
-                Some(format!("{}", &user_id.0)),
-                &username,
-                first_name,
-                last_name,
-            ),
-        )?;
-
-        println!("Inserting user data: {:#?}", self.conn);
-
-        Ok(())
+        sqlx::query("INSERT OR REPLACE INTO user_data (id, username, first_name, last_name) VALUES (?1, ?2, ?3, ?4)")
+            .bind(Some(format!("{}", &user_id.0)))
+            .bind(username)
+            .bind(first_name)
+            .bind(last_name)
+            .execute(&self.pool)
+            .await
+            .map(|_| ())
     }
-
+/*
     pub fn list_users(&self) -> Result<Vec<UserDataSql>> {
-        let mut stmt = self.conn.prepare("SELECT id, username, first_name, last_name FROM user_data")?;
+        let mut stmt = self
+            .conn
+            .prepare("SELECT id, username, first_name, last_name FROM user_data")?;
 
         let user_data_iter = stmt.query_map([], |row| {
             Ok(UserDataSql {
@@ -77,16 +76,18 @@ impl Database {
 
         Ok(user_data_vec)
     }
+    */
 }
-
+*/
+/*
 pub async fn test_message(bot: Bot, msg: Message, data: Database) -> ResponseResult<()> {
-
     data.list_users().expect("Error listing users");
 
     bot.send_message(msg.chat.id, format!("test")).await?;
 
     Ok(())
 }
+*/
 
 /*
 /// # Errors
@@ -135,6 +136,24 @@ fn initialize_database() -> Result<Connection> {
 // Ok(user_data_vec)
 // }
 
+pub async fn initialize_database() -> ResponseResult<SqlitePool> {
+    let pool = SqlitePool::connect("database.sqlite").await?;
+
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS user_data (
+            id INTEGER PRIMARY KEY,
+            username VARCHAR(32),
+            first_name VARCHAR(32),
+            last_name VARCHAR(32)
+        )",
+    )
+        .execute(&pool)
+        .await
+        .expect("TODO: panic message");
+
+    Ok(pool)
+}
+
 /// # Errors
 /// # Panics
 /// This code will panic if is not possible to connect to the database or if is not
@@ -142,7 +161,7 @@ fn initialize_database() -> Result<Connection> {
 pub async fn insert_user_to_sql(msg: &Message) -> ResponseResult<()> {
     let user = msg.from().unwrap();
 
-    let conn = Database::new().expect("error al conectar con la base de datos").conn;
+    let pool = Database::new();
 
     let user_id = user.id;
     println!("User ID: {user_id}");
@@ -154,21 +173,19 @@ pub async fn insert_user_to_sql(msg: &Message) -> ResponseResult<()> {
 
     let last_name = user.last_name.clone();
 
-    conn.execute(
+    sqlx::query(
         "INSERT OR REPLACE INTO user_data (id, username, first_name, last_name) VALUES (?1, ?2, \
          ?3, ?4)",
-        (
-            Some(format!("{}", &user_id.0)),
-            &username,
-            first_name,
-            last_name,
-        ),
     )
-    .expect("Error al insertar datos del usuario");
+        .bind(Some(format!("{}", &user_id.0)))
+        .bind(username)
+        .bind(first_name)
+        .bind(last_name)
+        .execute(&pool)
+        .await
+        .unwrap();
 
-    println!("Inserting user data: {conn:#?}");
-
-    let mut database_id = conn
+    let mut database_id = pool
         .prepare("SELECT id FROM user_data WHERE id = ?1 AND username = ?2")
         .expect("Error al leer datos del usuario");
 
